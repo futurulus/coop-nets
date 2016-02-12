@@ -42,6 +42,9 @@ parser.add_argument('--speaker_ignore_color', action='store_true',
                          "language model. (For debugging; you'll rarely want to do this.)")
 parser.add_argument('--speaker_recurrent_layers', type=int, default=2,
                     help='The number of recurrent layers to pass the input through.')
+parser.add_argument('--speaker_hidden_in_layers', type=int, default=0,
+                    help='The number of dense layers to pass the input through '
+                         'before it enters the LSTM.')
 parser.add_argument('--speaker_hidden_out_layers', type=int, default=0,
                     help='The number of dense layers to pass activations through '
                          'before the output.')
@@ -249,7 +252,19 @@ class SpeakerLearner(NeuralLearner):
             l_in = ConcatLayer([l_color_embed, l_prev_embed], axis=2, name=id_tag + 'color_prev')
         l_mask_in = InputLayer(shape=(None, self.seq_vec.max_len - 1),
                                input_var=mask_var, name=id_tag + 'mask_input')
-        l_lstm_drop = l_in
+
+        l_hidden_in = l_in
+        for i in range(1, options.speaker_hidden_in_layers + 1):
+            shape_dense = ReshapeLayer(l_hidden_in, (-1, options.speaker_cell_size),
+                                       name=id_tag + 'shape_dense%d' % i)
+            dense_out = DenseLayer(shape_dense, num_units=options.speaker_cell_size,
+                                   nonlinearity=NONLINEARITIES[options.speaker_nonlinearity],
+                                   name=id_tag + 'hidden_in%d' % i)
+            l_hidden_in = ReshapeLayer(dense_out,
+                                       (-1, self.seq_vec.max_len - 1, options.speaker_cell_size),
+                                       name=id_tag + 'shape_rec%d' % i)
+
+        l_lstm_drop = l_hidden_in
         if not options.speaker_no_lstm:
             for i in range(1, options.speaker_recurrent_layers):
                 l_lstm = LSTMLayer(l_lstm_drop, num_units=options.speaker_cell_size,
