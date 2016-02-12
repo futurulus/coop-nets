@@ -33,6 +33,13 @@ parser.add_argument('--speaker_color_resolution', type=int, nargs='+', default=[
                          'for the input of the speaker model.')
 parser.add_argument('--speaker_no_mask', action='store_true',
                     help='If `True`, disable masking of LSTM inputs in training.')
+parser.add_argument('--speaker_no_lstm', action='store_true',
+                    help='If `True`, remove LSTM layer (wat).')
+parser.add_argument('--speaker_fixed_word_embed', action='store_true',
+                    help='If `True`, do not train the (random) word embeddings.')
+parser.add_argument('--speaker_ignore_color', action='store_true',
+                    help="If `True`, ignore the color input, turning the speaker into a "
+                         "language model. (For debugging; you'll rarely want to do this.)")
 parser.add_argument('--speaker_recurrent_layers', type=int, default=2,
                     help='The number of recurrent layers to pass the input through.')
 parser.add_argument('--speaker_hidden_out_layers', type=int, default=0,
@@ -228,33 +235,43 @@ class SpeakerLearner(NeuralLearner):
         l_color_embed = EmbeddingLayer(l_color, input_size=self.color_vec.num_types,
                                        output_size=options.speaker_cell_size,
                                        name=id_tag + 'color_embed')
+        if options.speaker_fixed_word_embed:
+            l_color_embed.params[l_color_embed.W].remove('trainable')
         l_prev_out = InputLayer(shape=(None, self.seq_vec.max_len - 1),
                                 input_var=prev_output_var,
                                 name=id_tag + 'prev_input')
         l_prev_embed = EmbeddingLayer(l_prev_out, input_size=len(self.seq_vec.tokens),
                                       output_size=options.speaker_cell_size,
                                       name=id_tag + 'prev_embed')
-        l_in = ConcatLayer([l_color_embed, l_prev_embed], axis=2, name=id_tag + 'color_prev')
+        if options.speaker_ignore_color:
+            l_in = l_prev_embed
+        else:
+            l_in = ConcatLayer([l_color_embed, l_prev_embed], axis=2, name=id_tag + 'color_prev')
         l_mask_in = InputLayer(shape=(None, self.seq_vec.max_len - 1),
                                input_var=mask_var, name=id_tag + 'mask_input')
         l_lstm_drop = l_in
-        for i in range(1, options.speaker_recurrent_layers):
-            l_lstm = LSTMLayer(l_lstm_drop, num_units=options.speaker_cell_size,
-                               mask_input=(None if options.speaker_no_mask else l_mask_in),
-                               nonlinearity=NONLINEARITIES[options.speaker_nonlinearity],
-                               forgetgate=Gate(b=Constant(options.speaker_forget_bias)),
-                               name=id_tag + 'lstm%d' % i)
-            if options.speaker_dropout > 0.0:
-                l_lstm_drop = DropoutLayer(l_lstm, p=options.speaker_dropout,
-                                           name=id_tag + 'lstm%d_drop' % i)
-            else:
-                l_lstm_drop = l_lstm
+        if not options.speaker_no_lstm:
+            for i in range(1, options.speaker_recurrent_layers):
+                l_lstm = LSTMLayer(l_lstm_drop, num_units=options.speaker_cell_size,
+                                   mask_input=(None if options.speaker_no_mask else l_mask_in),
+                                   nonlinearity=NONLINEARITIES[options.speaker_nonlinearity],
+                                   forgetgate=Gate(b=Constant(options.speaker_forget_bias)),
+                                   name=id_tag + 'lstm%d' % i)
+                if options.speaker_dropout > 0.0:
+                    l_lstm_drop = DropoutLayer(l_lstm, p=options.speaker_dropout,
+                                               name=id_tag + 'lstm%d_drop' % i)
+                else:
+                    l_lstm_drop = l_lstm
+
         units = (options.speaker_cell_size if options.speaker_hidden_out_layers
                  else len(self.seq_vec.tokens))
-        l_lstm = LSTMLayer(l_lstm_drop, num_units=units,
-                           nonlinearity=NONLINEARITIES[options.speaker_nonlinearity],
-                           forgetgate=Gate(b=Constant(options.speaker_forget_bias)),
-                           name=id_tag + 'lstm%d' % options.speaker_recurrent_layers)
+        if options.speaker_no_lstm:
+            l_lstm = l_lstm_drop
+        else:
+            l_lstm = LSTMLayer(l_lstm_drop, num_units=units,
+                               nonlinearity=NONLINEARITIES[options.speaker_nonlinearity],
+                               forgetgate=Gate(b=Constant(options.speaker_forget_bias)),
+                               name=id_tag + 'lstm%d' % options.speaker_recurrent_layers)
         l_shape = ReshapeLayer(l_lstm, (-1, units),
                                name=id_tag + 'reshape')
         l_hidden_out = l_shape
