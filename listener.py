@@ -4,7 +4,8 @@ import theano.tensor as T
 import warnings
 from collections import Counter
 from lasagne.layers import InputLayer, DropoutLayer, DenseLayer, EmbeddingLayer, NonlinearityLayer
-from lasagne.layers import NINLayer, ConcatLayer, dimshuffle
+from lasagne.layers import NINLayer, FeaturePoolLayer, ConcatLayer, SliceLayer, ElemwiseMergeLayer
+from lasagne.layers import dimshuffle, reshape
 from lasagne.layers.recurrent import Gate
 from lasagne.init import Constant
 from lasagne.objectives import categorical_crossentropy
@@ -15,6 +16,7 @@ from stanza.monitoring import progress
 from stanza.research import config, instance, iterators, rng
 import color_instances
 import speaker
+from helpers import ForgetSizeLayer
 from neural import NeuralLearner, SimpleLasagneModel
 from neural import NONLINEARITIES, OPTIMIZERS, CELLS, sample
 from vectorizers import SequenceVectorizer, BucketsVectorizer, SymbolVectorizer
@@ -610,6 +612,107 @@ class TwoStreamListenerLearner(ContextListenerLearner):
         return l_scores, [l_in] + context_inputs
 
 
+class ContextVecListenerLearner(ContextListenerLearner):
+    def __init__(self, *args, **kwargs):
+        super(ContextVecListenerLearner, self).__init__(*args, **kwargs)
+
+    def _get_l_out(self, input_vars):
+        check_options(self.options)
+        id_tag = (self.id + '/') if self.id else ''
+
+        input_var = input_vars[0]
+        context_vars = input_vars[1:]
+
+        l_in = InputLayer(shape=(None, self.seq_vec.max_len), input_var=input_var,
+                          name=id_tag + 'desc_input')
+        l_in_embed = EmbeddingLayer(l_in, input_size=len(self.seq_vec.tokens),
+                                    output_size=self.options.listener_cell_size,
+                                    name=id_tag + 'desc_embed')
+
+        # Context repr has shape (batch_size, seq_len, context_len * repr_size)
+        l_context_repr, context_inputs = self.color_vec.get_input_layer(
+            context_vars,
+            recurrent_length=self.seq_vec.max_len,
+            cell_size=self.options.listener_cell_size,
+            context_len=self.context_len,
+            id=self.id
+        )
+        l_context_repr = reshape(l_context_repr, ([0], [1], self.context_len,
+                                                  self.options.listener_cell_size))
+        l_hidden_context = dimshuffle(l_context_repr, (0, 3, 1, 2), name=id_tag + 'shuffle_in')
+        for i in range(1, self.options.listener_hidden_color_layers + 1):
+            l_hidden_context = NINLayer(
+                l_hidden_context, num_units=self.options.listener_cell_size,
+                nonlinearity=NONLINEARITIES[self.options.listener_nonlinearity],
+                name=id_tag + 'hidden_context%d' % i)
+        l_pool = FeaturePoolLayer(l_hidden_context, pool_size=self.context_len, axis=-1,
+                                  pool_function=T.mean, name=id_tag + 'pool')
+        l_pool_squeezed = reshape(l_pool, ([0], [1], [2]), name=id_tag + 'pool_squeezed')
+        l_pool_shuffle = dimshuffle(l_pool_squeezed, (0, 2, 1), name=id_tag + 'shuffle_out')
+        l_concat = ConcatLayer([l_pool_shuffle, l_in_embed], axis=2,
+                               name=id_tag + 'concat_inp_context')
+
+        cell = CELLS[self.options.listener_cell]
+        cell_kwargs = {
+            'grad_clipping': self.options.listener_grad_clipping,
+            'num_units': self.options.listener_cell_size,
+        }
+        if self.options.listener_cell == 'LSTM':
+            cell_kwargs['forgetgate'] = Gate(b=Constant(self.options.listener_forget_bias))
+        if self.options.listener_cell != 'GRU':
+            cell_kwargs['nonlinearity'] = NONLINEARITIES[self.options.listener_nonlinearity]
+
+        l_rec1 = cell(l_concat, name=id_tag + 'rec1', **cell_kwargs)
+        if self.options.listener_dropout > 0.0:
+            l_rec1_drop = DropoutLayer(l_rec1, p=self.options.listener_dropout,
+                                       name=id_tag + 'rec1_drop')
+        else:
+            l_rec1_drop = l_rec1
+        l_rec2 = cell(l_rec1_drop, name=id_tag + 'rec2', only_return_final=True, **cell_kwargs)
+        if self.options.listener_dropout > 0.0:
+            l_rec2_drop = DropoutLayer(l_rec2, p=self.options.listener_dropout,
+                                       name=id_tag + 'rec2_drop')
+        else:
+            l_rec2_drop = l_rec2
+
+        # Output shape: (batch_size, cell_size)
+        l_hidden = DenseLayer(l_rec2_drop, num_units=self.options.listener_cell_size,
+                              nonlinearity=NONLINEARITIES[self.options.listener_nonlinearity],
+                              name=id_tag + 'hidden')
+        if self.options.listener_dropout > 0.0:
+            l_hidden_drop = DropoutLayer(l_hidden, p=self.options.listener_dropout,
+                                         name=id_tag + 'hidden_drop')
+        else:
+            l_hidden_drop = l_hidden
+
+        # Context is fed into the RNN as one copy for each time step; just use
+        # the first time step for output.
+        # Input shape: (batch_size, repr_size, seq_len, context_len)
+        # Output shape: (batch_size, repr_size, context_len)
+        l_context_nonrec = SliceLayer(l_hidden_context, indices=0, axis=2,
+                                      name=id_tag + 'context_nonrec')
+        # Output shape: (batch_size, cell_size, context_len)
+        l_hidden_context = NINLayer(
+            l_context_nonrec, num_units=self.options.listener_cell_size,
+            nonlinearity=NONLINEARITIES[self.options.listener_nonlinearity],
+            name=id_tag + 'context_out')
+
+        l_dot = broadcast_dot_layer(l_hidden_drop, l_hidden_context,
+                                    feature_dim=self.options.listener_cell_size, id_tag=id_tag)
+        l_scores = NonlinearityLayer(l_dot, nonlinearity=softmax, name=id_tag + 'scores')
+
+        return l_scores, [l_in] + context_inputs
+
+
+def broadcast_dot_layer(l_pred, l_targets, feature_dim, id_tag):
+    l_broadcast = dimshuffle(l_pred, (0, 1, 'x'), name=id_tag + 'broadcast')
+    l_forget = ForgetSizeLayer(l_broadcast, axis=2, name=id_tag + 'broadcast_nosize')
+    l_merge = ElemwiseMergeLayer((l_forget, l_targets), T.mul, name=id_tag + 'elemwise_mul')
+    l_pool = FeaturePoolLayer(l_merge, pool_size=feature_dim, axis=1,
+                              pool_function=T.sum, name=id_tag + 'broadcast_pool')
+    return reshape(l_pool, ([0], [2]), name=id_tag + 'broadcast_dot')
+
+
 class AtomicListenerLearner(ListenerLearner):
     '''
     An single-embedding listener (guesses colors from descriptions, where
@@ -724,5 +827,6 @@ LISTENERS = {
     'Listener': ListenerLearner,
     'ContextListener': ContextListenerLearner,
     'TwoStreamListener': TwoStreamListenerLearner,
+    'ContextVecListener': ContextVecListenerLearner,
     'AtomicListener': AtomicListenerLearner,
 }

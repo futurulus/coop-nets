@@ -2,8 +2,37 @@ import numpy as np  # NOQA: for doctest
 import theano  # NOQA: for doctest
 import theano.tensor as T
 from collections import OrderedDict
+from lasagne.layers import Layer
 from theano.ifelse import ifelse
 from theano.printing import Print
+
+
+class ForgetSizeLayer(Layer):
+    '''
+    Workaround for lack of support for broadcasting in Lasagne merge layers.
+
+    >>> from lasagne.layers import InputLayer, ElemwiseMergeLayer, dimshuffle
+    >>> l_in = InputLayer((100, 20))
+    >>> l_w = InputLayer((100, 20, 5))
+    >>> l_broadcast = dimshuffle(l_in, (0, 1, 'x'))
+    >>> l_forget = ForgetSizeLayer(l_broadcast, axis=2)
+    >>> l_merge = ElemwiseMergeLayer((l_forget, l_w), T.mul)
+    >>> l_merge.output_shape
+    (100, 20, 5)
+
+    https://github.com/Lasagne/Lasagne/issues/584#issuecomment-174573736
+    '''
+    def __init__(self, incoming, axis=-1, **kwargs):
+        super(ForgetSizeLayer, self).__init__(incoming, **kwargs)
+        self.axis = axis
+
+    def get_output_for(self, input):
+        return input
+
+    def get_output_shape_for(self, input_shape):
+        shape = list(input_shape)
+        shape[self.axis] = None
+        return tuple(shape)
 
 
 def apply_nan_suppression(updates, print_mode='all'):
