@@ -645,7 +645,7 @@ class ContextVecListenerLearner(ContextListenerLearner):
                 l_hidden_context, num_units=self.options.listener_cell_size,
                 nonlinearity=NONLINEARITIES[self.options.listener_nonlinearity],
                 name=id_tag + 'hidden_context%d' % i)
-        l_pool = FeaturePoolLayer(l_hidden_context, pool_size=self.context_len, axis=-1,
+        l_pool = FeaturePoolLayer(l_hidden_context, pool_size=self.context_len, axis=3,
                                   pool_function=T.mean, name=id_tag + 'pool')
         l_pool_squeezed = reshape(l_pool, ([0], [1], [2]), name=id_tag + 'pool_squeezed')
         l_pool_shuffle = dimshuffle(l_pool_squeezed, (0, 2, 1), name=id_tag + 'shuffle_out')
