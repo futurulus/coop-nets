@@ -675,41 +675,51 @@ class ContextVecListenerLearner(ContextListenerLearner):
         else:
             l_rec2_drop = l_rec2
 
-        # Output shape: (batch_size, cell_size)
-        l_hidden = DenseLayer(l_rec2_drop, num_units=self.options.listener_cell_size,
-                              nonlinearity=NONLINEARITIES[self.options.listener_nonlinearity],
-                              name=id_tag + 'hidden')
-        if self.options.listener_dropout > 0.0:
-            l_hidden_drop = DropoutLayer(l_hidden, p=self.options.listener_dropout,
-                                         name=id_tag + 'hidden_drop')
-        else:
-            l_hidden_drop = l_hidden
-
         # Context is fed into the RNN as one copy for each time step; just use
         # the first time step for output.
         # Input shape: (batch_size, repr_size, seq_len, context_len)
         # Output shape: (batch_size, repr_size, context_len)
         l_context_nonrec = SliceLayer(l_hidden_context, indices=0, axis=2,
                                       name=id_tag + 'context_nonrec')
-        # Output shape: (batch_size, cell_size, context_len)
-        l_hidden_context = NINLayer(
-            l_context_nonrec, num_units=self.options.listener_cell_size,
-            nonlinearity=NONLINEARITIES[self.options.listener_nonlinearity],
-            name=id_tag + 'context_out')
+        l_pool_nonrec = SliceLayer(l_pool_squeezed, indices=0, axis=2,
+                                   name=id_tag + 'pool_nonrec')
 
-        l_dot = broadcast_dot_layer(l_hidden_drop, l_hidden_context,
-                                    feature_dim=self.options.listener_cell_size, id_tag=id_tag)
+        # Output shape: (batch_size, repr_size, context_len)
+        l_sub = broadcast_sub_layer(l_pool_nonrec, l_context_nonrec,
+                                    feature_dim=self.options.listener_cell_size,
+                                    id_tag=id_tag)
+        # Output shape: (batch_size, repr_size * 2, context_len)
+        l_concat_sub = ConcatLayer([l_context_nonrec, l_sub], axis=2,
+                                   name=id_tag + 'concat_inp_context')
+        # Output shape: (batch_size, cell_size, context_len)
+        l_hidden = NINLayer(l_concat_sub, num_units=self.options.listener_cell_size,
+                            nonlinearity=None, name=id_tag + 'hidden')
+        if self.options.listener_dropout > 0.0:
+            l_hidden_drop = DropoutLayer(l_hidden, p=self.options.listener_dropout,
+                                         name=id_tag + 'hidden_drop')
+        else:
+            l_hidden_drop = l_hidden
+
+        l_dot = broadcast_dot_layer(l_rec2_drop, l_hidden_drop,
+                                    feature_dim=self.options.listener_cell_size,
+                                    id_tag=id_tag)
         l_scores = NonlinearityLayer(l_dot, nonlinearity=softmax, name=id_tag + 'scores')
 
         return l_scores, [l_in] + context_inputs
 
 
+def broadcast_sub_layer(l_pred, l_targets, feature_dim, id_tag):
+    l_broadcast = dimshuffle(l_pred, (0, 1, 'x'), name=id_tag + 'sub_broadcast')
+    l_forget = ForgetSizeLayer(l_broadcast, axis=2, name=id_tag + 'sub_nosize')
+    return ElemwiseMergeLayer((l_forget, l_targets), T.sub, name=id_tag + 'broadcast_sub')
+
+
 def broadcast_dot_layer(l_pred, l_targets, feature_dim, id_tag):
-    l_broadcast = dimshuffle(l_pred, (0, 1, 'x'), name=id_tag + 'broadcast')
-    l_forget = ForgetSizeLayer(l_broadcast, axis=2, name=id_tag + 'broadcast_nosize')
-    l_merge = ElemwiseMergeLayer((l_forget, l_targets), T.mul, name=id_tag + 'elemwise_mul')
+    l_broadcast = dimshuffle(l_pred, (0, 1, 'x'), name=id_tag + 'dot_broadcast')
+    l_forget = ForgetSizeLayer(l_broadcast, axis=2, name=id_tag + 'dot_nosize')
+    l_merge = ElemwiseMergeLayer((l_forget, l_targets), T.mul, name=id_tag + 'dot_elemwise_mul')
     l_pool = FeaturePoolLayer(l_merge, pool_size=feature_dim, axis=1,
-                              pool_function=T.sum, name=id_tag + 'broadcast_pool')
+                              pool_function=T.sum, name=id_tag + 'dot_pool')
     return reshape(l_pool, ([0], [2]), name=id_tag + 'broadcast_dot')
 
 
