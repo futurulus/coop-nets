@@ -367,6 +367,12 @@ def uniform(color):
     return h * 360.0, s * 100.0, v * 100.0
 
 
+def uniform_int(color):
+    r, g, b = rng.uniform(size=(3,))
+    h, s, v = colorsys.rgb_to_hsv(r, g, b)
+    return int(h * 360.0), int(round(s * 101.0 - 0.5)), int(round(v * 101.0 - 0.5))
+
+
 def linear_rgb(color):
     coord = rng.randint(0, 3)
     val = rng.uniform()

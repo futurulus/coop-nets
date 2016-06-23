@@ -126,7 +126,7 @@ class UniformContextPrior(UniformPrior):
     def sample(self, num_samples=1):
         colors = super(UniformContextPrior, self).sample(num_samples)
         insts = [instance.Instance(c.input) for c in colors]
-        return color_instances.reference_game(insts, color_instances.uniform, listener=False)
+        return color_instances.reference_game(insts, color_instances.uniform_int, listener=False)
 
 
 PRIORS = {
