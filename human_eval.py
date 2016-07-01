@@ -5,6 +5,7 @@ try:
 except ImportError, e:
     import warnings
     warnings.warn('Could not import wx; human_eval cannot be used: %s' % e)
+    Dialog = object
 from itertools import izip
 
 from stanza.research import config, evaluate, instance, learner, metrics, output, rng
