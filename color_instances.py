@@ -1,6 +1,7 @@
 import colorsys
 import csv
 from collections import namedtuple, defaultdict
+import json
 
 try:
     from rugstk.data.munroecorpus import munroecorpus
@@ -25,6 +26,12 @@ parser.add_argument('--num_distractors', type=int, default=4,
                     help='The number of random colors to include in addition to the true '
                          'color in generating reference game instances. Ignored if not '
                          'using one of the `ref_` data sources.')
+parser.add_argument('--train_data_file', type=str, default=None,
+                    help='Path to a json file to use as the training dataset. Ignored if '
+                         'not using the `file` data source.')
+parser.add_argument('--test_data_file', type=str, default=None,
+                    help='Path to a json file to use as the evaluation dataset. Ignored if '
+                         'not using the `file` data source.')
 
 
 def load_colors(h, s, v):
@@ -76,6 +83,20 @@ def tune_train(listener=False):
 def tune_test(listener=False):
     all_train = get_training_instances(listener=listener)
     return all_train[-100000:]
+
+
+def json_file_train(listener='ignored'):
+    options = config.options()
+    with open(options.train_data_file, 'r') as infile:
+        dataset = [json.loads(line.strip()) for line in infile]
+    return [Instance(**d) for d in dataset]
+
+
+def json_file_test(listener='ignored'):
+    options = config.options()
+    with open(options.test_data_file, 'r') as infile:
+        dataset = [json.loads(line.strip()) for line in infile]
+    return [Instance(**d) for d in dataset]
 
 
 def pairs_to_insts(data, listener=False):
@@ -439,6 +460,7 @@ SOURCES = {
     'dev': DataSource(get_training_instances, get_dev_instances),
     'test': DataSource(get_training_instances, get_test_instances),
     'tune': DataSource(tune_train, tune_test),
+    'file': DataSource(json_file_train, json_file_test),
     '2word': DataSource(two_word, two_word),
     '1word': DataSource(one_word, one_word),
     '0word': DataSource(empty_str, empty_str),
