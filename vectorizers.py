@@ -3,7 +3,7 @@ import numpy as np
 import operator
 import theano.tensor as T
 import skimage.color
-from collections import Sequence
+from collections import Sequence, Counter
 from lasagne.layers import InputLayer, EmbeddingLayer, reshape
 from matplotlib.colors import hsv_to_rgb
 
@@ -74,12 +74,14 @@ class SequenceVectorizer(object):
     >>> vec.unvectorize_all([[1, 3, 0, 5, 1], [1, 2, 3, 6, 4]])
     [['the', 'cat', '<unk>', 'in', 'the'], ['the', 'flat', 'cat', 'hat', '</s>']]
     '''
-    def __init__(self):
+    def __init__(self, unk_threshold=0):
         self.tokens = []
         self.token_indices = {}
         self.indices_token = {}
+        self.counts = Counter()
         self.max_len = 0
-        self.add(['<unk>'])
+        self.unk_threshold = unk_threshold
+        self.add(['<unk>'] * (unk_threshold + 1))
 
     @property
     def num_types(self):
@@ -91,11 +93,19 @@ class SequenceVectorizer(object):
 
     def add(self, sequence):
         self.max_len = max(self.max_len, len(sequence))
+        self.counts.update(sequence)
         for token in sequence:
-            if token not in self.token_indices:
+            if token not in self.token_indices and self.counts[token] > self.unk_threshold:
                 self.token_indices[token] = len(self.tokens)
                 self.indices_token[len(self.tokens)] = token
                 self.tokens.append(token)
+
+    def unk_replace(self, sequence):
+        return [(token if token in self.token_indices else '<unk>')
+                for token in sequence]
+
+    def unk_replace_all(self, sequences):
+        return [self.unk_replace(s) for s in sequences]
 
     def vectorize(self, sequence):
         return np.array([(self.token_indices[token] if token in self.token_indices

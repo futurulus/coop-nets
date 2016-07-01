@@ -75,6 +75,11 @@ parser.add_argument('--speaker_color_repr', choices=COLOR_REPRS.keys(), default=
                          'grid of `buckets` or the `raw` RGB/HSV values.')
 parser.add_argument('--speaker_tokenizer', choices=TOKENIZERS.keys(), default='whitespace',
                     help='The tokenization/preprocessing method to use for the speaker model.')
+parser.add_argument('--speaker_unk_threshold', type=int, default=0,
+                    help="The maximum number of occurrences of a token in the training data "
+                         "before it's assigned a non-<unk> token index. 0 means nothing in "
+                         "the training data is to be treated as unknown words; 1 means "
+                         "single-occurrence words (hapax legomena) will be replaced with <unk>.")
 
 rng = get_rng()
 
@@ -149,7 +154,7 @@ class SpeakerLearner(NeuralLearner):
     '''
     def __init__(self, id=None, context_len=1):
         super(SpeakerLearner, self).__init__(id=id)
-        self.seq_vec = SequenceVectorizer()
+        self.seq_vec = SequenceVectorizer(unk_threshold=self.options.speaker_unk_threshold)
         color_repr = COLOR_REPRS[self.options.speaker_color_repr]
         self.color_vec = color_repr(self.options.speaker_color_resolution,
                                     hsv=self.options.speaker_hsv)
@@ -265,8 +270,9 @@ class SpeakerLearner(NeuralLearner):
         if init_vectorizer:
             tokenized = [['<s>'] + tokenize(get_desc(inst)) + ['</s>']
                          for inst in training_instances]
-            config.dump(tokenized, 'tokenized.train.jsons', lines=True)
             self.seq_vec.add_all(tokenized)
+            unk_replaced = self.seq_vec.unk_replace_all(tokenized)
+            config.dump(unk_replaced, 'unk_replaced.train.jsons', lines=True)
 
         colors = []
         previous = []
