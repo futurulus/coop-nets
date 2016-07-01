@@ -15,9 +15,22 @@ WORD_RE_STR = r"""
 """
 
 WORD_RE = re.compile(r"(%s)" % WORD_RE_STR, re.VERBOSE | re.I | re.UNICODE)
- 
+
+
 def basic_unigram_tokenizer(s, lower=True):
     words = WORD_RE.findall(s)
     if lower:
         words = [w.lower() for w in words]
     return words
+
+
+def whitespace_tokenizer(s, lower=True):
+    if lower:
+        s = s.lower()
+    return s.split()
+
+
+TOKENIZERS = {
+    'unigram': basic_unigram_tokenizer,
+    'whitespace': whitespace_tokenizer,
+}

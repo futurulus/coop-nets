@@ -19,6 +19,7 @@ from neural import NeuralLearner, SimpleLasagneModel
 from neural import NONLINEARITIES, OPTIMIZERS, CELLS, sample
 from vectorizers import SequenceVectorizer, SymbolVectorizer, strip_invalid_tokens, COLOR_REPRS
 from vectorizers import BucketsVectorizer
+from tokenizers import TOKENIZERS
 
 parser = config.get_options_parser()
 parser.add_argument('--speaker_cell_size', type=int, default=20,
@@ -72,6 +73,8 @@ parser.add_argument('--speaker_grad_clipping', type=float, default=0.0,
 parser.add_argument('--speaker_color_repr', choices=COLOR_REPRS.keys(), default='buckets',
                     help='The representation of the color to use in the speaker model: a regular '
                          'grid of `buckets` or the `raw` RGB/HSV values.')
+parser.add_argument('--speaker_tokenizer', choices=TOKENIZERS.keys(), default='whitespace',
+                    help='The tokenization/preprocessing method to use for the speaker model.')
 
 rng = get_rng()
 
@@ -254,9 +257,16 @@ class SpeakerLearner(NeuralLearner):
         get_alt_i, get_alt_o = (lambda inst: inst.alt_inputs), (lambda inst: inst.alt_outputs)
         get_alt_colors = get_alt_o if inverted else get_alt_i
 
+        if hasattr(self.options, 'speaker_tokenizer'):
+            tokenize = TOKENIZERS[self.options.speaker_tokenizer]
+        else:
+            tokenize = TOKENIZERS['whitespace']
+
         if init_vectorizer:
-            self.seq_vec.add_all(['<s>'] + get_desc(inst).split() + ['</s>']
-                                 for inst in training_instances)
+            tokenized = [['<s>'] + tokenize(get_desc(inst)) + ['</s>']
+                         for inst in training_instances]
+            config.dump(tokenized, 'tokenized.train.jsons', lines=True)
+            self.seq_vec.add_all(tokenized)
 
         colors = []
         previous = []
@@ -270,7 +280,7 @@ class SpeakerLearner(NeuralLearner):
             if test:
                 full = ['<s>'] + ['</s>'] * (self.seq_vec.max_len - 1)
             else:
-                desc = desc.split()
+                desc = tokenize(desc)
                 full = (['<s>'] + desc + ['</s>'] +
                         ['<MASK>'] * (self.seq_vec.max_len - 1 - len(desc)))
             prev = full[:-1]
