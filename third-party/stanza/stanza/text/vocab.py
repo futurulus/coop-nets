@@ -1,16 +1,49 @@
 """
 Vocabulary module for conversion between word tokens and numerical indices.
 """
-__author__ = 'victor'
+__author__ = 'victor, kelvinguu'
+
+from abc import ABCMeta, abstractmethod
 from collections import Counter, namedtuple, OrderedDict
-from itertools import izip
 import numpy as np
-from copy import deepcopy
+from copy import copy
 import zipfile
 from ..util.resource import get_data_or_download
 
 
-class Vocab(object):
+class BaseVocab(object):
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def word2index(self, w):
+        """Convert string to integer."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def index2word(self, i):
+        """Convert integer to string."""
+        raise NotImplementedError
+
+    def words2indices(self, words):
+        """
+        Convert a list of words into a list of indices.
+
+        :param words: an iterable of words to map to indices.
+        :return: the corresponding indices for each word.
+        """
+        return [self.word2index(w) for w in words]
+
+    def indices2words(self, indices):
+        """
+        Convert a list of indices into a list of words.
+
+        :param words: an iterable of ints to map to words.
+        :return: the corresponding words for each int.
+        """
+        return [self.index2word(i) for i in indices]
+
+
+class Vocab(BaseVocab, OrderedDict):
     """A mapping between words and numerical indices. This class is used to facilitate the creation of word embedding matrices.
 
     Example:
@@ -29,74 +62,33 @@ class Vocab(object):
 
         :param unk: string to represent the unknown word (UNK). It is always represented by the 0 index.
         """
-        self._word2index = OrderedDict()
+        super(Vocab, self).__init__()
         self._counts = Counter()
         self._unk = unk
 
         # assign an index for UNK
         self.add(self._unk, count=0)
 
-    def clear(self):
-        """
-        Resets all mappings and counts. The unk token is retained.
-        """
-        self._word2index.clear()
-        self._counts.clear()
-        self.add(self._unk, count=0)
-
-    def __iter__(self):
-        """
-        :return: An iterator over the (word, index) tuples in the vocabulary
-        """
-        return iter(self._word2index)
-
-    def iteritems(self):
-        """
-        :return: An iterator over the (word, index) tuples in the vocabulary
-        """
-        return self._word2index.iteritems()
-
-    def items(self):
-        """
-        :return: A list of (word, index) pairs from the vocabulary.
-        """
-        return self._word2index.items()
-
-    def keys(self):
-        """
-        :return: A list of words in the vocabulary.
-        """
-        return self._word2index.keys()
-
-    def iterkeys(self):
-        """
-        :return: An iterator over the words in the vocabulary.
-        """
-        return self._word2index.iterkeys()
-
-    def __repr__(self):
-        """Represent Vocab as a dictionary from words to indices."""
-        return str(self._word2index)
-
-    def __str__(self):
-        return 'Vocab(%d words)' % len(self._word2index)
-
-    def __len__(self):
-        """Get total number of entries in vocab (including UNK)."""
-        return len(self._word2index)
-
     def __getitem__(self, word):
         """Get the index for a word.
 
         If the word is unknown, the index for UNK is returned.
         """
-        return self._word2index.get(word, 0)
+        return self.get(word, 0)
 
-    def __contains__(self, word):
-        """
-        :return: whether word is in the vocabulary
-        """
-        return word in self._word2index
+    def __setitem__(self, key, value, **kwargs):
+        raise NotImplementedError('Use add method instead.')
+
+    def __str__(self):
+        return 'Vocab(%d words)' % len(self)
+
+    def __eq__(self, other):
+        if isinstance(other, Vocab):
+            return super(Vocab, self).__eq__(other)
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def add(self, word, count=1):
         """Add a word to the vocabulary and return its index.
@@ -110,10 +102,10 @@ class Vocab(object):
         WARNING: this function assumes that if the Vocab currently has N words, then
         there is a perfect bijection between these N words and the integers 0 through N-1.
         """
-        if word not in self._word2index:
-            self._word2index[word] = len(self._word2index)
+        if word not in self:
+            super(Vocab, self).__setitem__(word, len(self))
         self._counts[word] += count
-        return self._word2index[word]
+        return self[word]
 
     def update(self, words):
         """
@@ -125,37 +117,66 @@ class Vocab(object):
         """
         return [self.add(w) for w in words]
 
-    def words2indices(self, words):
+    def word2index(self, w):
+        return self[w]
+
+    def index2word(self, i):
+        return self._index2word[i]
+
+    def freeze(self):
+        return FrozenVocab(self)
+
+    def count(self, w):
+        """Get the count for a word.
+
+        :param w: a string
         """
-        Convert a list of words into a list of indices.
+        return self._counts[w]
 
-        :param words: an iterable of words to map to indices.
+    def subset(self, words):
+        """Get a new Vocab containing only the specified subset of words.
 
-        :return: the corresponding indices for each word. If a word is not found in the vocabulary then the unknown index will be returned for it.
+        If w is in words, but not in the original vocab, it will NOT be in the subset vocab.
+        Indices will be in the order of `words`. Counts from the original vocab are preserved.
+
+        :return (Vocab): a new Vocab object
         """
-        return [self[w] for w in words]
-
-    def indices2words(self, indices):
-        """
-        Converts a list of indices into a list of words.
-
-        :param indices: indices for which to retrieve words.
-
-        :return: a list of words corresponding to each index.
-        """
-        index2word = self._word2index.keys()  # works because word2index is an OrderedDict
-        return [index2word[i] for i in indices]
+        v = self.__class__(unk=self._unk)
+        unique = lambda seq: len(set(seq)) == len(seq)
+        assert unique(words)
+        for w in words:
+            if w in self:
+                v.add(w, count=self.count(w))
+        return v
 
     @property
-    def counts(self):
+    def _index2word(self):
+        """Mapping from indices to words.
+
+        WARNING: this may go out-of-date, because it is a copy, not a view into the Vocab.
+
+        :return: a list of strings
         """
-        :return: a counter containing the number of occurrences of each word.
-        """
-        return self._counts
+        # TODO(kelvinguu): it would be nice to just use `dict.viewkeys`, but unfortunately those are not indexable
+
+        compute_index2word = lambda: self.keys()  # this works because self is an OrderedDict
+
+        # create if it doesn't exist
+        try:
+            self._index2word_cache
+        except AttributeError:
+            self._index2word_cache = compute_index2word()
+
+        # update if it is out of date
+        if len(self._index2word_cache) != len(self):
+            self._index2word_cache = compute_index2word()
+
+        return self._index2word_cache
 
     def prune_rares(self, cutoff=2):
         """
-        returns a **new** `Vocab` object that is similar to this one but with rare words removed. Note that the indices in the new `Vocab` will be remapped (because rare words will have been removed).
+        returns a **new** `Vocab` object that is similar to this one but with rare words removed.
+        Note that the indices in the new `Vocab` will be remapped (because rare words will have been removed).
 
         :param cutoff: words occuring less than this number of times are removed from the vocabulary.
 
@@ -163,13 +184,8 @@ class Vocab(object):
 
         NOTE: UNK is never pruned.
         """
-        # make a deep copy and reset its contents
-        v = deepcopy(self)
-        v.clear()
-        for w in self._word2index:
-            if self._counts[w] >= cutoff or w == self._unk:  # don't remove unk
-                v.add(w, count=self._counts[w])
-        return v
+        keep = lambda w: self.count(w) >= cutoff or w == self._unk
+        return self.subset([w for w in self if keep(w)])
 
     def sort_by_decreasing_count(self):
         """Return a **new** `Vocab` object that is ordered by decreasing count.
@@ -181,28 +197,12 @@ class Vocab(object):
 
         NOTE: UNK will remain at index 0, regardless of its frequency.
         """
-        v = self.__class__(unk=self._unk)  # use __class__ to support subclasses
-
-        # UNK gets index 0
-        v.add(self._unk, count=self._counts[self._unk])
-
-        for word, count in self._counts.most_common():
-            if word != self._unk:
-                v.add(word, count=count)
+        words = [w for w, ct in self._counts.most_common()]
+        v = self.subset(words)
         return v
 
-    def clear_counts(self):
-        """
-        Removes counts for all tokens.
-
-        :return: the vocabulary object.
-        """
-        # TODO: this removes the entries too, rather than setting them to 0
-        self._counts.clear()
-        return self
-
     @classmethod
-    def from_dict(cls, word2index, unk):
+    def from_dict(cls, word2index, unk, counts=None):
         """Create Vocab from an existing string to integer dictionary.
 
         All counts are set to 0.
@@ -211,6 +211,8 @@ class Vocab(object):
                 UNK must be assigned the 0 index.
 
         :param unk: the string representing unk in word2index.
+
+        :param counts: (optional) a Counter object mapping words to counts
 
         :return: a created vocab object.
         """
@@ -235,11 +237,63 @@ class Vocab(object):
         for i in xrange(n):
             vocab.add(index2word[i])
 
+        if counts:
+            matching_entries = set(word2index.keys()) == set(counts.keys())
+            if not matching_entries:
+                raise ValueError('entries of word2index do not match counts (did you include UNK?)')
+            vocab._counts = counts
+
         return vocab
+
+    def to_file(self, f):
+        """Write vocab to a file.
+
+        :param (file) f: a file object, e.g. as returned by calling `open`
+
+        File format:
+            word0<TAB>count0
+            word1<TAB>count1
+            ...
+
+        word with index 0 is on the 0th line and so on...
+        """
+        for word in self._index2word:
+            count = self._counts[word]
+            f.write('{}\t{}\n'.format(word, count))
+
+    @classmethod
+    def from_file(cls, f):
+        """Load vocab from a file.
+
+        :param (file) f: a file object, e.g. as returned by calling `open`
+        :return: a vocab object. The 0th line of the file is assigned to index 0, and so on...
+        """
+        word2index = {}
+        counts = Counter()
+        for i, line in enumerate(f):
+            word, count_str = line.strip().split('\t')
+            word2index[word] = i
+            counts[word] = float(count_str)
+            if i == 0:
+                unk = word
+        return cls.from_dict(word2index, unk, counts)
+
+
+class FrozenVocab(BaseVocab):
+    def __init__(self, vocab):
+        self._word2index = dict(vocab)  # make a copy
+        self._index2word = copy(vocab._index2word)
+        # since this vocab is frozen, we do not need to worry about
+        # word2index and index2word becoming inconsistent
+
+    def word2index(self, w):
+        return self._word2index.get(w, 0)
+
+    def index2word(self, i):
+        return self._index2word[i]
 
 
 class EmbeddedVocab(Vocab):
-
     def get_embeddings(self):
         """
         :return: the embedding matrix for this vocabulary object.
@@ -261,7 +315,6 @@ class EmbeddedVocab(Vocab):
 
 
 class SennaVocab(EmbeddedVocab):
-
     """
     Vocab object with initialization from Senna by Collobert et al.
 
@@ -304,7 +357,7 @@ class SennaVocab(EmbeddedVocab):
         E = rand((len(self), self.n_dim)).astype(dtype)
 
         seen = []
-        for word_emb in izip(self.gen_word_list(words), self.gen_embeddings(embeddings)):
+        for word_emb in zip(self.gen_word_list(words), self.gen_embeddings(embeddings)):
             w, e = word_emb
             if w in self:
                 seen += [w]
@@ -314,7 +367,6 @@ class SennaVocab(EmbeddedVocab):
 
 
 class GloveVocab(EmbeddedVocab):
-
     """
     Vocab object with initialization from GloVe by Pennington et al.
 
@@ -360,7 +412,8 @@ class GloveVocab(EmbeddedVocab):
 
         with zipfile.ZipFile(open(zip_file)) as zf:
             # should be only 1 txt file
-            names = [info.filename for info in zf.infolist() if info.filename.endswith('.txt') and n_dim in info.filename]
+            names = [info.filename for info in zf.infolist() if
+                     info.filename.endswith('.txt') and n_dim in info.filename]
             if not names:
                 s = 'no .txt files found in zip file that matches {}-dim!'.format(n_dim)
                 s += '\n available files: {}'.format(names)
