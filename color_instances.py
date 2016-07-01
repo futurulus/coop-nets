@@ -1,6 +1,6 @@
 import colorsys
 import csv
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 
 try:
     from rugstk.data.munroecorpus import munroecorpus
@@ -333,7 +333,13 @@ def reference_game(insts, gen_func, listener=False):
 
 
 def hawkins_context(listener=False):
-    assert not listener
+    messages = defaultdict(list)
+    with open('hawkins_data/colorReferenceMessage.csv', 'r') as infile:
+        for row in csv.DictReader(infile):
+            if row['sender'] == 'speaker':
+                message = row['contents']  # TODO: clean, tokenize?
+                messages[(row['gameid'], row['roundNum'])].append(message)
+
     result = []
     with open('hawkins_data/colorReferenceClicks.csv', 'r') as infile:
         reader = csv.DictReader(infile)
@@ -350,15 +356,49 @@ def hawkins_context(listener=False):
             assert len(target_idx) == 1, context
             target_idx = target_idx[0]
             alt_colors = [c for (c, _, _) in context]
-            result.append(Instance(input=target_idx, alt_inputs=alt_colors, output=''))
+            key = (row['gameid'], row['roundNum'])
+            message = ' ~ '.join(messages[key])
+
+            if listener:
+                inst = Instance(input=message, output=target_idx, alt_outputs=alt_colors,
+                                source=key)
+            else:
+                inst = Instance(input=target_idx, alt_inputs=alt_colors, output=message,
+                                source=key)
+            result.append(inst)
     return result
 
 
 def hawkins_target(listener=False):
     insts = hawkins_context(listener=listener)
-    return [Instance(input=inst.alt_inputs[inst.input], output=inst.output,
-                     source=inst.__dict__)
+    return [(Instance(output=inst.alt_outputs[inst.output], input=inst.input,
+                      source=inst.__dict__)
+             if listener else
+             Instance(input=inst.alt_inputs[inst.input], output=inst.output,
+                      source=inst.__dict__))
             for inst in insts]
+
+
+def hawkins_train(listener=False):
+    insts = hawkins_context(listener=listener)
+    num_insts = len(insts) / 3
+    train_insts = insts[:num_insts]
+    rng.shuffle(train_insts)
+    return train_insts
+
+
+def hawkins_dev(listener=False):
+    insts = hawkins_context(listener=listener)
+    num_insts = len(insts) / 3
+    dev_insts = insts[num_insts:num_insts * 2]
+    return dev_insts
+
+
+def hawkins_test(listener=False):
+    insts = hawkins_context(listener=listener)
+    num_insts = len(insts) / 3
+    train_insts = insts[num_insts * 2:]
+    return train_insts
 
 
 def uniform(color):
@@ -409,6 +449,8 @@ SOURCES = {
     'ref_linhsv': DataSource(reference_game_train(linear_hsv), reference_game_test(linear_hsv)),
     'hawkins': DataSource(lambda listener: [], hawkins_context),
     'hawkins_target': DataSource(lambda listener: [], hawkins_target),
+    'hawkins_dev': DataSource(hawkins_train, hawkins_dev),
+    'hawkins_test': DataSource(hawkins_train, hawkins_test),
     'ams_literal': DataSource(amsterdam_literal_train, amsterdam_test),
     'ams_unambig': DataSource(amsterdam_unambiguous_train, amsterdam_test),
     'ams_1word': DataSource(amsterdam_1word_train, amsterdam_test),
