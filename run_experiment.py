@@ -84,11 +84,11 @@ def main():
     elif isinstance(test_data[0].output, (tuple, list)):
         m.append(metrics.prec1)
         if test_data[0].output and isinstance(test_data[0].output, basestring):
-            m.append(metrics.bleu)
+            m.extend([metrics.bleu, metrics.token_perplexity_macro, metrics.token_perplexity_micro])
     else:
         m.append(metrics.accuracy)
         if test_data[0].output and isinstance(test_data[0].output, basestring):
-            m.append(metrics.bleu)
+            m.extend([metrics.bleu, metrics.token_perplexity_macro, metrics.token_perplexity_micro])
 
     if options.load:
         with open(options.load, 'rb') as infile:
