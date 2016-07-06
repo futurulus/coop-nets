@@ -8,7 +8,8 @@ from stanza.research import config
 from lux import LuxLearner
 from listener import LISTENERS
 from speaker import SpeakerLearner, ContextSpeakerLearner, AtomicSpeakerLearner
-from vectorizers import BucketsVectorizer
+from vectorizers import BucketsVectorizer, SequenceVectorizer
+from tokenizers import TOKENIZERS
 from rsa import RSALearner
 
 
@@ -198,6 +199,52 @@ class MostCommonSpeakerLearner(Learner):
             return 1.0 * len(self.seen) / self.num_examples
 
 
+class UnigramLMSpeakerLearner(Learner):
+    def __init__(self):
+        options = config.options()
+        self.tokenizer = options.speaker_tokenizer
+        self.token_counts = Counter()
+        self.seq_vec = SequenceVectorizer(unk_threshold=options.speaker_unk_threshold)
+        self.num_tokens = 0
+
+    def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
+        tokenize = TOKENIZERS[self.tokenizer]
+
+        tokenized = [tokenize(inst.output) + ['</s>'] for inst in training_instances]
+        self.seq_vec.add_all(tokenized)
+        unk_replaced = self.seq_vec.unk_replace_all(tokenized)
+
+        progress.start_task('Example', len(training_instances))
+        for i, utt in enumerate(unk_replaced):
+            progress.progress(i)
+            self.token_counts.update(utt)
+            self.num_tokens += len(utt)
+        progress.end_task()
+
+    @property
+    def num_params(self):
+        return len(self.token_counts)
+
+    def predict_and_score(self, eval_instances):
+        predict = [''] * len(eval_instances)
+        score = []
+        progress.start_task('Example', len(eval_instances))
+        for i, inst in enumerate(eval_instances):
+            progress.progress(i)
+            score.append(self._get_log_prob(inst.output))
+        progress.end_task()
+        return predict, score
+
+    def _get_log_prob(self, output):
+        tokenize = TOKENIZERS[self.tokenizer]
+        tokenized = tokenize(output) + ['</s>']
+        unk_replaced = self.seq_vec.unk_replace(tokenized)
+        log_prob = 0.0
+        for token in unk_replaced:
+            log_prob += np.log(self.token_counts[token] * 1.0 / self.num_tokens)
+        return log_prob
+
+
 class RandomListenerLearner(Learner):
     def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
         self.num_params = 0
@@ -319,6 +366,7 @@ LEARNERS = {
     'AtomicSpeaker': AtomicSpeakerLearner,
     'RSA': RSALearner,
     'MostCommon': MostCommonSpeakerLearner,
+    'UnigramLM': UnigramLMSpeakerLearner,
     'Random': RandomListenerLearner,
     'Lookup': LookupLearner,
 }
