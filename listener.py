@@ -21,6 +21,7 @@ from neural import NeuralLearner, SimpleLasagneModel
 from neural import NONLINEARITIES, OPTIMIZERS, CELLS, sample
 from vectorizers import SequenceVectorizer, BucketsVectorizer, SymbolVectorizer
 from vectorizers import strip_invalid_tokens, COLOR_REPRS
+from tokenizers import TOKENIZERS
 
 random = rng.get_rng()
 
@@ -68,6 +69,13 @@ parser.add_argument('--listener_color_repr', choices=COLOR_REPRS.keys(), default
                          'grid of `buckets`, overlapping bucket grids at multiple resolutions '
                          '(`ms`), `raw` RGB/HSV values, or a `fourier` transform-based '
                          'representation. Only used for ContextListenerLearner.')
+parser.add_argument('--listener_tokenizer', choices=TOKENIZERS.keys(), default='whitespace',
+                    help='The tokenization/preprocessing method to use for the listener model.')
+parser.add_argument('--listener_unk_threshold', type=int, default=0,
+                    help="The maximum number of occurrences of a token in the training data "
+                         "before it's assigned a non-<unk> token index. 0 means nothing in "
+                         "the training data is to be treated as unknown words; 1 means "
+                         "single-occurrence words (hapax legomena) will be replaced with <unk>.")
 
 
 class UnigramPrior(object):
@@ -211,7 +219,7 @@ class ListenerLearner(NeuralLearner):
     def __init__(self, id=None):
         super(ListenerLearner, self).__init__(id=id)
         self.word_counts = Counter()
-        self.seq_vec = SequenceVectorizer()
+        self.seq_vec = SequenceVectorizer(unk_threshold=self.options.listener_unk_threshold)
         self.color_vec = BucketsVectorizer(self.options.listener_color_resolution,
                                            hsv=self.options.listener_hsv)
 
@@ -269,17 +277,25 @@ class ListenerLearner(NeuralLearner):
         get_i, get_o = (lambda inst: inst.input), (lambda inst: inst.output)
         get_desc, get_color = (get_o, get_i) if inverted else (get_i, get_o)
 
+        if hasattr(self.options, 'listener_tokenizer'):
+            tokenize = TOKENIZERS[self.options.listener_tokenizer]
+        else:
+            tokenize = TOKENIZERS['whitespace']
+
         if init_vectorizer:
-            self.seq_vec.add_all(['<s>'] + get_desc(inst).split() + ['</s>']
-                                 for inst in training_instances)
+            tokenized = [['<s>'] + tokenize(get_desc(inst)) + ['</s>']
+                         for inst in training_instances]
+            self.seq_vec.add_all(tokenized)
+            unk_replaced = self.seq_vec.unk_replace_all(tokenized)
             self.word_counts.update([get_desc(inst) for inst in training_instances])
+            config.dump(unk_replaced, 'unk_replaced.train.jsons', lines=True)
 
         sentences = []
         colors = []
         if self.options.verbosity >= 9:
             print('%s _data_to_arrays:' % self.id)
         for i, inst in enumerate(training_instances):
-            desc = get_desc(inst).split()
+            desc = tokenize(get_desc(inst))
             color = get_color(inst)
             if not color:
                 assert test
@@ -294,6 +310,8 @@ class ListenerLearner(NeuralLearner):
         x = np.zeros((len(sentences), self.seq_vec.max_len), dtype=np.int32)
         y = np.zeros((len(sentences),), dtype=np.int32)
         for i, sentence in enumerate(sentences):
+            if len(sentence) > x.shape[1]:
+                sentence = sentence[:x.shape[1]]
             x[i, :] = self.seq_vec.vectorize(sentence)
             y[i] = self.color_vec.vectorize(colors[i], hsv=True)
 
@@ -423,10 +441,18 @@ class ContextListenerLearner(ListenerLearner):
         get_alt_i, get_alt_o = (lambda inst: inst.alt_inputs), (lambda inst: inst.alt_outputs)
         get_alt_colors = get_alt_i if inverted else get_alt_o
 
+        if hasattr(self.options, 'listener_tokenizer'):
+            tokenize = TOKENIZERS[self.options.listener_tokenizer]
+        else:
+            tokenize = TOKENIZERS['whitespace']
+
         if init_vectorizer:
-            self.seq_vec.add_all(['<s>'] + get_desc(inst).split() + ['</s>']
-                                 for inst in training_instances)
+            tokenized = [['<s>'] + tokenize(get_desc(inst)) + ['</s>']
+                         for inst in training_instances]
+            self.seq_vec.add_all(tokenized)
+            unk_replaced = self.seq_vec.unk_replace_all(tokenized)
             self.word_counts.update([get_desc(inst) for inst in training_instances])
+            config.dump(unk_replaced, 'unk_replaced.train.jsons', lines=True)
 
         sentences = []
         colors = []
@@ -434,7 +460,7 @@ class ContextListenerLearner(ListenerLearner):
         if self.options.verbosity >= 9:
             print('%s _data_to_arrays:' % self.id)
         for i, inst in enumerate(training_instances):
-            desc = get_desc(inst).split()
+            desc = tokenize(get_desc(inst))
             target = get_color_index(inst)
             if target is None:
                 assert test
@@ -452,6 +478,8 @@ class ContextListenerLearner(ListenerLearner):
 
         x = np.zeros((len(sentences), self.seq_vec.max_len), dtype=np.int32)
         for i, sentence in enumerate(sentences):
+            if len(sentence) > x.shape[1]:
+                sentence = sentence[:x.shape[1]]
             x[i, :] = self.seq_vec.vectorize(sentence)
         y = np.array(target_indices, dtype=np.int32)
 
