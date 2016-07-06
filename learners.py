@@ -1,4 +1,5 @@
 from collections import defaultdict, Counter
+from numbers import Number
 import numpy as np
 
 from stanza.monitoring import progress
@@ -202,8 +203,12 @@ class RandomListenerLearner(Learner):
         self.num_params = 0
 
     def predict_and_score(self, eval_instances):
-        predict = [(128, 128, 128)] * len(eval_instances)
-        score = [-3.0 * np.log(256.0)] * len(eval_instances)
+        predict = [(0 if isinstance(inst.output, Number) else (128, 128, 128))
+                   for inst in eval_instances]
+        score = [(-np.log(len(inst.alt_outputs))
+                  if isinstance(inst.output, Number) else
+                  -3.0 * np.log(256.0))
+                 for inst in eval_instances]
         return predict, score
 
 
