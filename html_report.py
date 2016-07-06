@@ -8,6 +8,7 @@ from collections import namedtuple
 from numbers import Number
 
 from stanza.research import config, instance  # NOQA (for doctest)
+from tokenizers import basic_unigram_tokenizer as tokenize
 
 
 parser = config.get_options_parser()
@@ -15,6 +16,10 @@ parser.add_argument('--compare_dir', type=str, default=None,
                     help='The directory containing other results providing a point for '
                          'comparison to the run_dir, if not None. These results will also '
                          'be included in the report.')
+parser.add_argument('--per_token_prob', type=config.boolean, default=False,
+                    help='If True, normalize probabilities by dividing scores by the number '
+                         'of tokens in the reference. This makes high-perplexity examples '
+                         'sort to the top, as opposed to simply long examples.')
 
 Output = namedtuple('Output', 'config,results,data,scores,predictions')
 
@@ -26,7 +31,7 @@ class NotPresent(object):
         return ''
 
 
-def html_report(output, compare=None):
+def html_report(output, compare=None, per_token=False):
     '''
     >>> config_dict = {'run_dir': 'runs/test', 'listener': True}
     >>> results_dict = {'dev.perplexity.gmean': 14.0}
@@ -100,7 +105,7 @@ def html_report(output, compare=None):
         compare_header='<th>Comparison</th>' if compare else '',
         config_opts=format_config_dict(output.config, compare.config if compare else None),
         results=format_results(output.results, compare.results if compare else None),
-        error_analysis=format_error_analysis(output, compare)
+        error_analysis=format_error_analysis(output, compare, per_token=per_token)
     )
 
 
@@ -186,10 +191,10 @@ def format_number(value):
         return '{:,.3f}'.format(value)
 
 
-def format_error_analysis(output, compare=None):
+def format_error_analysis(output, compare=None, per_token=False):
     examples_table_template = '''    <h3>{cond}</h3>
     <table>
-        <tr><th>input</th>{alt_inputs_header}{alt_outputs_header}<th>gold</th><th>prediction</th><th>prob</th>{compare_header}</tr>
+        <tr><th>input</th>{alt_inputs_header}{alt_outputs_header}<th>gold</th><th>prediction</th><th>{prob_header}</th>{compare_header}</tr>
 {examples}
     </table>'''
 
@@ -206,7 +211,14 @@ def format_error_analysis(output, compare=None):
         example['output'] = format_value(inst['output'])
         example['alt_outputs'] = format_alts(inst['alt_outputs'], show_alt_outputs)
         example['prediction'] = format_value(pred)
-        pprob = np.exp(score) if isinstance(score, Number) else score
+        if isinstance(score, Number):
+            if per_token:
+                num_tokens = max(1, len(tokenize(inst['output'])))
+            else:
+                num_tokens = 1
+            pprob = np.exp(score / num_tokens)
+        else:
+            pprob = score
         example['pprob'] = score_template.format(format_number(pprob))
         example['pprob_val'] = pprob if isinstance(pprob, Number) else 0
         if compare:
@@ -246,6 +258,7 @@ def format_error_analysis(output, compare=None):
         alt_outputs_header=(('<th>alt outputs</th>' if show_alt_outputs else '') +
                             '<th></th>' * (show_alt_outputs - 1)),
         compare_header='<th>comparison</th><th>prob</th>' if compare else '',
+        prob_header='prob (per token)' if per_token else 'prob',
         examples='\n'.join(
             example_template.format(**inst) for inst in examples
         )
@@ -297,7 +310,7 @@ def generate_html_reports(run_dir=None, compare_dir=None):
 
     for output, compare, out_path in get_all_outputs(run_dir, options.compare_dir):
         with open(out_path, 'w') as outfile:
-            outfile.write(html_report(output, compare))
+            outfile.write(html_report(output, compare, per_token=options.per_token_prob))
 
 
 def get_all_outputs(run_dir, compare_dir):
