@@ -161,12 +161,17 @@ class DirectRefGameLearner(Learner):
             true_indices = np.array([inst.output for inst in batch])
             grid_scores = self.base.score(output_grid, verbosity=verbosity)
             log_probs = np.array(grid_scores).reshape((len(batch), context))
-            # Renormalize over only the context colors, and extract the score of
-            # the true color.
+            # Renormalize over only the context colors
             log_probs -= logsumexp(log_probs, axis=1)[:, np.newaxis]
+            # Cap confidences to reasonable values
+            if options.direct_min_score is not None and options.direct_min_score <= 0.0:
+                log_probs = np.maximum(options.direct_min_score, log_probs)
+                # Normalize again (so we always return log probabilities)
+                log_probs -= logsumexp(log_probs, axis=1)[:, np.newaxis]
             assert log_probs.shape == (len(batch), context)
             pred_indices = np.argmax(log_probs, axis=1)
             predictions.extend(pred_indices.tolist())
+            # Extract the score of the true color
             scores.extend(log_probs[np.arange(len(batch)), true_indices].tolist())
         progress.end_task()
 
@@ -196,3 +201,9 @@ parser.add_argument('--direct_base_learner', default='Listener',
                     choices=learners.LEARNERS.keys(),
                     help='The name of the model to use as the level-0 agent for direct score-based '
                          'listener models.')
+parser.add_argument('--direct_min_score', default=None, type=float,
+                    help='The log likelihood of the base model will be capped from below to this '
+                         'value. This prevents extreme-confidence wrong decisions, and '
+                         'is roughly equivalent to postulating an a priori probability that a '
+                         'target in the dataset is chosen uniformly at random. None or positive '
+                         'values will be interpreted as no cap.')
