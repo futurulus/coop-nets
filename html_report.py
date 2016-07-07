@@ -213,7 +213,7 @@ def format_error_analysis(output, compare=None, per_token=False):
         example['prediction'] = format_value(pred)
         if isinstance(score, Number):
             if per_token:
-                num_tokens = max(1, len(tokenize(inst['output'])))
+                num_tokens = len(tokenize(inst['output'])) + 1
             else:
                 num_tokens = 1
             pprob = np.exp(score / num_tokens)
