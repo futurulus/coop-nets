@@ -468,6 +468,9 @@ class ContextListenerLearner(ListenerLearner):
             s = ['<s>'] * (self.seq_vec.max_len - 1 - len(desc)) + desc
             s.append('</s>')
             new_context = get_alt_colors(inst)
+            assert new_context is not None, \
+                "ContextListener can't vectorize an instance with no context (did you " \
+                "make sure your data source and your priors use distractors?)"
             assert len(new_context) == self.context_len, \
                 'Inconsistent context lengths: %s' % ((self.context_len, len(new_context)),)
             if self.options.verbosity >= 9:
