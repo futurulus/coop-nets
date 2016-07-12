@@ -430,6 +430,7 @@ class RSALearner(NeuralLearner):
 
     def init_submodels(self, id=None):
         id_tag = (id + '/') if id else ''
+        self.get_options()
 
         listener_classes = self.options.listener_class
         speaker_classes = self.options.speaker_class
