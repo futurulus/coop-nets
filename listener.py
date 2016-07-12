@@ -1,3 +1,4 @@
+import numbers
 import numpy as np
 import theano
 import theano.tensor as T
@@ -274,8 +275,21 @@ class ListenerLearner(NeuralLearner):
 
     def _data_to_arrays(self, training_instances,
                         init_vectorizer=False, test=False, inverted=False):
+        def get_multi(val):
+            if isinstance(val, tuple):
+                assert len(val) == 1
+                return val[0]
+            else:
+                return val
+
         get_i, get_o = (lambda inst: inst.input), (lambda inst: inst.output)
         get_desc, get_color = (get_o, get_i) if inverted else (get_i, get_o)
+        get_alt_i, get_alt_o = (lambda inst: inst.alt_inputs), (lambda inst: inst.alt_outputs)
+        get_alt_colors = get_alt_i if inverted else get_alt_o
+
+        get_i_ind, get_o_ind = ((lambda inst: inst.alt_inputs[get_multi(inst.input)]),
+                                (lambda inst: inst.alt_outputs[get_multi(inst.output)]))
+        get_color_indexed = get_i_ind if inverted else get_o_ind
 
         if hasattr(self.options, 'listener_tokenizer'):
             tokenize = TOKENIZERS[self.options.listener_tokenizer]
@@ -297,6 +311,8 @@ class ListenerLearner(NeuralLearner):
         for i, inst in enumerate(training_instances):
             desc = tokenize(get_desc(inst))
             color = get_color(inst)
+            if isinstance(color, numbers.Number):
+                color = get_color_indexed(inst)
             if not color:
                 assert test
                 color = (0.0, 0.0, 0.0)
