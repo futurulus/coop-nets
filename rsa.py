@@ -227,10 +227,8 @@ class RSAGraphModel(SimpleLasagneModel):
         if self.options.monitor_sublosses:
             monitored.update(all_sublosses)
         if self.options.monitor_activations:
-            print('Monitoring:')
             for agent in self.listeners + self.speakers:
                 for name, layer in get_named_layers(agent.l_out).iteritems():
-                    print('activation/' + name)
                     monitored['activation/' + name] = get_output(layer)
         return monitored
 

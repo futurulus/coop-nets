@@ -208,9 +208,7 @@ class SimpleLasagneModel(object):
             for p, grad in zip(params, grads):
                 monitored.append(('grad/' + p.name, grad))
         if self.options.monitor_activations:
-            print('Monitoring:')
             for name, layer in get_named_layers(self.l_out).iteritems():
-                print('activation/' + name)
                 monitored.append(('activation/' + name, get_output(layer)))
         return OrderedDict(monitored), grads, []
 
