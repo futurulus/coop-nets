@@ -1,11 +1,12 @@
 import operator
 import theano.tensor as T
 from collections import OrderedDict
+from lasagne.layers import get_output
 
 from stanza.research import config
 from neural import SimpleLasagneModel, NeuralLearner
 from vectorizers import SequenceVectorizer, BucketsVectorizer
-from neural import OPTIMIZERS
+from neural import OPTIMIZERS, get_named_layers
 from listener import LISTENERS, PRIORS as LISTENER_PRIORS
 from speaker import SPEAKERS, PRIORS as SPEAKER_PRIORS
 
@@ -225,6 +226,12 @@ class RSAGraphModel(SimpleLasagneModel):
         monitored = OrderedDict([('loss', est_loss)])
         if self.options.monitor_sublosses:
             monitored.update(all_sublosses)
+        if self.options.monitor_activations:
+            print('Monitoring:')
+            for agent in self.listeners + self.speakers:
+                for name, layer in get_named_layers(agent.l_out).iteritems():
+                    print('activation/' + name)
+                    monitored['activation/' + name] = get_output(layer)
         return monitored
 
     def get_est_grad(self, params, layer_by_layer=False):

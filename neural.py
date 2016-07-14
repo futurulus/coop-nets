@@ -51,6 +51,9 @@ parser.add_argument('--monitor_grads', type=config.boolean, default=False,
 parser.add_argument('--monitor_params', type=config.boolean, default=False,
                     help='If `True`, write parameter value histograms out to the '
                          'TensorBoard events file.')
+parser.add_argument('--monitor_activations', type=config.boolean, default=False,
+                    help='If `True`, write activation value histograms (outputs of named'
+                         'layers) out to the TensorBoard events file.')
 parser.add_argument('--true_grad_clipping', type=float, default=5.0,
                     help='The maximum absolute value of all gradients. This gradient '
                          'clipping is performed on the full gradient calculation, not '
@@ -204,6 +207,11 @@ class SimpleLasagneModel(object):
         if self.options.monitor_grads:
             for p, grad in zip(params, grads):
                 monitored.append(('grad/' + p.name, grad))
+        if self.options.monitor_activations:
+            print('Monitoring:')
+            for name, layer in get_named_layers(self.l_out).iteritems():
+                print('activation/' + name)
+                monitored.append(('activation/' + name, get_output(layer)))
         return OrderedDict(monitored), grads, []
 
     def fit(self, Xs, ys, batch_size, num_epochs, summary_writer=None, step=0):
@@ -304,6 +312,21 @@ class SimpleLasagneModel(object):
         if not hasattr(self, 'options'):
             options = config.options()
             self.options = argparse.Namespace(**options.__dict__)
+
+
+def get_named_layers(layer, id_map=None):
+    if id_map is None:
+        id_map = {}
+
+    if layer.name:
+        id_map[layer.name] = layer
+    if hasattr(layer, 'input_layers'):
+        for inp in layer.input_layers:
+            get_named_layers(inp, id_map)
+    elif hasattr(layer, 'input_layer'):
+        get_named_layers(layer.input_layer, id_map)
+
+    return id_map
 
 
 def output_model_structure(layer, indent=0):
