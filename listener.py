@@ -685,12 +685,13 @@ class ContextVecListenerLearner(ContextListenerLearner):
             id=self.id
         )
         l_context_repr = reshape(l_context_repr, ([0], [1], self.context_len,
-                                                  self.options.listener_cell_size))
+                                                  self.color_vec.output_size))
         l_hidden_context = dimshuffle(l_context_repr, (0, 3, 1, 2), name=id_tag + 'shuffle_in')
         for i in range(1, self.options.listener_hidden_color_layers + 1):
             l_hidden_context = NINLayer(
                 l_hidden_context, num_units=self.options.listener_cell_size,
                 nonlinearity=NONLINEARITIES[self.options.listener_nonlinearity],
+                b=Constant(0.1),
                 name=id_tag + 'hidden_context%d' % i)
         l_pool = FeaturePoolLayer(l_hidden_context, pool_size=self.context_len, axis=3,
                                   pool_function=T.mean, name=id_tag + 'pool')
@@ -725,6 +726,9 @@ class ContextVecListenerLearner(ContextListenerLearner):
         else:
             l_rec2_drop = l_rec2
 
+        l_rec2_drop = NINLayer(l_rec2_drop, num_units=self.options.listener_cell_size,
+                               nonlinearity=None, name=id_tag + 'rec2_dense')
+
         # Context is fed into the RNN as one copy for each time step; just use
         # the first time step for output.
         # Input shape: (batch_size, repr_size, seq_len, context_len)
@@ -739,7 +743,7 @@ class ContextVecListenerLearner(ContextListenerLearner):
                                     feature_dim=self.options.listener_cell_size,
                                     id_tag=id_tag)
         # Output shape: (batch_size, repr_size * 2, context_len)
-        l_concat_sub = ConcatLayer([l_context_nonrec, l_sub], axis=2,
+        l_concat_sub = ConcatLayer([l_context_nonrec, l_sub], axis=1,
                                    name=id_tag + 'concat_inp_context')
         # Output shape: (batch_size, cell_size, context_len)
         l_hidden = NINLayer(l_concat_sub, num_units=self.options.listener_cell_size,
