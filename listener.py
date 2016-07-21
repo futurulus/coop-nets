@@ -6,7 +6,7 @@ import warnings
 from collections import Counter
 from lasagne.layers import InputLayer, DropoutLayer, DenseLayer, EmbeddingLayer, NonlinearityLayer
 from lasagne.layers import NINLayer, FeaturePoolLayer, ConcatLayer, SliceLayer, ElemwiseMergeLayer
-from lasagne.layers import dimshuffle, reshape
+from lasagne.layers import BiasLayer, dimshuffle, reshape
 from lasagne.layers.recurrent import Gate
 from lasagne.init import Constant
 from lasagne.objectives import categorical_crossentropy
@@ -709,12 +709,15 @@ class ContextVecListenerLearner(ContextListenerLearner):
         if self.options.listener_cell != 'GRU':
             cell_kwargs['nonlinearity'] = NONLINEARITIES[self.options.listener_nonlinearity]
 
+        l_rec1_drop = l_concat
+        '''
         l_rec1 = cell(l_concat, name=id_tag + 'rec1', **cell_kwargs)
         if self.options.listener_dropout > 0.0:
             l_rec1_drop = DropoutLayer(l_rec1, p=self.options.listener_dropout,
                                        name=id_tag + 'rec1_drop')
         else:
             l_rec1_drop = l_rec1
+        '''
         l_rec2 = cell(l_rec1_drop, name=id_tag + 'rec2', only_return_final=True, **cell_kwargs)
         if self.options.listener_dropout > 0.0:
             l_rec2_drop = DropoutLayer(l_rec2, p=self.options.listener_dropout,
@@ -750,7 +753,12 @@ class ContextVecListenerLearner(ContextListenerLearner):
         l_dot = broadcast_dot_layer(l_rec2_drop, l_hidden_drop,
                                     feature_dim=self.options.listener_cell_size,
                                     id_tag=id_tag)
-        l_scores = NonlinearityLayer(l_dot, nonlinearity=softmax, name=id_tag + 'scores')
+        l_dot_bias = BiasLayer(l_dot, name=id_tag + 'dot_bias')
+        l_dot_clipped = NonlinearityLayer(
+            l_dot_bias,
+            nonlinearity=NONLINEARITIES[self.options.listener_nonlinearity],
+            name=id_tag + 'dot_clipped')
+        l_scores = NonlinearityLayer(l_dot_clipped, nonlinearity=softmax, name=id_tag + 'scores')
 
         return l_scores, [l_in] + context_inputs
 
