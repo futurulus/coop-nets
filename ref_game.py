@@ -1,11 +1,14 @@
 import numpy as np
 from scipy.misc import logsumexp
+from sklearn.linear_model import LogisticRegression
 
 from stanza.monitoring import progress
 from stanza.research import config, instance, iterators
 from stanza.research.learner import Learner
 
 from neural import sample
+from tokenizers import TOKENIZERS
+from vectorizers import SequenceVectorizer, COLOR_REPRS
 
 
 class ExhaustiveS1Learner(Learner):
@@ -182,6 +185,82 @@ class DirectRefGameLearner(Learner):
 
     def load(self, infile):
         return self.base.load(infile)
+
+
+class LRContextListenerLearner(Learner):
+    def train(self, training_instances, validation_instances=None, metrics=None):
+        X, y = self._data_to_arrays(training_instances, init_vectorizer=True)
+        self.mod = LogisticRegression(solver='lbfgs')
+        self.mod.fit(X, y)
+
+    @property
+    def num_params(self):
+        return np.prod(self.mod.coef_.shape) + np.prod(self.mod.intercept_.shape)
+
+    def predict_and_score(self, eval_instances, random=False, verbosity=0):
+        X, y = self._data_to_arrays(eval_instances)
+        y = y.reshape((len(eval_instances), self.context_len))
+        all_scores = self.mod.predict_log_proba(X)[:, 1].reshape((len(eval_instances),
+                                                                  self.context_len))
+        all_scores -= logsumexp(all_scores, axis=1)[:, np.newaxis]
+
+        preds = all_scores.argmax(axis=1)
+        scores = np.where(y, all_scores, 0).sum(axis=1)
+
+        return preds.tolist(), scores.tolist()
+
+    def _data_to_arrays(self, instances, inverted=False, init_vectorizer=False):
+        self.get_options()
+
+        get_i, get_o = (lambda inst: inst.input), (lambda inst: inst.output)
+        get_desc, get_color = (get_o, get_i) if inverted else (get_i, get_o)
+        get_alt_i, get_alt_o = (lambda inst: inst.alt_inputs), (lambda inst: inst.alt_outputs)
+        get_alt_colors = get_alt_i if inverted else get_alt_o
+
+        tokenize = TOKENIZERS[self.options.listener_tokenizer]
+        tokenized = [tokenize(get_desc(inst)) for inst in instances]
+        context_lens = [len(get_alt_colors(inst)) for inst in instances]
+
+        if init_vectorizer:
+            self.seq_vec = SequenceVectorizer()
+            self.seq_vec.add_all(tokenized)
+
+        unk_replaced = self.seq_vec.unk_replace_all(tokenized)
+
+        if init_vectorizer:
+            config.dump(unk_replaced, 'unk_replaced.train.jsons', lines=True)
+
+            self.context_len = context_lens[0]
+
+            color_repr = COLOR_REPRS[self.options.listener_color_repr]
+            self.color_vec = color_repr(self.options.listener_color_resolution,
+                                        hsv=self.options.listener_hsv)
+
+        assert all(cl == self.context_len for cl in context_lens), (self.context_len, context_lens)
+
+        padded = [(d + ['</s>'] * (self.seq_vec.max_len - len(d)))[:self.seq_vec.max_len]
+                  for d in unk_replaced]
+        colors = [c for inst in instances for c in get_alt_colors(inst)]
+        labels = np.array([int(i == get_color(inst))
+                           for inst in instances
+                           for i in range(self.context_len)])
+
+        desc_indices = self.seq_vec.vectorize_all(padded)
+        desc_bow = -np.ones((desc_indices.shape[0], self.seq_vec.num_types))
+        desc_bow[np.arange(desc_indices.shape[0])[:, np.newaxis], desc_indices] = 1.
+        color_feats = self.color_vec.vectorize_all(colors)
+        color_feats = color_feats.reshape((desc_indices.shape[0],
+                                           self.context_len,
+                                           color_feats.shape[1]))
+        feats = np.einsum('ij,ick->icjk', desc_bow, color_feats)
+        feats = feats.reshape((desc_indices.shape[0] * self.context_len,
+                               desc_bow.shape[1] * color_feats.shape[2]))
+
+        return feats, labels
+
+    def get_options(self):
+        if not hasattr(self, 'options'):
+            self.options = config.options()
 
 
 import learners
