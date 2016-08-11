@@ -2,7 +2,7 @@ import numpy as np  # NOQA: for doctest
 import theano  # NOQA: for doctest
 import theano.tensor as T
 from collections import OrderedDict
-from lasagne.layers import Layer
+from lasagne.layers import Layer, MergeLayer
 from theano.ifelse import ifelse
 from theano.printing import Print
 
@@ -33,6 +33,107 @@ class ForgetSizeLayer(Layer):
         shape = list(input_shape)
         shape[self.axis] = None
         return tuple(shape)
+
+
+class GaussianScoreLayer(MergeLayer):
+    def __init__(self, incoming, pred_mean, pred_covar, **kwargs):
+        super(GaussianScoreLayer, self).__init__([incoming, pred_mean, pred_covar], **kwargs)
+        self.points = incoming
+        self.pred_mean = pred_mean
+        self.pred_covar = pred_covar
+
+        # points = (batch_size, points_size, repr_size)
+        if len(self.points.output_shape) != 3:
+            raise ValueError('Input to GaussianScoreLayer should be a rank-3 tensor, instead '
+                             'got shape {}'.format(self.points.output_shape))
+        batch_size, points_size, repr_size = self.points.output_shape
+
+        # pred_mean = (batch_size, repr_size)
+        if len(self.pred_mean.output_shape) != 2:
+            raise ValueError('Mean layer for GaussianScoreLayer should be a rank-2 tensor, instead '
+                             'got shape {}'.format(self.pred_mean.output_shape))
+        if (batch_size is not None and
+                self.pred_mean.output_shape[0] is not None and
+                self.pred_mean.output_shape[0] != batch_size):
+            raise ValueError("Batch size for GaussianScoreLayer mean doesn't match input: "
+                             'mean={} vs. input={}'.format(self.pred_mean.output_shape,
+                                                           self.points.output_shape))
+        if (repr_size is not None and
+                self.pred_mean.output_shape[1] is not None and
+                self.pred_mean.output_shape[1] != repr_size):
+            raise ValueError("Representation size for GaussianScoreLayer mean doesn't match input: "
+                             'mean={} vs. input={}'.format(self.pred_mean.output_shape,
+                                                           self.points.output_shape))
+
+        # pred_covar = (batch_size, repr_size, repr_size)
+        if len(self.pred_covar.output_shape) != 3:
+            raise ValueError('Covariance layer for GaussianScoreLayer should be a rank-3 tensor, '
+                             'instead got shape {}'.format(self.pred_covar.output_shape))
+        if (batch_size is not None and
+                self.pred_covar.output_shape[0] is not None and
+                self.pred_covar.output_shape[0] != batch_size):
+            raise ValueError("Batch size for GaussianScoreLayer covar doesn't match input: "
+                             'covar={} vs. input={}'.format(self.pred_covar.output_shape,
+                                                            self.points.output_shape))
+        if (self.pred_covar.output_shape[1] is not None and
+                self.pred_covar.output_shape[2] is not None and
+                self.pred_covar.output_shape[1] != self.pred_covar.output_shape[2]):
+            raise ValueError("GaussianScoreLayer covar should be square in 2nd and 3rd dimensions: "
+                             '{}'.format(self.pred_covar.output_shape))
+        if (repr_size is not None and
+                self.pred_covar.output_shape[1] is not None and
+                self.pred_covar.output_shape[1] != repr_size):
+            raise ValueError("Representation size for GaussianScoreLayer covar doesn't match "
+                             'input: covar={} vs. input={}'.format(self.pred_covar.output_shape,
+                                                                   self.points.output_shape))
+        if (repr_size is not None and
+                self.pred_covar.output_shape[2] is not None and
+                self.pred_covar.output_shape[2] != repr_size):
+            raise ValueError("Representation size for GaussianScoreLayer covar doesn't match "
+                             'input: covar={} vs. input={}'.format(self.pred_covar.output_shape,
+                                                                   self.points.output_shape))
+
+    def get_output_shape_for(self, input_shapes):
+        points_shape, mean_shape, covar_shape = input_shapes
+        if len(points_shape) != 3:
+            raise ValueError('In get_output_shape_for: Input to GaussianScoreLayer should be a '
+                             'rank-3 tensor, instead got shape {}'.format(self.points.output_shape))
+        batch_size, points_size, repr_size = points_shape
+        return (batch_size, points_size)
+
+    def get_output_for(self, inputs, **kwargs):
+        points, mean, covar = inputs
+        # points: (batch_size, context_len, repr_size)
+        assert points.ndim == 3, '{}.ndim == {}'.format(points, points.ndim)
+        # mean: (batch_size, repr_size)
+        assert mean.ndim == 2, '{}.ndim == {}'.format(mean, mean.ndim)
+        # mean: (batch_size, repr_size, repr_size)
+        assert covar.ndim == 3, '{}.ndim == {}'.format(covar, covar.ndim)
+
+        # log of gaussian is a quadratic form: -(x - m).T * Sigma * (x - m)
+        centered = points - mean.dimshuffle(0, 'x', 1)
+        # centered: (batch_size, context_len, repr_size)
+        assert centered.ndim == 3, '{}.ndim == {}'.format(centered, centered.ndim)
+
+        left = batched_dot(centered, covar)
+        # left: (batch_size, context_len, repr_size)
+        assert left.ndim == 3, '{}.ndim == {}'.format(left, left.ndim)
+        output = T.sum(left * centered, axis=2)
+        # left: (batch_size, context_len)
+        assert output.ndim == 2, '{}.ndim == {}'.format(output, output.ndim)
+        return output
+
+
+def batched_dot(x, y):
+    '''
+    Implements the Theano batched_dot function in a way that should be executable
+    on the GPU. As of 0.7.0, the batched_dot function also doesn't compile
+    when passed two 3D tensors for some reason--it gives the error:
+      File ".../site-packages/theano/scan_module/scan.py", line 557, in scan
+        scan_seqs = [seq[:actual_n_steps] for seq in scan_seqs]
+      IndexError: failed to coerce slice entry of type TensorVariable to integer
+    '''
+    return T.sum(x.dimshuffle(0, 1, 2, 'x') * y.dimshuffle(0, 'x', 1, 2), axis=2)
 
 
 def apply_nan_suppression(updates, print_mode='all'):

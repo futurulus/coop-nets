@@ -17,7 +17,7 @@ from stanza.monitoring import progress
 from stanza.research import config, instance, iterators, rng
 import color_instances
 import speaker
-from helpers import ForgetSizeLayer
+from helpers import ForgetSizeLayer, GaussianScoreLayer
 from neural import NeuralLearner, SimpleLasagneModel
 from neural import NONLINEARITIES, OPTIMIZERS, CELLS, sample
 from vectorizers import SequenceVectorizer, BucketsVectorizer, SymbolVectorizer
@@ -659,6 +659,76 @@ class TwoStreamListenerLearner(ContextListenerLearner):
         return l_scores, [l_in] + context_inputs
 
 
+class GaussianContextListenerLearner(ContextListenerLearner):
+    def __init__(self, *args, **kwargs):
+        super(GaussianContextListenerLearner, self).__init__(*args, **kwargs)
+
+    @property
+    def recurrent_context(self):
+        return False
+
+    def _get_l_out(self, input_vars):
+        check_options(self.options)
+        id_tag = (self.id + '/') if self.id else ''
+
+        input_var = input_vars[0]
+        context_vars = input_vars[1:]
+
+        l_in = InputLayer(shape=(None, self.seq_vec.max_len), input_var=input_var,
+                          name=id_tag + 'desc_input')
+        l_in_embed = EmbeddingLayer(l_in, input_size=len(self.seq_vec.tokens),
+                                    output_size=self.options.listener_cell_size,
+                                    name=id_tag + 'desc_embed')
+
+        cell = CELLS[self.options.listener_cell]
+        cell_kwargs = {
+            'grad_clipping': self.options.listener_grad_clipping,
+            'num_units': self.options.listener_cell_size,
+        }
+        if self.options.listener_cell == 'LSTM':
+            cell_kwargs['forgetgate'] = Gate(b=Constant(self.options.listener_forget_bias))
+        if self.options.listener_cell != 'GRU':
+            cell_kwargs['nonlinearity'] = NONLINEARITIES[self.options.listener_nonlinearity]
+
+        l_rec1 = cell(l_in_embed, name=id_tag + 'rec1', only_return_final=True, **cell_kwargs)
+        if self.options.listener_dropout > 0.0:
+            l_rec1_drop = DropoutLayer(l_rec1, p=self.options.listener_dropout,
+                                       name=id_tag + 'rec1_drop')
+        else:
+            l_rec1_drop = l_rec1
+
+        # (batch_size, repr_size)
+        l_pred_mean = DenseLayer(l_rec1_drop, num_units=self.color_vec.output_size,
+                                 nonlinearity=None, name=id_tag + 'pred_mean')
+        # (batch_size, repr_size * repr_size)
+        l_pred_covar_vec = DenseLayer(l_rec1_drop, num_units=self.color_vec.output_size ** 2,
+                                      # initially produce identity matrix
+                                      b=np.eye(self.color_vec.output_size).ravel(),
+                                      nonlinearity=None, name=id_tag + 'pred_covar_vec')
+        # (batch_size, repr_size, repr_size)
+        l_pred_covar = reshape(l_pred_covar_vec, ([0], self.color_vec.output_size,
+                                                  self.color_vec.output_size),
+                               name=id_tag + 'pred_covar')
+
+        # Context repr has shape (batch_size, context_len * repr_size)
+        l_context_repr, context_inputs = self.color_vec.get_input_layer(
+            context_vars,
+            cell_size=self.options.listener_cell_size,
+            context_len=self.context_len,
+            id=self.id
+        )
+        l_context_points = reshape(l_context_repr, ([0], self.context_len,
+                                                    self.color_vec.output_size))
+
+        l_unnorm_scores = GaussianScoreLayer(l_context_points, l_pred_mean, l_pred_covar,
+                                             name=id_tag + 'gaussian_score')
+
+        l_scores = NonlinearityLayer(l_unnorm_scores, nonlinearity=softmax,
+                                     name=id_tag + 'scores')
+
+        return l_scores, [l_in] + context_inputs
+
+
 class ContextVecListenerLearner(ContextListenerLearner):
     def __init__(self, *args, **kwargs):
         super(ContextVecListenerLearner, self).__init__(*args, **kwargs)
@@ -897,5 +967,6 @@ LISTENERS = {
     'ContextListener': ContextListenerLearner,
     'TwoStreamListener': TwoStreamListenerLearner,
     'ContextVecListener': ContextVecListenerLearner,
+    'GaussianContextListener': GaussianContextListenerLearner,
     'AtomicListener': AtomicListenerLearner,
 }

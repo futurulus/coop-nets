@@ -500,6 +500,7 @@ class RawVectorizer(ColorVectorizer):
         else:
             resolution = (256, 256, 256)
         self.num_types = reduce(operator.mul, resolution)
+        self.output_size = 3
         self.hsv = hsv
 
     def vectorize(self, color, hsv=None):
