@@ -616,22 +616,20 @@ class TwoStreamListenerLearner(ContextListenerLearner):
         if self.options.listener_cell != 'GRU':
             cell_kwargs['nonlinearity'] = NONLINEARITIES[self.options.listener_nonlinearity]
 
-        l_rec1 = cell(l_in_embed, name=id_tag + 'rec1', only_return_final=True, **cell_kwargs)
+        l_rec1 = cell(l_in_embed, name=id_tag + 'rec1', **cell_kwargs)
         if self.options.listener_dropout > 0.0:
             l_rec1_drop = DropoutLayer(l_rec1, p=self.options.listener_dropout,
                                        name=id_tag + 'rec1_drop')
         else:
             l_rec1_drop = l_rec1
-        '''
         l_rec2 = cell(l_rec1_drop, name=id_tag + 'rec2', only_return_final=True, **cell_kwargs)
         if self.options.listener_dropout > 0.0:
             l_rec2_drop = DropoutLayer(l_rec2, p=self.options.listener_dropout,
                                        name=id_tag + 'rec2_drop')
         else:
             l_rec2_drop = l_rec2
-        '''
-        # remove only_return_final from l_rec1 to restore second layer
-        l_rec2_drop = l_rec1_drop
+        # add only_return_final to l_rec1 and uncomment next line to remove second layer
+        # l_rec2_drop = l_rec1_drop
 
         # Context repr has shape (batch_size, context_len * repr_size)
         l_context_repr, context_inputs = self.color_vec.get_input_layer(
@@ -780,15 +778,13 @@ class ContextVecListenerLearner(ContextListenerLearner):
         if self.options.listener_cell != 'GRU':
             cell_kwargs['nonlinearity'] = NONLINEARITIES[self.options.listener_nonlinearity]
 
-        l_rec1_drop = l_concat
-        '''
+        # l_rec1_drop = l_concat
         l_rec1 = cell(l_concat, name=id_tag + 'rec1', **cell_kwargs)
         if self.options.listener_dropout > 0.0:
             l_rec1_drop = DropoutLayer(l_rec1, p=self.options.listener_dropout,
                                        name=id_tag + 'rec1_drop')
         else:
             l_rec1_drop = l_rec1
-        '''
         l_rec2 = cell(l_rec1_drop, name=id_tag + 'rec2', only_return_final=True, **cell_kwargs)
         if self.options.listener_dropout > 0.0:
             l_rec2_drop = DropoutLayer(l_rec2, p=self.options.listener_dropout,
@@ -827,7 +823,7 @@ class ContextVecListenerLearner(ContextListenerLearner):
         l_dot = broadcast_dot_layer(l_rec2_drop, l_hidden_drop,
                                     feature_dim=self.options.listener_cell_size,
                                     id_tag=id_tag)
-        l_dot_bias = BiasLayer(l_dot, name=id_tag + 'dot_bias')
+        l_dot_bias = l_dot  # BiasLayer(l_dot, name=id_tag + 'dot_bias')
         l_dot_clipped = NonlinearityLayer(
             l_dot_bias,
             nonlinearity=NONLINEARITIES[self.options.listener_nonlinearity],
