@@ -701,7 +701,8 @@ class GaussianContextListenerLearner(ContextListenerLearner):
         # (batch_size, repr_size * repr_size)
         l_pred_covar_vec = DenseLayer(l_rec1_drop, num_units=self.color_vec.output_size ** 2,
                                       # initially produce identity matrix
-                                      b=np.eye(self.color_vec.output_size).ravel(),
+                                      b=np.eye(self.color_vec.output_size,
+                                               dtype=theano.config.floatX).ravel(),
                                       nonlinearity=None, name=id_tag + 'pred_covar_vec')
         # (batch_size, repr_size, repr_size)
         l_pred_covar = reshape(l_pred_covar_vec, ([0], self.color_vec.output_size,
