@@ -17,6 +17,7 @@ from stanza.monitoring import progress
 from stanza.research import config, instance, iterators, rng
 import color_instances
 import speaker
+import data_aug
 from helpers import ForgetSizeLayer, GaussianScoreLayer
 from neural import NeuralLearner, SimpleLasagneModel
 from neural import NONLINEARITIES, OPTIMIZERS, CELLS, sample
@@ -967,3 +968,4 @@ LISTENERS = {
     'GaussianContextListener': GaussianContextListenerLearner,
     'AtomicListener': AtomicListenerLearner,
 }
+LISTENERS.update(data_aug.AGENTS)

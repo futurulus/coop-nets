@@ -15,6 +15,7 @@ from stanza.monitoring import progress
 from stanza.research import config, iterators, instance
 from stanza.research.rng import get_rng
 import color_instances
+import data_aug
 from neural import NeuralLearner, SimpleLasagneModel
 from neural import NONLINEARITIES, OPTIMIZERS, CELLS, sample
 from vectorizers import SequenceVectorizer, SymbolVectorizer, strip_invalid_tokens, COLOR_REPRS
@@ -781,3 +782,4 @@ SPEAKERS = {
     'ContextSpeaker': ContextSpeakerLearner,
     'AtomicSpeaker': AtomicSpeakerLearner,
 }
+SPEAKERS.update(data_aug.AGENTS)
