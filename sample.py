@@ -12,6 +12,8 @@ parser.add_argument('--num_samples', type=int, default=100,
 def output_sample(model):
     options = config.options()
     insts = model.sample_joint_smooth(num_samples=options.num_samples)
+    if not options.listener:
+        insts = [inst.inverted() for inst in insts]
     html = rsa_fit_data.get_html(insts, title='Agent samples (smoothed prior)')
     config.dump([inst.__dict__ for inst in insts], 'data.sample.jsons', lines=True)
     with config.open('report.sample.html', 'w') as outfile:
