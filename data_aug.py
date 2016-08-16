@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import numpy as np
+import theano
 import theano.tensor as T
 from lasagne.layers import InputLayer
 
@@ -55,7 +56,8 @@ class DataSampler(NeuralLearner):
 
     def _data_to_arrays(self, training_instances,
                         init_vectorizer=False, test=False, inverted=False):
-        return [np.zeros((len(training_instances),))], [np.zeros((len(training_instances),))]
+        return ([np.zeros((len(training_instances),), dtype=theano.config.floatX)],
+                [np.zeros((len(training_instances),), dtype=theano.config.floatX)])
 
     def _build_model(self, model_class=SimpleLasagneModel):
         id_tag = (self.id + '/') if self.id else ''
