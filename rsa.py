@@ -466,6 +466,9 @@ class RSALearner(NeuralLearner):
         for agent in self.speakers + self.listeners:
             agent.on_iter_end(step, writer)
 
+    def sample_joint_smooth(self, num_samples):
+        return self.eval_agent.sample_joint_smooth(num_samples)
+
     def _data_to_arrays(self, training_instances,
                         init_vectorizer=False, test=False, inverted=False):
         input_arrays = []
