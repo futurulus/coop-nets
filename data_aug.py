@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import cPickle as pickle
 import numpy as np
 import theano
 import theano.tensor as T
@@ -17,6 +18,10 @@ parser = config.get_options_parser()
 parser.add_argument('--aug_data_source', default='hawkins_dev',
                     choices=color_instances.SOURCES.keys(),
                     help='The type of data to use.')
+parser.add_argument('--aug_model', default=None,
+                    help='Load a model from the given pickle file for use in generating '
+                         'synthetic data. Should be a quickpickle file, to avoid '
+                         'unexpected command line option interactions.')
 parser.add_argument('--aug_noise_prob', type=float, default=0.0,
                     help='With this probability (fraction between 0 and 1), data '
                          'augmentation samples will be corrupted by randomizing the '
@@ -168,6 +173,72 @@ class NotRepeatDataSampler(DataSampler):
                                                .train_data(listener=self.options.listener))
 
 
+class SpeakerModelDataSampler(NotRepeatDataSampler):
+    '''
+    Data sampler that samples random instances from the source dataset, samples
+    utterances for each color in the context of those instances from a speaker
+    model (specified by --aug_model), and combines them with the modifications of
+    NotRepeatDataSampler (adding "not" to the utterances that aren't the target).
+    '''
+    def __init__(self, id=None):
+        super(SpeakerModelDataSampler, self).__init__(id=id)
+        self.get_options()
+        with open(self.options.aug_model, 'rb') as infile:
+            self.speaker_model = pickle.load(infile)
+        self.speaker_model.options.verbosity = 0
+
+    def sample_augmented(self, num_samples):
+        self.get_sample_data()
+        base_samples = self.sample_base(num_samples)
+        speaker_utts = self.get_context_speaker_utts(base_samples)
+        return [self.mangle(s, utts) for s, utts in zip(base_samples, speaker_utts)]
+
+    def get_context_speaker_utts(self, base_samples):
+        from fields import get_context
+        contexts = [get_context(inst, self.options.listener) for inst in base_samples]
+        context_insts = [instance.Instance(c, None)
+                         for context in contexts
+                         for c in context]
+        utts = self.speaker_model.predict(context_insts, random=True)
+        grouped_utts = []
+        utt_iter = iter(utts)
+        for context in contexts:
+            grouped_utts.append([next(utt_iter) for _ in range(len(context))])
+        return grouped_utts
+
+    def mangle(self, inst, speaker_utts):
+        from fields import get_color_index, get_context, build_instance
+
+        list_input = self.options.listener
+        list_output = self.is_listener
+        color_index = get_color_index(inst, list_input)
+        context = get_context(inst, list_input)
+
+        true_utt = speaker_utts[color_index]
+        negated_utts = ['not ' + u for i, u in enumerate(speaker_utts) if i != color_index]
+
+        if rng.rand() <= 0.95:
+            chosen = [true_utt]
+        else:
+            i = rng.choice(range(len(negated_utts)))
+            chosen = [negated_utts[i]]
+            del negated_utts[i]
+
+        if rng.rand() <= 0.15:
+            for utt in negated_utts:
+                if rng.rand() <= 0.5:
+                    chosen.append(utt)
+
+        rng.shuffle(chosen)
+        utt = self.random_separators(chosen)
+
+        utt, color_index, context = self.target_noise(self.options.aug_noise_prob,
+                                                      utt, color_index, context)
+        utt, color_index, context = self.repeat(1, 3, utt, color_index, context)
+        return build_instance(utt, color_index, context, list_output)
+
+
 AGENTS = {
     'NotRepeat': NotRepeatDataSampler,
+    'ModelSampler': SpeakerModelDataSampler,
 }
