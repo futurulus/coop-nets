@@ -17,6 +17,11 @@ parser = config.get_options_parser()
 parser.add_argument('--aug_data_source', default='hawkins_dev',
                     choices=color_instances.SOURCES.keys(),
                     help='The type of data to use.')
+parser.add_argument('--aug_noise_prob', type=float, default=0.0,
+                    help='With this probability (fraction between 0 and 1), data '
+                         'augmentation samples will be corrupted by randomizing the '
+                         'target index. This is to prevent overconfidence, thereby '
+                         'reducing perplexity.')
 
 
 class DataSampler(NeuralLearner):
@@ -130,8 +135,12 @@ class NotRepeatDataSampler(DataSampler):
             others = list(range(0, color_index)) + list(range(color_index + 1, len(context)))
             color_index = rng.choice(others)
 
+        if rng.rand() <= self.options.aug_noise_prob:
+            color_index = rng.choice(range(len(context)))
+
         repeats = rng.choice(range(1, 4))
-        separators = [(' ', ', ', ' ~ ')[i] for i in rng.choice(range(3), size=repeats - 1)]
+        separators = [(' ', ', ', ' ~ ', ' <unk> ')[i]
+                      for i in rng.choice(range(4), size=repeats - 1)]
         utt += ''.join(s + utt for s in separators)
 
         if self.is_listener:
