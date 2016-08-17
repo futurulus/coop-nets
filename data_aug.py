@@ -110,43 +110,56 @@ class NotRepeatDataSampler(DataSampler):
 
     - repeating the utterance (possibly with the "not") 1-3 times, separated by
       commas, newlines, or only a space
+
+    - randomly changing the target with a configurable probability (--aug_noise_prob),
+      without modifying the utterance. This helps prevent overconfidence.
     '''
     def sample_augmented(self, num_samples):
         self.get_sample_data()
-        indices = rng.choice(np.arange(len(self.sample_data)), size=num_samples)
-        base_samples = [self.sample_data[i] for i in indices]
+        base_samples = self.sample_base(num_samples)
         return [self.mangle(s) for s in base_samples]
 
+    def sample_base(self, num_samples):
+        indices = rng.choice(np.arange(len(self.sample_data)), size=num_samples)
+        return [self.sample_data[i] for i in indices]
+
     def mangle(self, inst):
-        get_input = lambda i: i.input
-        get_output = lambda i: i.output
-        get_alt_inputs = lambda i: i.alt_inputs
-        get_alt_outputs = lambda i: i.alt_outputs
-        get_utt = get_input if self.options.listener else get_output
-        get_color_index = get_output if self.options.listener else get_input
-        get_context = get_alt_outputs if self.options.listener else get_alt_inputs
+        from fields import get_utt, get_color_index, get_context, build_instance
 
-        utt = get_utt(inst)
-        color_index = get_color_index(inst)
-        context = get_context(inst)
+        list_input = self.options.listener
+        list_output = self.is_listener
+        utt = get_utt(inst, list_input)
+        color_index = get_color_index(inst, list_input)
+        context = get_context(inst, list_input)
 
+        utt, color_index, context = self.negative_and_switch(utt, color_index, context)
+        utt, color_index, context = self.target_noise(self.options.aug_noise_prob,
+                                                      utt, color_index, context)
+        utt, color_index, context = self.repeat(1, 3, utt, color_index, context)
+        return build_instance(utt, color_index, context, list_output)
+
+    def negative_and_switch(self, utt, color_index, context):
         if rng.choice([0, 1]):
             utt = 'not ' + utt
             others = list(range(0, color_index)) + list(range(color_index + 1, len(context)))
             color_index = rng.choice(others)
+        return utt, color_index, context
 
-        if rng.rand() <= self.options.aug_noise_prob:
+    def target_noise(self, prob, utt, color_index, context):
+        if rng.rand() <= prob:
             color_index = rng.choice(range(len(context)))
+        return utt, color_index, context
 
+    def repeat(self, min_repeat, max_repeat, utt, color_index, context):
         repeats = rng.choice(range(1, 4))
-        separators = [(' ', ', ', ' ~ ', ' <unk> ')[i]
-                      for i in rng.choice(range(4), size=repeats - 1)]
-        utt += ''.join(s + utt for s in separators)
+        utt = self.random_separators([utt] * repeats)
+        return utt, color_index, context
 
-        if self.is_listener:
-            return instance.Instance(utt, color_index, alt_outputs=context)
-        else:
-            return instance.Instance(color_index, utt, alt_inputs=context)
+    def random_separators(self, strings):
+        separators = (' ', ', ', ' ~ ', ' <unk> ')
+        chosen = [separators[i] for i in rng.choice(range(len(separators)),
+                                                    size=len(strings) - 1)]
+        return ''.join(string + sep for string, sep in zip(strings, chosen)) + strings[-1]
 
     def get_sample_data(self):
         self.get_options()
