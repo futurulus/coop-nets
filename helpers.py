@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy as np  # NOQA: for doctest
 import theano  # NOQA: for doctest
 import theano.tensor as T
@@ -122,6 +123,26 @@ class GaussianScoreLayer(MergeLayer):
         # left: (batch_size, context_len)
         assert output.ndim == 2, '{}.ndim == {}'.format(output, output.ndim)
         return output
+
+
+class RepeatLayer(Layer):
+    '''
+    By Søren Sønderby.
+    https://github.com/Lasagne/Lasagne/issues/362
+    '''
+    def __init__(self, incoming, num_repeats, axis=1, **kwargs):
+        super(RepeatLayer, self).__init__(incoming, **kwargs)
+        self.n = num_repeats
+        self.axis = axis
+
+    def get_output_shape_for(self, input_shape):
+        return tuple(list(input_shape[:self.axis]) + [self.n] + list(input_shape[self.axis:]))
+
+    def get_output_for(self, input, **kwargs):
+        tensors = [input]*self.n
+        stacked = theano.tensor.stack(*tensors)
+        dim = range(1, self.axis + 1) + [0] + range(self.axis + 1, input.ndim + 1)
+        return stacked.dimshuffle(dim)
 
 
 def batched_dot(x, y):

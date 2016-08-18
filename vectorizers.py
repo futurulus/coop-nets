@@ -704,9 +704,10 @@ class FourierVectorizer(ColorVectorizer):
                         context_len=1, id=None):
         id_tag = (id + '/') if id else ''
         (input_var,) = input_vars
-        shape = ((None, self.output_size * context_len)
+        context_repr_size = None if context_len is None else self.output_size * context_len
+        shape = ((None, context_repr_size)
                  if recurrent_length == 0 else
-                 (None, recurrent_length, self.output_size * context_len))
+                 (None, recurrent_length, context_repr_size))
         l_color = InputLayer(shape=shape, input_var=input_var,
                              name=id_tag + 'color_input')
         return l_color, [l_color]
