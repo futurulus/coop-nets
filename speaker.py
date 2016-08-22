@@ -813,7 +813,7 @@ class RecurrentContextSpeakerLearner(SpeakerLearner):
         l_out = ReshapeLayer(l_softmax, (-1, self.seq_vec.max_len - 1, len(self.seq_vec.tokens)),
                              name=id_tag + 'out')
 
-        return l_out, color_inputs + [l_prev_out, l_mask_in]
+        return l_out, color_inputs + [l_color_mask_in, l_prev_out, l_mask_in]
 
 
 class AtomicSpeakerLearner(NeuralLearner):
