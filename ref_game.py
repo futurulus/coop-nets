@@ -122,25 +122,50 @@ class ExhaustiveS1PriorLearner(ExhaustiveS1Learner):
 
 class DirectRefGameLearner(Learner):
     def __init__(self, base=None):
-        options = config.options()
+        options = self.get_options()
+        base_is_listener = self.override_listener(exists=False)
+        old_listener = options.listener
+        options.listener = base_is_listener
         if base is None:
             self.base = learners.new(options.direct_base_learner)
         else:
             self.base = base
+        options.listener = old_listener
+
+    def get_options(self):
+        if not hasattr(self, 'options'):
+            self.options = config.options()
+        return self.options
 
     def train(self, training_instances, validation_instances=None, metrics=None):
+        self.override_listener()
         return self.base.train(training_instances=training_instances,
                                validation_instances=validation_instances, metrics=metrics)
+
+    def override_listener(self, exists=True):
+        if self.options.direct_base_is_listener > 0:
+            base_is_listener = True
+            if exists:
+                self.base.options.listener = True
+        elif self.options.direct_base_is_listener < 0:
+            base_is_listener = False
+            if exists:
+                self.base.options.listener = False
+        elif base_is_listener is None:
+            base_is_listener = (self.options.direct_base_learner in listener.LISTENERS)
+        return base_is_listener
 
     @property
     def num_params(self):
         return self.base.num_params
 
     def predict_and_score(self, eval_instances, random=False, verbosity=0):
-        options = config.options()
+        from fields import build_instance
+
+        options = self.get_options()
         predictions = []
         scores = []
-        base_is_listener = (type(self.base) in listener.LISTENERS.values())
+        base_is_listener = self.override_listener()
         assert options.listener, 'Eval data should be listener data for DirectRefGameLearner'
 
         true_batch_size = options.listener_eval_batch_size / options.num_distractors
@@ -155,10 +180,12 @@ class DirectRefGameLearner(Learner):
             batch = list(batch)
             assert batch[0].alt_outputs, 'No context given for direct listener testing'
             context = len(batch[0].alt_outputs)
-            output_grid = [instance.Instance(inst.input, color)
-                           if base_is_listener else
-                           instance.Instance(color, inst.input)
-                           for inst in batch for color in inst.alt_outputs]
+            if self.options.direct_base_uses_context:
+                output_grid = [build_instance(inst.input, target, inst.alt_outputs, base_is_listener)
+                               for inst in batch for target in range(len(inst.alt_outputs))]
+            else:
+                output_grid = [build_instance(inst.input, color, None, base_is_listener)
+                               for inst in batch for color in inst.alt_outputs]
             assert len(output_grid) == context * len(batch), \
                 'Context must be the same number of colors for all examples'
             true_indices = np.array([inst.output for inst in batch])
@@ -184,7 +211,13 @@ class DirectRefGameLearner(Learner):
         return self.base.dump(outfile)
 
     def load(self, infile):
-        return self.base.load(infile)
+        options = self.get_options()
+        base_is_listener = self.override_listener(exists=False)
+        old_listener = options.listener
+        options.listener = base_is_listener
+        result = self.base.load(infile)
+        options.listener = old_listener
+        return result
 
 
 class LRContextListenerLearner(Learner):
@@ -280,6 +313,14 @@ parser.add_argument('--direct_base_learner', default='Listener',
                     choices=learners.LEARNERS.keys(),
                     help='The name of the model to use as the level-0 agent for direct score-based '
                          'listener models.')
+parser.add_argument('--direct_base_is_listener', default=0, type=int,
+                    help='If +1, override the --listener option in the base learner so it '
+                         'becomes a listener. If -1, override so it becomes a speaker. If 0, '
+                         'use the --listener option. Only useful for learners that can be '
+                         'either speakers or listeners (e.g. RSA).')
+parser.add_argument('--direct_base_uses_context', default=False, type=config.boolean,
+                    help='If True, pass context and a target index through to the base learner. '
+                         'Otherwise, extract the target color itself and discard remaining context.')
 parser.add_argument('--direct_min_score', default=None, type=float,
                     help='The log likelihood of the base model will be capped from below to this '
                          'value. This prevents extreme-confidence wrong decisions, and '
