@@ -453,14 +453,14 @@ class RSALearner(NeuralLearner):
         agents = self.listeners if self.options.listener else self.speakers
         self.eval_agent = agents[self.options.eval_agent]
 
-    def predict(self, eval_instances):
-        return self.eval_agent.predict(eval_instances)
+    def predict(self, eval_instances, verbosity=0):
+        return self.eval_agent.predict(eval_instances, verbosity=verbosity)
 
-    def score(self, eval_instances):
-        return self.eval_agent.score(eval_instances)
+    def score(self, eval_instances, verbosity=0):
+        return self.eval_agent.score(eval_instances, verbosity=verbosity)
 
-    def predict_and_score(self, eval_instances):
-        return self.eval_agent.predict_and_score(eval_instances)
+    def predict_and_score(self, eval_instances, verbosity=0):
+        return self.eval_agent.predict_and_score(eval_instances, verbosity=verbosity)
 
     def on_iter_end(self, step, writer):
         for agent in self.speakers + self.listeners:
