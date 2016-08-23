@@ -181,7 +181,8 @@ class DirectRefGameLearner(Learner):
             assert batch[0].alt_outputs, 'No context given for direct listener testing'
             context = len(batch[0].alt_outputs)
             if self.options.direct_base_uses_context:
-                output_grid = [build_instance(inst.input, target, inst.alt_outputs, base_is_listener)
+                output_grid = [build_instance(inst.input, target, inst.alt_outputs,
+                                              base_is_listener)
                                for inst in batch for target in range(len(inst.alt_outputs))]
             else:
                 output_grid = [build_instance(inst.input, color, None, base_is_listener)
@@ -320,7 +321,8 @@ parser.add_argument('--direct_base_is_listener', default=0, type=int,
                          'either speakers or listeners (e.g. RSA).')
 parser.add_argument('--direct_base_uses_context', default=False, type=config.boolean,
                     help='If True, pass context and a target index through to the base learner. '
-                         'Otherwise, extract the target color itself and discard remaining context.')
+                         'Otherwise, extract the target color itself and discard remaining '
+                         'context.')
 parser.add_argument('--direct_min_score', default=None, type=float,
                     help='The log likelihood of the base model will be capped from below to this '
                          'value. This prevents extreme-confidence wrong decisions, and '
