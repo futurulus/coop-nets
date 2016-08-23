@@ -225,7 +225,10 @@ def format_error_analysis(output, compare=None, per_token=False):
             if compare.data[i]['input'] == inst['input']:
                 example['comparison'] = format_value(compare.predictions[i])
                 cscore = compare.scores[i]
-                cprob = np.exp(cscore) if isinstance(cscore, Number) else cscore
+                if isinstance(cscore, Number):
+                    cprob = np.exp(cscore / num_tokens)
+                else:
+                    cprob = cscore
                 example['cprob'] = score_template.format(format_number(cprob))
                 example['cprob_val'] = cprob if isinstance(cprob, Number) else 0
             else:
@@ -251,14 +254,17 @@ def format_error_analysis(output, compare=None, per_token=False):
             ('Biggest improvement', reversed(diff_order[-100:])),
         ])
 
+    prob_header = 'prob (per token)' if per_token else 'prob'
+    compare_header = ('<th>comparison</th><th>{prob_header}</th>'.format(prob_header=prob_header)
+                      if compare else '')
     return '\n'.join(examples_table_template.format(
         cond=cond,
         alt_inputs_header=(('<th>alt inputs</th>' if show_alt_inputs else '') +
                            '<th></th>' * (show_alt_inputs - 1)),
         alt_outputs_header=(('<th>alt outputs</th>' if show_alt_outputs else '') +
                             '<th></th>' * (show_alt_outputs - 1)),
-        compare_header='<th>comparison</th><th>prob</th>' if compare else '',
-        prob_header='prob (per token)' if per_token else 'prob',
+        compare_header=compare_header,
+        prob_header=prob_header,
         examples='\n'.join(
             example_template.format(**inst) for inst in examples
         )
