@@ -24,6 +24,21 @@ def basic_unigram_tokenizer(s, lower=True):
     return words
 
 
+def heuristic_ending_tokenizer(s, lower=True):
+    words = basic_unigram_tokenizer(s, lower=lower)
+    return [seg for w in words for seg in heuristic_segmenter(w)]
+
+
+ENDINGS = ['er', 'est', 'ish']
+
+
+def heuristic_segmenter(word):
+    for ending in ENDINGS:
+        if word.endswith(ending):
+            return [word[:-len(ending)], '+' + ending]
+    return [word]
+
+
 def whitespace_tokenizer(s, lower=True):
     if lower:
         s = s.lower()
@@ -32,5 +47,6 @@ def whitespace_tokenizer(s, lower=True):
 
 TOKENIZERS = {
     'unigram': basic_unigram_tokenizer,
+    'ending': heuristic_ending_tokenizer,
     'whitespace': whitespace_tokenizer,
 }
