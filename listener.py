@@ -692,7 +692,7 @@ class GaussianContextListenerLearner(ContextListenerLearner):
 
         l_rec1 = cell(l_in_embed, name=id_tag + 'rec1', only_return_final=True, **cell_kwargs)
         if self.options.listener_bidi:
-            l_rec1_backwards = cell(l_in_embed, name=id_tag + 'rec1', backwards=True,
+            l_rec1_backwards = cell(l_in_embed, name=id_tag + 'rec1_back', backwards=True,
                                     only_return_final=True, **cell_kwargs)
             l_rec1 = ConcatLayer([l_rec1, l_rec1_backwards], axis=1,
                                  name=id_tag + 'rec1_bidi_concat')
