@@ -41,6 +41,9 @@ parser.add_argument('--listener_nonlinearity', choices=NONLINEARITIES.keys(), de
                          'LSTM layers in the listener model.')
 parser.add_argument('--listener_cell', choices=CELLS.keys(), default='LSTM',
                     help='The recurrent cell to use for the listener model.')
+parser.add_argument('--listener_bidi', type=config.boolean, default=False,
+                    help='If True, recurrent listener models will use bidirectional RNNs; '
+                         'otherwise, only the final output of the forward RNN is used.')
 parser.add_argument('--listener_dropout', type=float, default=0.2,
                     help='The dropout rate (probability of setting a value to zero). '
                          'Dropout will be disabled if nonpositive.')
@@ -688,6 +691,11 @@ class GaussianContextListenerLearner(ContextListenerLearner):
             cell_kwargs['nonlinearity'] = NONLINEARITIES[self.options.listener_nonlinearity]
 
         l_rec1 = cell(l_in_embed, name=id_tag + 'rec1', only_return_final=True, **cell_kwargs)
+        if self.options.listener_bidi:
+            l_rec1_backwards = cell(l_in_embed, name=id_tag + 'rec1', backwards=True,
+                                    only_return_final=True, **cell_kwargs)
+            l_rec1 = ConcatLayer([l_rec1, l_rec1_backwards], axis=1,
+                                 name=id_tag + 'rec1_bidi_concat')
         if self.options.listener_dropout > 0.0:
             l_rec1_drop = DropoutLayer(l_rec1, p=self.options.listener_dropout,
                                        name=id_tag + 'rec1_drop')
