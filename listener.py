@@ -6,7 +6,7 @@ import warnings
 from collections import Counter
 from lasagne.layers import InputLayer, DropoutLayer, DenseLayer, EmbeddingLayer, NonlinearityLayer
 from lasagne.layers import NINLayer, FeaturePoolLayer, ConcatLayer, SliceLayer, ElemwiseMergeLayer
-from lasagne.layers import BiasLayer, dimshuffle, reshape
+from lasagne.layers import dimshuffle, reshape
 from lasagne.layers.recurrent import Gate
 from lasagne.init import Constant
 from lasagne.objectives import categorical_crossentropy
@@ -285,8 +285,6 @@ class ListenerLearner(NeuralLearner):
 
         get_i, get_o = (lambda inst: inst.input), (lambda inst: inst.output)
         get_desc, get_color = (get_o, get_i) if inverted else (get_i, get_o)
-        get_alt_i, get_alt_o = (lambda inst: inst.alt_inputs), (lambda inst: inst.alt_outputs)
-        get_alt_colors = get_alt_i if inverted else get_alt_o
 
         get_i_ind, get_o_ind = ((lambda inst: inst.alt_inputs[get_multi(inst.input)]),
                                 (lambda inst: inst.alt_outputs[get_multi(inst.output)]))
