@@ -6,6 +6,7 @@ import theano
 import theano.tensor as T
 import theano.sandbox.cuda.basic_ops as G
 import time
+import warnings
 from collections import Sequence, OrderedDict
 from lasagne.layers import get_output, get_all_params
 from lasagne.updates import total_norm_constraint
@@ -153,6 +154,7 @@ class SimpleLasagneModel(object):
             scaled_grads = train_loss_grads
 
         updates = optimizer(scaled_grads, params, learning_rate=learning_rate)
+        self.optimizer_vars = [var for var in updates if var not in params]
         if not self.options.no_nan_suppression:
             # TODO: print_mode='all' somehow is always printing, even when
             # there are no NaNs. But tests are passing, even on GPU!
@@ -311,6 +313,19 @@ class SimpleLasagneModel(object):
             options = config.options()
             self.options = argparse.Namespace(**options.__dict__)
 
+    def reset_optimizer(self):
+        if not hasattr(self, 'optimizer_vars'):
+            # Probably loaded from older pickle file, in which case the optimizer
+            # will typically have been reset anyway (only real parameters are pickled)
+            return
+
+        for var in self.optimizer_vars:
+            # Lasagne optimizer variables are nameless, as of 26 Aug 2016; most
+            # real parameters have names.
+            assert var.name is None, var.name
+            val = var.get_value()
+            var.set_value(np.zeros(val.shape, dtype=val.dtype))
+
 
 def get_named_layers(layer, id_map=None):
     if id_map is None:
@@ -346,15 +361,23 @@ class NeuralLearner(Learner):
         self.id = id
         self.get_options()
 
-    def train(self, training_instances, validation_instances=None, metrics=None):
+    def train(self, training_instances, validation_instances=None, metrics=None,
+              keep_params=False):
         id_tag = (self.id + ': ') if self.id else ''
         if self.options.verbosity >= 2:
             print(id_tag + 'Training priors')
         self.train_priors(training_instances, listener_data=self.options.listener)
 
         self.dataset = training_instances
-        xs, ys = self._data_to_arrays(training_instances, init_vectorizer=True)
-        self._build_model()
+        xs, ys = self._data_to_arrays(training_instances,
+                                      init_vectorizer=not hasattr(self, 'model'))
+        if not hasattr(self, 'model') or not keep_params:
+            if keep_params:
+                warnings.warn("keep_params was passed, but the model hasn't been built; "
+                              "initializing all parameters.")
+            self._build_model()
+        else:
+            self.model.reset_optimizer()
 
         if self.options.verbosity >= 2:
             print(id_tag + 'Training conditional model')

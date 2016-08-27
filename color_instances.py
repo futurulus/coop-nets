@@ -340,17 +340,16 @@ def reference_game_test(gen_func):
 
 def reference_game(insts, gen_func, listener=False):
     options = config.options()
-    result = []
-    for inst in insts:
-        color = inst.output if listener else inst.input
+    for i in range(len(insts)):
+        color = insts[i].output if listener else insts[i].input
         distractors = [gen_func(color) for _ in range(options.num_distractors)]
         answer = rng.randint(0, len(distractors) + 1)
         context = distractors[:answer] + [color] + distractors[answer:]
-        ref_inst = (Instance(inst.input, answer, alt_outputs=context)
+        ref_inst = (Instance(insts[i].input, answer, alt_outputs=context)
                     if listener else
-                    Instance(answer, inst.output, alt_inputs=context))
-        result.append(ref_inst)
-    return result
+                    Instance(answer, insts[i].output, alt_inputs=context))
+        insts[i] = ref_inst
+    return insts
 
 
 def hawkins_context(listener=False):

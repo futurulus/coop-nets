@@ -28,18 +28,19 @@ parser.add_argument('--load', metavar='MODEL_FILE', default=None,
                     help='If provided, skip training and instead load a pretrained model '
                          'from the specified path. If None or an empty string, train a '
                          'new model.')
-parser.add_argument('--train_size', type=int, default=None,
+parser.add_argument('--train_size', type=int, default=[None], nargs='+',
                     help='The number of examples to use in training. This number should '
                          '*include* examples held out for validation. If None, use the '
                          'whole training set.')
-parser.add_argument('--validation_size', type=int, default=0,
+parser.add_argument('--validation_size', type=int, default=[0], nargs='+',
                     help='The number of examples to hold out from the training set for '
                          'monitoring generalization error.')
-parser.add_argument('--test_size', type=int, default=None,
+parser.add_argument('--test_size', type=int, default=[None], nargs='+',
                     help='The number of examples to use in testing. '
                          'If None, use the whole dev/test set.')
-parser.add_argument('--data_source', default='dev', choices=color_instances.SOURCES.keys(),
-                    help='The type of data to use.')
+parser.add_argument('--data_source', default=['dev'], nargs='+',
+                    choices=color_instances.SOURCES.keys(),
+                    help='The type of data to use. Can supply several for sequential training.')
 parser.add_argument('--output_train_data', type=config.boolean, default=False,
                     help='If True, write out the training dataset (after cutting down to '
                          '`train_size`) as a JSON-lines file in the output directory.')
@@ -58,20 +59,43 @@ def main():
 
     progress.set_resolution(datetime.timedelta(seconds=options.progress_tick))
 
-    train_data = color_instances.SOURCES[options.data_source].train_data(
-        listener=options.listener
-    )[:options.train_size]
-    if options.validation_size:
-        assert options.validation_size < len(train_data), \
-            ('No training data after validation split! (%d <= %d)' %
-             (len(train_data), options.validation_size))
-        validation_data = train_data[-options.validation_size:]
-        train_data = train_data[:-options.validation_size]
+    train_datasets = []
+    validation_datasets = []
+    test_datasets = []
+
+    if len(options.train_size) == 1:
+        options.train_size = options.train_size * len(options.data_source)
     else:
-        validation_data = None
-    test_data = color_instances.SOURCES[options.data_source].test_data(
-        options.listener
-    )[:options.test_size]
+        assert len(options.train_size) == len(options.data_source)
+    if len(options.validation_size) == 1:
+        options.validation_size = options.validation_size * len(options.data_source)
+    else:
+        assert len(options.validation_size) == len(options.data_source)
+    if len(options.test_size) == 1:
+        options.test_size = options.test_size * len(options.data_source)
+    else:
+        assert len(options.test_size) == len(options.data_source)
+
+    for source, train_size, validation_size, test_size in zip(options.data_source,
+                                                              options.train_size,
+                                                              options.validation_size,
+                                                              options.test_size):
+        train_insts = color_instances.SOURCES[source].train_data(
+            listener=options.listener
+        )[:train_size]
+        if validation_size:
+            assert validation_size < len(train_insts), \
+                ('No training data after validation split! (%d <= %d)' %
+                 (len(train_insts), validation_size))
+            validation_insts = train_insts[-validation_size:]
+            train_insts = train_insts[:-validation_size]
+        else:
+            validation_datasets.append(None)
+        train_datasets.append(train_insts)
+        test_insts = color_instances.SOURCES[source].test_data(
+            options.listener
+        )[:test_size]
+        test_datasets.append(test_insts)
 
     learner = learners.new(options.learner)
 
@@ -79,32 +103,72 @@ def main():
          metrics.log_likelihood_bits,
          metrics.perplexity,
          metrics.aic]
-    if options.listener and not isinstance(test_data[0].output, numbers.Integral):
+    example_inst = get_example_inst(test_datasets, train_datasets)
+    if options.listener and not isinstance(example_inst.output, numbers.Integral):
         m.append(metrics.squared_error)
-    elif isinstance(test_data[0].output, (tuple, list)):
+    elif isinstance(example_inst.output, (tuple, list)):
         m.append(metrics.prec1)
-        if test_data[0].output and isinstance(test_data[0].output, basestring):
+        if example_inst.output and isinstance(example_inst.output, basestring):
             m.extend([metrics.bleu, metrics.token_perplexity_macro, metrics.token_perplexity_micro])
     else:
         m.append(metrics.accuracy)
-        if test_data[0].output and isinstance(test_data[0].output, basestring):
+        if example_inst.output and isinstance(example_inst.output, basestring):
             m.extend([metrics.bleu, metrics.token_perplexity_macro, metrics.token_perplexity_micro])
 
+    multi_train = (len(options.data_source) > 1)
     if options.load:
         with open(options.load, 'rb') as infile:
             learner.load(infile)
     else:
-        learner.train(train_data, validation_data, metrics=m)
-        with open(config.get_file_path('model.p'), 'wb') as outfile:
-            learner.dump(outfile)
+        if hasattr(learner, '_data_to_arrays'):
+            # XXX: is there a better way to ensure that the vocabulary is defined
+            # before training starts?
+            for train_insts in train_datasets[1:]:
+                learner._data_to_arrays(train_insts, init_vectorizer=True)
 
-        train_results = evaluate.evaluate(learner, train_data, metrics=m, split_id='train',
-                                          write_data=options.output_train_data)
-        output.output_results(train_results, 'train')
+        for i, (source, train_insts, validation_insts) in enumerate(zip(options.data_source,
+                                                                        train_datasets,
+                                                                        validation_datasets)):
+            if not train_insts:
+                continue
 
-    test_results = evaluate.evaluate(learner, test_data, metrics=m, split_id='dev',
-                                     write_data=options.output_test_data)
-    output.output_results(test_results, 'dev')
+            if i > 0:
+                learner.train(train_insts, validation_insts, metrics=m, keep_params=True)
+            else:
+                learner.train(train_insts, validation_insts, metrics=m)
+            with open(config.get_file_path('model.p'), 'wb') as outfile:
+                learner.dump(outfile)
+
+            if multi_train:
+                split_id = 'train_' + source
+            else:
+                split_id = 'train'
+            train_results = evaluate.evaluate(learner, train_insts, metrics=m, split_id=split_id,
+                                              write_data=options.output_train_data)
+            output.output_results(train_results, split_id)
+
+    for i, (source, test_insts) in enumerate(zip(options.data_source,
+                                                 test_datasets)):
+        if not test_insts:
+            continue
+        if multi_train:
+            split_id = 'eval_' + source
+        else:
+            split_id = 'eval'
+        test_results = evaluate.evaluate(learner, test_insts, metrics=m, split_id=split_id,
+                                         write_data=options.output_test_data)
+        output.output_results(test_results, split_id)
+
+
+def get_example_inst(test_datasets, train_datasets):
+    # Use test if any are nonempty, if not, back off to train
+    for dataset in test_datasets:
+        if dataset:
+            return dataset[0]
+    for dataset in train_datasets:
+        if dataset:
+            return dataset[0]
+    assert False, "No data, can't determine correct evaluation metrics"
 
 
 if __name__ == '__main__':
