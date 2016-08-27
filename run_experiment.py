@@ -88,6 +88,7 @@ def main():
                 ('No training data after validation split! (%d <= %d)' %
                  (len(train_insts), validation_size))
             validation_insts = train_insts[-validation_size:]
+            validation_datasets.append(validation_insts)
             train_insts = train_insts[:-validation_size]
         else:
             validation_datasets.append(None)
