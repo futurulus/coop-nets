@@ -58,6 +58,10 @@ parser.add_argument('--speaker_hsv', type=config.boolean, default=False,
                          'color buckets will be in RGB. Input instances should be in HSV '
                          'regardless; this sets the internal representation for training '
                          'and prediction.')
+parser.add_argument('--speaker_repeat_color', type=config.boolean, default=True,
+                    help='If `True`, color will be concatenated with output tokens at '
+                         'every time step. Otherwise, color will only be fed in as the '
+                         'initial state of the RNN. (Only for SpeakerLearner.)')
 parser.add_argument('--speaker_eval_batch_size', type=int, default=16384,
                     help='The number of examples per batch for evaluating the speaker '
                          'model. Higher means faster but more memory usage. This should '
@@ -339,7 +343,12 @@ class SpeakerLearner(NeuralLearner):
             N[i, :len(next)] = self.seq_vec.vectorize(next)
             for t, token in enumerate(next):
                 mask[i, t] = (token != '<MASK>')
-        c = np.tile(c[:, np.newaxis, ...], [1, self.seq_vec.max_len - 1] + [1] * (c.ndim - 1))
+
+        repeat_color = (not hasattr(self.options, 'speaker_repeat_color') or
+                        self.options.speaker_repeat_color)
+        if repeat_color:
+            c = np.tile(c[:, np.newaxis, ...],
+                        [1, self.seq_vec.max_len - 1] + [1] * (c.ndim - 1))
 
         if self.options.verbosity >= 9:
             print('c: %s' % (repr(c),))
@@ -351,7 +360,11 @@ class SpeakerLearner(NeuralLearner):
     def _build_model(self, model_class=SimpleLasagneModel):
         id_tag = (self.id + '/') if self.id else ''
 
-        input_vars = self.color_vec.get_input_vars(self.id, recurrent=not self.use_color_mask)
+        repeat_color = (not hasattr(self.options, 'speaker_repeat_color') or
+                        self.options.speaker_repeat_color)
+
+        input_vars = self.color_vec.get_input_vars(self.id, recurrent=(repeat_color and
+                                                                       not self.use_color_mask))
         if self.use_color_mask:
             input_vars.append(T.imatrix(id_tag + 'color_mask'))
         input_vars.extend([
@@ -382,20 +395,34 @@ class SpeakerLearner(NeuralLearner):
         color_input_vars = input_vars[:-2]
 
         context_len = self.context_len if hasattr(self, 'context_len') else 1
+        repeat_color = (not hasattr(self.options, 'speaker_repeat_color') or
+                        self.options.speaker_repeat_color)
+        recurrent_len = self.seq_vec.max_len - 1 if repeat_color else 0
         l_color_repr, color_inputs = self.color_vec.get_input_layer(
             color_input_vars,
-            recurrent_length=self.seq_vec.max_len - 1,
+            recurrent_length=recurrent_len,
             cell_size=self.options.speaker_cell_size,
             context_len=context_len,
             id=self.id
         )
-        l_hidden_color = dimshuffle(l_color_repr, (0, 2, 1))
+        if repeat_color:
+            l_hidden_color = dimshuffle(l_color_repr, (0, 2, 1))
+        else:
+            assert (self.options.speaker_hidden_color_layers or
+                    self.color_vec.output_size == self.options.speaker_cell_size), \
+                'If color is not repeated, at least one hidden color layer ' \
+                '[--speaker_hidden_color_layers] should be used to ensure that the initial state ' \
+                'is the cell size. (color representation ' \
+                'size: %s, cell size: %s)' % (self.color_vec.output_size,
+                                              self.options.speaker_cell_size)
+            l_hidden_color = l_color_repr
         for i in range(1, self.options.speaker_hidden_color_layers + 1):
             l_hidden_color = NINLayer(
                 l_hidden_color, num_units=self.options.speaker_cell_size,
                 nonlinearity=NONLINEARITIES[self.options.speaker_nonlinearity],
                 name=id_tag + 'hidden_color%d' % i)
-        l_hidden_color = dimshuffle(l_hidden_color, (0, 2, 1))
+        if repeat_color:
+            l_hidden_color = dimshuffle(l_hidden_color, (0, 2, 1))
 
         l_prev_out = InputLayer(shape=(None, self.seq_vec.max_len - 1),
                                 input_var=prev_output_var,
@@ -403,7 +430,10 @@ class SpeakerLearner(NeuralLearner):
         l_prev_embed = EmbeddingLayer(l_prev_out, input_size=len(self.seq_vec.tokens),
                                       output_size=self.options.speaker_cell_size,
                                       name=id_tag + 'prev_embed')
-        l_in = ConcatLayer([l_hidden_color, l_prev_embed], axis=2, name=id_tag + 'color_prev')
+        if repeat_color:
+            l_in = ConcatLayer([l_hidden_color, l_prev_embed], axis=2, name=id_tag + 'color_prev')
+        else:
+            l_in = l_prev_embed
         l_mask_in = InputLayer(shape=(None, self.seq_vec.max_len - 1),
                                input_var=mask_var, name=id_tag + 'mask_input')
         l_rec_drop = l_in
@@ -418,6 +448,8 @@ class SpeakerLearner(NeuralLearner):
             cell_kwargs['forgetgate'] = Gate(b=Constant(self.options.speaker_forget_bias))
         if self.options.speaker_cell != 'GRU':
             cell_kwargs['nonlinearity'] = NONLINEARITIES[self.options.speaker_nonlinearity]
+        if not repeat_color:
+            cell_kwargs['hid_init'] = l_hidden_color
 
         for i in range(1, self.options.speaker_recurrent_layers):
             l_rec = cell(l_rec_drop, name=id_tag + 'rec%d' % i, **cell_kwargs)
