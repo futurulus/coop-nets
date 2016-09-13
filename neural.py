@@ -59,6 +59,10 @@ parser.add_argument('--true_grad_clipping', type=float, default=5.0,
                     help='The maximum absolute value of all gradients. This gradient '
                          'clipping is performed on the full gradient calculation, not '
                          'just the messages passing through the LSTM.')
+parser.add_argument('--reset_optimizer_vars', type=config.boolean, default=True,
+                    help='If True, reset variables that are not parameters (i.e. variables '
+                         'used for the optimizer like Adagrad weights) between training on '
+                         'different datasets. Only used if data_source has more than one value.')
 
 
 NONLINEARITIES = {
@@ -372,12 +376,18 @@ class NeuralLearner(Learner):
         xs, ys = self._data_to_arrays(training_instances,
                                       init_vectorizer=not hasattr(self, 'model'))
         if not hasattr(self, 'model') or not keep_params:
+            if self.options.verbosity >= 2:
+                print(id_tag + 'Building model')
             if keep_params:
                 warnings.warn("keep_params was passed, but the model hasn't been built; "
                               "initializing all parameters.")
             self._build_model()
         else:
-            self.model.reset_optimizer()
+            if not hasattr(self.options, 'reset_optimizer_vars') or \
+                    self.options.reset_optimizer_vars:
+                if self.options.verbosity >= 2:
+                    print(id_tag + 'Resetting optimizer')
+                self.model.reset_optimizer()
 
         if self.options.verbosity >= 2:
             print(id_tag + 'Training conditional model')
