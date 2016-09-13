@@ -391,24 +391,35 @@ class NeuralLearner(Learner):
 
         if self.options.verbosity >= 2:
             print(id_tag + 'Training conditional model')
-        summary_path = config.get_file_path('losses.tfevents')
-        if summary_path:
-            writer = summary.SummaryWriter(summary_path)
+        if hasattr(self, 'writer'):
+            writer = self.writer
         else:
-            writer = None
+            summary_path = config.get_file_path('losses.tfevents')
+            if summary_path:
+                writer = summary.SummaryWriter(summary_path)
+            else:
+                writer = None
+            self.writer = writer
+
+        if not hasattr(self, 'step_base'):
+            self.step_base = 0
+
         progress.start_task('Iteration', self.options.train_iters)
         for iteration in range(self.options.train_iters):
             progress.progress(iteration)
             self.model.fit(xs, ys, batch_size=self.options.batch_size,
                            num_epochs=self.options.train_epochs,
-                           summary_writer=writer, step=iteration * self.options.train_epochs)
+                           summary_writer=writer,
+                           step=self.step_base + iteration * self.options.train_epochs)
             validation_results = self.validate(validation_instances, metrics, iteration=iteration)
             if writer is not None:
-                step = (iteration + 1) * self.options.train_epochs
+                step = self.step_base + (iteration + 1) * self.options.train_epochs
                 self.on_iter_end(step, writer)
                 for key, value in validation_results.iteritems():
                     tag = 'val/' + key.split('.', 1)[1].replace('.', '/')
                     writer.log_scalar(step, tag, value)
+
+        self.step_base += self.options.train_iters * self.options.train_epochs
         writer.flush()
         progress.end_task()
 
