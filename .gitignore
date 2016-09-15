@@ -15,6 +15,9 @@
 
 *.swp
 
+tacl_colors.out
+tacl_colors.pdf
+
 .DS_Store
 
 coverage_report/
