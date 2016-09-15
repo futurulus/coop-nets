@@ -22,6 +22,7 @@
 \makeatother
 \usepackage[hidelinks]{hyperref}
 \DeclareMathOperator*{\argmax}{arg\,max}
+
 \setlength\titlebox{6.5cm}    % Expanding the titlebox
 
 \title{Instructions for TACL Submissions}
@@ -55,10 +56,15 @@ asdf asdf asdf
 \label{taskScreenshot}
 \end{figure}
 
-To collect a corpus of natural color reference data across varying contexts, we recruited 210 participants from Amazon Mechanical Turk to play an interactive communication game. Participants were sorted into dyads, assigned the role of speaker or listener, and placed in a game environment containing a chat box and an array of three color patches (see Fig. \ref{taskScreenshot}). 
+To collect a corpus of natural color reference data across varying contexts, we recruited 210 participants from Amazon Mechanical Turk to play a real-time, multi-player communication game \cite{Hawkins15_RealTimeWebExperiments}. Participants were sorted into dyads, assigned the role of speaker or listener, and placed in a game environment containing a chat box and an array of three color patches (Fig. \ref{taskScreenshot}). 
 
-On each round, one of the three colors was highlighted for the speaker as the ``target'' and they were instructed to communicate this information to the listener, who could then click on one of the colors to advance to the next trial. Both participants were free to use the chat box at any point.
+On each round, one of the three colors was chosen to be the ``target'' and highlighted for the speaker. They were instructed to communicate this information to the listener, who could then click on one of the colors to advance to the next trial. Both participants were free to use the chat box at any point during the trial. 
 
+To ensure a range of difficulty, we randomly interspersed an equal number of trials from three different conditions: (1) \emph{close}, where colors were all within a distance of $\theta$ from one another but still perceptible\footnote{We used the most recent CIEDE standard to measure color differences, which is calibrated to human vision \cite{SharmaWuDalal05_DeltaE}. All distances were constrained to be larger than a lower bound of $\epsilon = 5$ to ensure perceptible differences, and we used a threshold value of $\theta = 20$ to create conditions}, (2) \emph{split}, where one distractor was within a distance of $\theta$ of the target, but the other distractor was further than $\theta$, and (3) \emph{far}, where all colors were farther than $\theta$ from one another. Colors were rejection sampled uniformly from RGB space to meet these constraints. 
+
+\section{Behavioral results}
+
+For ease of comparison to computational results, we focus on five metrics capturing different aspects of the rich pragmatic behavior displayed by human participants in our task. 
 
 %\section{Credits}
 %
@@ -316,8 +322,9 @@ On each round, one of the three colors was highlighted for the speaker as the ``
 \section*{Acknowledgments}
 
 Do not number the acknowledgment section. Do not include this section when submitting your paper for review.
-\bibliography{tacl}
-\bibliographystyle{acl2012}
+
+\bibliography{colors}
+\bibliographystyle{acl2012.bst}
 
 \end{document}
 
