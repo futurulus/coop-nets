@@ -421,6 +421,21 @@ def hawkins_test(listener=False):
     return train_insts
 
 
+def hawkins_tune_train(listener=False):
+    insts = hawkins_context(listener=listener)
+    num_insts = len(insts) / 3
+    train_insts = insts[:num_insts - 350]
+    rng.shuffle(train_insts)
+    return train_insts
+
+
+def hawkins_tune_test(listener=False):
+    insts = hawkins_context(listener=listener)
+    num_insts = len(insts) / 3
+    tune_insts = insts[num_insts - 350:num_insts]
+    return tune_insts
+
+
 def uniform(color):
     r, g, b = rng.uniform(size=(3,))
     h, s, v = colorsys.rgb_to_hsv(r, g, b)
@@ -472,6 +487,7 @@ SOURCES = {
     'hawkins_target': DataSource(lambda listener: [], hawkins_target),
     'hawkins_dev': DataSource(hawkins_train, hawkins_dev),
     'hawkins_test': DataSource(hawkins_train, hawkins_test),
+    'hawkins_tune': DataSource(hawkins_tune_train, hawkins_tune_test),
     'ams_literal': DataSource(amsterdam_literal_train, amsterdam_test),
     'ams_unambig': DataSource(amsterdam_unambiguous_train, amsterdam_test),
     'ams_1word': DataSource(amsterdam_1word_train, amsterdam_test),
