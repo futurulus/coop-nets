@@ -15,6 +15,7 @@
 \usepackage{amsmath}
 \usepackage{multirow}
 \usepackage{graphicx}
+\usepackage{todonotes}
 \usepackage{url}
 \makeatletter
 \newcommand{\@BIBLABEL}{\@emptybiblabel}
@@ -62,9 +63,34 @@ On each round, one of the three colors was chosen to be the ``target'' and highl
 
 To ensure a range of difficulty, we randomly interspersed an equal number of trials from three different conditions: (1) \emph{close}, where colors were all within a distance of $\theta$ from one another but still perceptible\footnote{We used the most recent CIEDE standard to measure color differences, which is calibrated to human vision \cite{SharmaWuDalal05_DeltaE}. All distances were constrained to be larger than a lower bound of $\epsilon = 5$ to ensure perceptible differences, and we used a threshold value of $\theta = 20$ to create conditions}, (2) \emph{split}, where one distractor was within a distance of $\theta$ of the target, but the other distractor was further than $\theta$, and (3) \emph{far}, where all colors were farther than $\theta$ from one another. Colors were rejection sampled uniformly from RGB space to meet these constraints. 
 
+% latex table generated in R 3.3.0 by xtable 1.8-2 package
+% Fri Sep 16 19:22:21 2016
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrrr}
+  \hline
+metric (per message) & far & split & close \\ 
+  \hline
+\# Chars & 8.17 & 11.87 & 13.12 \\ 
+  \# Comparatives & 0.01 & 0.06 & 0.06 \\ 
+  \# Negatives & 0.05 & 0.09 & 0.11 \\ 
+  \# Superlatives & 0.03 & 0.07 & 0.16 \\ 
+  \# Words & 1.54 & 2.11 & 2.27 \\ 
+   \hline
+\end{tabular}
+\label{table:metrics}
+\todo[inline]{rh: could also make plots, but a table seemed more economical. a couple notes: (1) need to put errors in, (2) percentages might be a more natural measure for negatives/superlatives/comparatives, (3) not sure we need both chars \& words, and (4) need to add another measure about level of specificity}
+\end{table}
+
 \section{Behavioral results}
 
-For ease of comparison to computational results, we focus on five metrics capturing different aspects of the rich pragmatic behavior displayed by human participants in our task. 
+For ease of comparison to computational results, we focus on five metrics capturing different aspects of the rich pragmatic behavior displayed by speakers in our task (see Table \ref{table:metrics}. 
+
+\noindent{\bf Words and characters:} We counted the average number of words and characters per message, after removing stop words and punctuation. We found that participants used longer messages when distractors were closer to the target in color space.
+
+\noindent{\bf Comparatives and superlatives:} We used the StanfordNLP POS tagger to count the number of comparatives (JJR or RBR) and superlatives (JJS or RBS) per message. We found that participants were more likely to use these constructions when one or more distractors were close to the target. Additionally, we found evidence of an asymmetry in the use of these constructions across the \emph{split} and \emph{close} conditions. Comparatives were used equally often in both conditions, while superlatives were twice as likely to be used when all colors were equally close. \todo[inline]{Note that these results were actually computed using the terrible built-in nltk tagger because the stanford nlp server is down; it counts ``forest green'' as a superlative and thinks that ``brightest'' is a noun, so take it with a grain of salt.}
+
+\noindent{\bf Negatives:} We counted occurrences of the string `not.' Participants were more likely to use negative constructions when one or more distractors were close to the target.
 
 %\section{Credits}
 %
