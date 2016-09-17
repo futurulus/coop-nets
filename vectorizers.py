@@ -397,9 +397,10 @@ class BucketsVectorizer(ColorVectorizer):
         l_color_embed = EmbeddingLayer(l_color, input_size=self.num_types,
                                        output_size=cell_size,
                                        name=id_tag + 'color_embed')
-        output_shape = (([0], context_len * cell_size)
+        context_repr_size = None if context_len is None else context_len * cell_size
+        output_shape = (([0], context_repr_size)
                         if recurrent_length == 0 else
-                        ([0], recurrent_length, context_len * cell_size))
+                        ([0], recurrent_length, context_repr_size))
         l_color_shape = reshape(l_color_embed, output_shape, name=id_tag + 'color_embed_flattened')
         return l_color_shape, [l_color]
 
@@ -468,9 +469,10 @@ class MSVectorizer(ColorVectorizer):
     def get_input_layer(self, input_vars, recurrent_length=0, cell_size=20, context_len=1, id=None):
         id_tag = (id + '/') if id else ''
         (input_var,) = input_vars
-        shape = ((None, context_len * len(self.buckets))
+        context_repr_size = None if context_len is None else len(self.buckets) * context_len
+        shape = ((None, context_repr_size)
                  if recurrent_length == 0 else
-                 (None, recurrent_length, context_len * len(self.buckets)))
+                 (None, recurrent_length, context_repr_size))
         l_color = InputLayer(shape=shape, input_var=input_var,
                              name=id_tag + 'color_input')
         l_color_embed = EmbeddingLayer(l_color, input_size=sum(b.num_types for b in self.buckets),
@@ -584,9 +586,10 @@ class RawVectorizer(ColorVectorizer):
     def get_input_layer(self, input_vars, recurrent_length=0, cell_size=20, context_len=1, id=None):
         id_tag = (id + '/') if id else ''
         (input_var,) = input_vars
-        shape = ((None, context_len * 3)
+        context_repr_size = None if context_len is None else context_len * 3
+        shape = ((None, context_repr_size)
                  if recurrent_length == 0 else
-                 (None, recurrent_length, context_len * 3))
+                 (None, recurrent_length, context_repr_size))
         l_color = InputLayer(shape=shape, input_var=input_var,
                              name=id_tag + 'color_input')
         return l_color, [l_color]
@@ -786,9 +789,10 @@ class TunaBinaryVectorizer(ColorVectorizer):
                         context_len=1, id=None):
         id_tag = (id + '/') if id else ''
         (input_var,) = input_vars
-        shape = ((None, self.output_size * context_len)
+        context_repr_size = None if context_len is None else self.output_size * context_len
+        shape = ((None, context_repr_size)
                  if recurrent_length == 0 else
-                 (None, recurrent_length, self.output_size * context_len))
+                 (None, recurrent_length, context_repr_size))
         l_color = InputLayer(shape=shape, input_var=input_var,
                              name=id_tag + 'ref_input')
         return l_color, [l_color]

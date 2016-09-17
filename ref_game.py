@@ -151,7 +151,7 @@ class DirectRefGameLearner(Learner):
             base_is_listener = False
             if exists:
                 self.base.options.listener = False
-        elif base_is_listener is None:
+        else:
             base_is_listener = (self.options.direct_base_learner in listener.LISTENERS)
         return base_is_listener
 
