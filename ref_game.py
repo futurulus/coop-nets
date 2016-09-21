@@ -181,8 +181,8 @@ class ExhaustiveL2Learner(Learner):
                 'Context must be the same number of colors for all examples %s' % \
                 ((len(output_grid), len(batch), num_alt_utts, context_len),)
             true_indices = np.array([inst.output for inst in batch])
-            scores = self.base.score(output_grid, verbosity=verbosity)
-            l0_log_probs = np.array(scores).reshape((len(batch), context_len, num_alt_utts))
+            grid_scores = self.base.score(output_grid, verbosity=verbosity)
+            l0_log_probs = np.array(grid_scores).reshape((len(batch), context_len, num_alt_utts))
             # Renormalize over only the context colors, and extract the score of
             # the true color according to the base model.
             l0_log_probs -= logsumexp(l0_log_probs, axis=1)[:, np.newaxis, :]
@@ -198,7 +198,7 @@ class ExhaustiveL2Learner(Learner):
             assert l2_log_probs.shape == (len(batch), context_len, num_alt_utts), l2_log_probs.shape
             # Extract the score of the true color according to the L2 model.
             log_probs = l2_log_probs[np.arange(len(batch)), :, 0]
-            assert log_probs.shape == (len(batch), context_len), orig_log_probs.shape
+            assert log_probs.shape == (len(batch), context_len), log_probs.shape
             # Blend L0 and L2 (if enabled) to produce final score.
             if options.exhaustive_base_weight:
                 w = options.exhaustive_base_weight
