@@ -397,7 +397,7 @@ class BucketsVectorizer(ColorVectorizer):
         l_color_embed = EmbeddingLayer(l_color, input_size=self.num_types,
                                        output_size=cell_size,
                                        name=id_tag + 'color_embed')
-        context_repr_size = None if context_len is None else context_len * cell_size
+        context_repr_size = -1 if context_len is None else context_len * cell_size
         output_shape = (([0], context_repr_size)
                         if recurrent_length == 0 else
                         ([0], recurrent_length, context_repr_size))
