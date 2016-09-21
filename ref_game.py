@@ -9,6 +9,7 @@ from stanza.research.learner import Learner
 from neural import sample
 from tokenizers import TOKENIZERS
 from vectorizers import SequenceVectorizer, COLOR_REPRS
+import color_instances
 
 
 class ExhaustiveS1Learner(Learner):
@@ -118,6 +119,159 @@ class ExhaustiveS1PriorLearner(ExhaustiveS1Learner):
 
     def prior_scores(self, utts):
         return np.log(np.array([self.prior_counter[u] for u in utts])) - np.log(self.denominator)
+
+
+class ExhaustiveL2Learner(Learner):
+    def __init__(self, base=None, sampler=None):
+        options = self.get_options()
+        if base is None:
+            self.base = learners.new(options.exhaustive_base_learner)
+        else:
+            self.base = base
+        if sampler is None and options.exhaustive_num_samples > 0:
+            if options.verbosity >= 2:
+                print('Loading sampler')
+            self.sampler = learners.new(options.exhaustive_sampler_learner)
+            with open(options.exhaustive_sampler_model, 'rb') as infile:
+                self.sampler.load(infile)
+        else:
+            self.sampler = sampler
+
+    def train(self, training_instances, validation_instances=None, metrics=None):
+        raise NotImplementedError
+
+    @property
+    def num_params(self):
+        options = self.get_options()
+        total = self.base.num_params
+        if options.exhaustive_num_samples > 0:
+            total += self.sampler.num_params
+        return total
+
+    def predict_and_score(self, eval_instances, random=False, verbosity=0):
+        options = self.get_options()
+        predictions = []
+        scores = []
+
+        if options.verbosity + verbosity >= 2:
+            print('Building alternative utterance list')
+        sym_vec = vectorizers.SymbolVectorizer()
+        sym_vec.add_all([inst.input for inst in self.get_dataset(self.base)])
+
+        assert eval_instances[0].alt_outputs, \
+            'Context required for L(S(L)): %s' % eval_instances[0].__dict__
+        context_len = len(eval_instances[0].alt_outputs)
+        if options.exhaustive_num_samples > 0:
+            num_alt_utts = options.exhaustive_num_samples * context_len + 1
+        else:
+            num_alt_utts = len(sym_vec.tokens) + 1
+        true_batch_size = max(1, options.listener_eval_batch_size / (num_alt_utts * context_len))
+        batches = iterators.iter_batches(eval_instances, true_batch_size)
+        num_batches = (len(eval_instances) - 1) // true_batch_size + 1
+
+        if options.verbosity + verbosity >= 2:
+            print('Testing')
+        progress.start_task('Eval batch', num_batches)
+        for batch_num, batch in enumerate(batches):
+            progress.progress(batch_num)
+            batch = list(batch)
+            output_grid = self.build_grid(batch, sym_vec.tokens)
+            assert len(output_grid) == len(batch) * context_len * num_alt_utts, \
+                'Context must be the same number of colors for all examples %s' % \
+                ((len(output_grid), len(batch), num_alt_utts, context_len),)
+            true_indices = np.array([inst.output for inst in batch])
+            scores = self.base.score(output_grid, verbosity=verbosity)
+            l0_log_probs = np.array(scores).reshape((len(batch), context_len, num_alt_utts))
+            # Renormalize over only the context colors, and extract the score of
+            # the true color according to the base model.
+            l0_log_probs -= logsumexp(l0_log_probs, axis=1)[:, np.newaxis, :]
+            assert l0_log_probs.shape == (len(batch), context_len, num_alt_utts), l0_log_probs.shape
+            orig_log_probs = l0_log_probs[np.arange(len(batch)), :, 0]
+            assert orig_log_probs.shape == (len(batch), context_len), orig_log_probs.shape
+            # Normalize across utterances. Note that the listener returns probability
+            # densities over colors.
+            s1_log_probs = l0_log_probs - logsumexp(l0_log_probs, axis=2)[:, :, np.newaxis]
+            assert s1_log_probs.shape == (len(batch), context_len, num_alt_utts), s1_log_probs.shape
+            # Normalize again across context colors.
+            l2_log_probs = s1_log_probs - logsumexp(s1_log_probs, axis=1)[:, np.newaxis, :]
+            assert l2_log_probs.shape == (len(batch), context_len, num_alt_utts), l2_log_probs.shape
+            # Extract the score of the true color according to the L2 model.
+            log_probs = l2_log_probs[np.arange(len(batch)), :, 0]
+            assert log_probs.shape == (len(batch), context_len), orig_log_probs.shape
+            # Blend L0 and L2 (if enabled) to produce final score.
+            if options.exhaustive_base_weight:
+                w = options.exhaustive_base_weight
+                log_probs = w * orig_log_probs + (1.0 - w) * log_probs
+            if random:
+                pred_indices = sample(np.exp(log_probs))
+            else:
+                pred_indices = np.argmax(log_probs, axis=1)
+            predictions.extend(pred_indices)
+            scores.extend(log_probs[np.arange(len(batch)), true_indices].tolist())
+        progress.end_task()
+
+        return predictions, scores
+
+    def build_grid(self, batch, all_utts):
+        # for inst in batch:
+        #     for i in range(len(inst.context)):
+        #         for utt in sample_utts(inst.context, i):
+        #             (utt -> inst.context, i)
+        options = self.get_options()
+        if options.exhaustive_num_samples > 0:
+            sampler_inputs = [instance.Instance(i, None, alt_inputs=inst.alt_outputs)
+                              for inst in batch
+                              for i in range(len(inst.alt_outputs))]
+            outputs = [[] for _ in range(len(sampler_inputs))]
+            for _ in range(options.exhaustive_num_samples):
+                for sublist, utt in zip(outputs, self.sampler.sample(sampler_inputs)):
+                    sublist.append(utt)
+
+            samples_inst = []
+            sublist_iter = iter(outputs)
+            for inst in batch:
+                inst_sublist = []
+                for i in range(len(inst.alt_outputs)):
+                    inst_sublist.extend(next(sublist_iter))
+                samples_inst.append(inst_sublist)
+
+            return [instance.Instance(utt, j, alt_outputs=inst.alt_outputs)
+                    for inst, samples in zip(batch, samples_inst)
+                    for j in range(len(inst.alt_outputs))
+                    for utt in [inst.input] + samples]
+        else:
+            return [instance.Instance(utt, j, alt_outputs=inst.alt_outputs)
+                    for inst in batch
+                    for j in range(len(inst.alt_outputs))
+                    for utt in [inst.input] + all_utts]
+
+    def get_dataset(self, model):
+        if hasattr(model, 'options'):
+            options = model.options
+        else:
+            options = config.options()
+        data_sources = options.data_source
+        if not isinstance(data_sources, list):
+            data_sources = [data_sources]
+        train_sizes = options.train_size
+        if not isinstance(train_sizes, list):
+            train_sizes = [train_sizes]
+        return [
+            inst
+            for data_source, train_size in zip(data_sources, train_sizes)
+            for inst in color_instances.SOURCES[data_source].train_data(listener=True)[:train_size]
+        ]
+
+    def dump(self, outfile):
+        return self.base.dump(outfile)
+
+    def load(self, infile):
+        return self.base.load(infile)
+
+    def get_options(self):
+        if not hasattr(self, 'options'):
+            self.options = config.options()
+        return self.options
 
 
 class DirectRefGameLearner(Learner):
@@ -306,10 +460,20 @@ parser = config.get_options_parser()
 parser.add_argument('--exhaustive_base_learner', default='Listener',
                     choices=learners.LEARNERS.keys(),
                     help='The name of the model to use as the L0 for exhaustive enumeration-based '
-                         'speaker models.')
+                         'models.')
 parser.add_argument('--exhaustive_base_weight', default=0.0, type=float,
                     help='Weight given to the base agent for the exhaustive RSA model. The RSA '
                          "agent's weight will be 1 - exhaustive_base_weight.")
+parser.add_argument('--exhaustive_sampler_learner', default='Speaker',
+                    choices=learners.LEARNERS.keys(),
+                    help='The name of the model to use as the speaker for sampling utterances in '
+                         'exhaustive enumeration-based models.')
+parser.add_argument('--exhaustive_sampler_model', default=None,
+                    help='The path to the model to use as the speaker for sampling utterances in '
+                         'exhaustive enumeration-based models.')
+parser.add_argument('--exhaustive_num_samples', default=0, type=int,
+                    help='The number of samples to take per context color for use as alternative '
+                         'utterances. If 0 or negative, use the entire training corpus.')
 parser.add_argument('--direct_base_learner', default='Listener',
                     choices=learners.LEARNERS.keys(),
                     help='The name of the model to use as the level-0 agent for direct score-based '
