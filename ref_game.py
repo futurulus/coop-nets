@@ -144,8 +144,9 @@ class ExhaustiveL2Learner(Learner):
     def num_params(self):
         options = self.get_options()
         total = self.base.num_params
-        if options.exhaustive_num_samples > 0:
-            total += self.sampler.num_params
+        # This is causing pickle problems; ignore these parameters for now
+        # if options.exhaustive_num_samples > 0:
+        #    total += self.sampler.num_params
         return total
 
     def predict_and_score(self, eval_instances, random=False, verbosity=0):
