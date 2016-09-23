@@ -1,0 +1,174 @@
+---
+title: ''
+output: html_document
+---
+
+# Import libraries
+
+```{r, message=F, warning=F}
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(tidyr)
+library(dplyr)
+library(qdap)
+library(stringr)
+library(knitr)
+```
+
+# Pre-processing human data
+
+First, we want to clean the data: join data frames together, remove games where participants were confused, spoke english as a second language, or didn't complete all trials.
+
+Note: there's a bunch of additional pre-processing that it's still be nice to do. For instance, it would be nice to strip all the meta-commentary (e.g. "oops" after missing, complaining about task, etc.)
+
+```{r}
+setwd("~/Repos/coop-nets/behavioralAnalysis")
+
+msgs = read.csv("./humanOutput/colorReferenceMessage.csv") %>%
+  rename(msgTime = time, 
+         role = sender)
+
+clks = read.csv("./humanOutput/colorReferenceClicks.csv") %>%
+  mutate(condition = factor(condition, levels = c("closer", "further", "equal"), labels = c("hard", "medium", "easy"))) %>%
+  rename(clkTime = time)
+
+subjInfo = read.csv("./humanOutput/colorReference-subject_information.csv") %>%
+  rename(gameid = gameID) %>%
+  select(-workerid)
+
+rawAggregated <- clks %>% 
+  left_join(msgs, by = c("gameid", "roundNum")) %>%
+  left_join(subjInfo, by = c("gameid", "role")) 
+
+goodGames <- unique((rawAggregated %>% 
+  filter(nativeEnglish == "yes") %>%
+  filter(confused == "yes") %>%
+  group_by(gameid) %>%
+  filter(length(unique(roundNum)) == 50))$gameid)
+
+combined_human <- rawAggregated %>%
+  filter(gameid %in% goodGames) %>%
+  mutate(numOutcome = ifelse(outcome == "true", 1, 0)) %>%
+  mutate(numRawWords = 1 + str_count(contents, fixed(" "))) %>%
+  mutate(strippedContents = str_replace_all(contents, "[^[:alnum:][:space:]']",' ')) %>%
+  do(mutate(., cleanMsg = rm_stopwords(.$strippedContents, tm::stopwords("english"), 
+                                       separate = F))) %>%
+  mutate(numCleanChars = nchar(as.character(cleanMsg))) %>%
+  mutate(numCleanWords = 1 + str_count(cleanMsg, fixed(" "))) %>%
+  filter(numCleanWords < mean(numCleanWords) + 3*sd(numCleanWords)) %>%
+  mutate(source = 'human')
+```
+
+# Preprocessing model data
+
+```{r}
+robo_msgs = read.csv("./modelOutput/speaker_reccontext_tuned_message.csv") %>%
+  rename(msgTime = time, 
+         role = sender)
+
+robo_clks = read.csv("./modelOutput/listener_lsl_blend_sampled_clickedObj.csv") %>%
+  mutate(condition = factor(condition, levels = c("closer", "further", "equal"), labels = c("hard", "medium", "easy"))) %>%
+  rename(clkTime = time)
+
+robo_rawAggregated <- robo_clks %>% 
+  left_join(robo_msgs, by = c("gameid", "roundNum")) 
+
+combined_model <- robo_rawAggregated %>%
+  mutate(numOutcome = ifelse(outcome == "true", 1, 0)) %>%
+  mutate(numRawWords = 1 + str_count(contents, fixed(" "))) %>%
+  mutate(strippedContents = str_replace_all(contents, "[^[:alnum:][:space:]']",' ')) %>%
+  do(mutate(., cleanMsg = rm_stopwords(.$strippedContents, tm::stopwords("english"), 
+                                       separate = F))) %>%
+  mutate(numCleanChars = nchar(as.character(cleanMsg))) %>%
+  mutate(numCleanWords = 1 + str_count(cleanMsg, fixed(" "))) %>%
+  filter(numCleanWords < mean(numCleanWords) + 3*sd(numCleanWords)) %>%
+  mutate(source = "model")
+```
+
+```{r}
+combined = rbind(combined_human, combined_model)
+```
+
+# Listener analysis: Do people make more mistakes on harder trials?
+
+```{r}
+listener_df = combined %>% 
+  group_by(gameid, roundNum, source) %>% 
+  filter(row_number()==1) # limit to one row per round
+
+listenerSummary = listener_df %>% group_by(condition, source) %>%
+  summarize(percentCorrect = mean(numOutcome), 
+             se = sqrt(percentCorrect*(1 - percentCorrect)/length(numOutcome))) 
+```
+
+### Run mixed model:
+
+```{r}
+conditionMod = glmer(numOutcome ~ condition*source + (1 | gameid), family = "binomial", 
+                     data = listener_df);
+summary(conditionMod)
+```
+
+We find main effects of difficulty and of model; also interaction where humans are *much* better at "easy" condition while computers are only moderately better...
+
+### Make human vs. model table
+
+```{r}
+listenerSummary %>%
+  select(-se) %>%
+  spread(condition, percentCorrect)
+```
+
+### Make bar plot
+
+```{r}
+ggplot(listenerSummary, aes(x = condition, y = percentCorrect, fill = source)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    geom_errorbar(aes(ymax = percentCorrect + se, ymin = percentCorrect - se), 
+                  position=dodge, width=0.25) + 
+    theme_bw()
+
+```
+
+# Generate latex table for TACL paper:
+
+Note that taggedColorMsgs.csv is created in tagPOS.ipynb.
+
+We're going to run both human and model output through a pipeline to get a table with the different conditions as columns and different metrics as rows... 
+
+```{r}
+# TODO: include model metrics in table as well
+# TODO: use stanford pos tagger
+taggedDF = read.csv("color/taggedColorMsgs.csv")
+
+# TODO: present se in table (e.g. in parens after mean)
+resultTable = combined %>% 
+  left_join(taggedDF, by = c("gameid", "roundNum", "contents")) %>%
+   filter(role == "speaker") %>%
+   group_by(gameid, condition) %>%
+   summarise(numWordsPerMessage = sum(numCleanWords)/length(numCleanWords),
+             numCharsPerMessage = sum(numCleanChars)/length(numCleanChars),
+             numComparatives = sum(numComp)/length(numComp),
+             numSuperlatives = sum(numSuper)/length(numSuper),
+             numNegatives = str_count(paste(contents, collapse=" "),
+                                      fixed("not"))/length(numCleanWords),
+             levelOfRef = NA) %>%
+  mutate(condition = ordered(condition, levels = c("easy", "medium", "hard"),
+                               labels = c("far", "split", "close"))) %>%
+   group_by(condition) %>% 
+   summarize("# WordsM" = mean(numWordsPerMessage), 
+             "# CharsM" = mean(numCharsPerMessage),
+             numWordsPerMessageSE = sd(numWordsPerMessage)/sqrt(length(numWordsPerMessage)),
+             "# NegativesM" = mean(numNegatives),
+             numNegativesSE = sd(numNegatives)/sqrt(length(numNegatives)),
+             "# ComparativesM" = mean(numComparatives),
+             "# SuperlativesM" = mean(numSuperlatives)) %>%
+  gather(metric, mu, ends_with("M")) %>%
+  #gather(garbage, se, ends_with("SE")) %>%
+  mutate("metric (per message)" = gsub(".$", "", metric)) %>%
+  select(-ends_with("SE"), -metric) %>%
+  spread(condition, mu)
+
+print(xtable(resultTable, label = "table:metrics"), include.rownames = FALSE)
+```

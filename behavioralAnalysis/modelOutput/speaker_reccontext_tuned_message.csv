@@ -1,0 +1,1750 @@
+gameid,time,roundNum,sender,contents
+2780-1,1459886486214,1,speaker,purple
+2780-1,1459886520593,2,speaker,green
+2780-1,1459886542191,3,speaker,the target is the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of the lighter of
+2780-1,1459886605541,4,speaker,green
+2780-1,1459886627307,5,speaker,the target is the three
+2780-1,1459886660813,6,listener,grey
+2780-1,1459886689406,7,speaker,orange
+2780-1,1459886733504,8,listener,pink
+2780-1,1459886754045,9,speaker,grey
+2780-1,1459886845113,10,speaker,grey
+2780-1,1459886862413,11,listener,grey
+2780-1,1459886876023,12,speaker,blue
+2780-1,1459886889788,13,speaker,blue
+2780-1,1459886919218,14,listener,purple
+2780-1,1459886952855,15,speaker,orange
+2780-1,1459886987653,16,speaker,purple
+2780-1,1459887002726,17,speaker,grey
+2780-1,1459887018320,18,speaker,green
+2780-1,1459887046440,19,speaker,orange
+2780-1,1459887064836,20,listener,yellow
+2780-1,1459887123637,21,speaker,purple
+2780-1,1459887132181,22,speaker,pink
+2780-1,1459887143854,23,speaker,green
+2780-1,1459887158097,24,speaker,red
+2780-1,1459887184025,25,speaker,pink
+2780-1,1459887194599,26,listener,green
+2780-1,1459887208235,27,speaker,orange
+2780-1,1459887219113,28,speaker,green
+2780-1,1459887241095,29,speaker,bright purple
+2780-1,1459887249948,30,speaker,the target is the three
+2780-1,1459887267137,31,speaker,purple
+2780-1,1459887279797,32,speaker,purple
+2780-1,1459887289255,33,speaker,grey
+2780-1,1459887296830,34,speaker,green
+2780-1,1459887306421,35,speaker,the target is the three
+2780-1,1459887316850,36,speaker,the target is a <unk> ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+2780-1,1459887326550,37,speaker,blue
+2780-1,1459887349748,38,speaker,blue
+2780-1,1459887359398,39,speaker,the target is the <unk> one
+2780-1,1459887368033,40,speaker,blue
+2780-1,1459887379186,41,speaker,purple
+2780-1,1459887396394,42,speaker,the target is the <unk> one
+2780-1,1459887409982,43,listener,grey
+2780-1,1459887440725,44,speaker,bright blue
+2780-1,1459887477940,45,speaker,purple
+2780-1,1459887494454,46,speaker,purple
+2780-1,1459887513393,47,speaker,green
+2780-1,1459887527782,48,listener,bright green
+2780-1,1459887573322,49,speaker,bright blue
+2780-1,1459887596545,50,speaker,purple
+8088-6,1459886572281,1,speaker,purple
+8088-6,1459886587185,2,speaker,purple
+8088-6,1459886604576,3,speaker,gray
+8088-6,1459886620942,4,speaker,grey
+8088-6,1459886642169,5,speaker,purple
+8088-6,1459886663000,6,speaker,the target is the <unk> <unk> ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+8088-6,1459886693581,7,speaker,purple
+8088-6,1459886713394,8,speaker,bright pink
+8088-6,1459886730776,9,speaker,green
+8088-6,1459886744966,10,speaker,blue
+8088-6,1459886761797,11,speaker,red
+8088-6,1459886771708,12,speaker,blue
+8088-6,1459886789589,13,speaker,purple
+8088-6,1459886799831,14,speaker,green
+8088-6,1459886815723,15,speaker,brown
+8088-6,1459886828186,16,speaker,grey
+8088-6,1459886847293,17,speaker,purple
+8088-6,1459886886630,18,speaker,green
+8088-6,1459886919422,19,speaker,blue
+8088-6,1459887079554,20,speaker,pink
+8088-6,1459887102913,21,speaker,green
+8088-6,1459887120724,22,speaker,yellow
+8088-6,1459887132514,23,speaker,the target is the three
+8088-6,1459887150924,24,speaker,purple
+8088-6,1459887165557,25,speaker,purple
+8088-6,1459887177710,26,speaker,bright purple
+8088-6,1459887191480,27,speaker,green
+8088-6,1459887207768,28,speaker,green
+8088-6,1459887220999,29,speaker,brown
+8088-6,1459887235583,30,speaker,blue
+8088-6,1459887252983,31,speaker,blue
+8088-6,1459887265133,32,speaker,purple
+8088-6,1459887273483,33,speaker,yellow
+8088-6,1459887282009,34,speaker,blue
+8088-6,1459887295161,35,speaker,grey
+8088-6,1459887304652,36,speaker,pink
+8088-6,1459887315775,37,speaker,grey
+8088-6,1459887326258,38,speaker,purple
+8088-6,1459887336633,39,speaker,brown
+8088-6,1459887352504,40,speaker,gray
+8088-6,1459887359901,41,speaker,orange
+8088-6,1459887365260,42,speaker,red
+8088-6,1459887373310,43,speaker,purple
+8088-6,1459887382730,44,speaker,orange
+8088-6,1459887398577,45,speaker,pink
+8088-6,1459887411516,46,speaker,green
+8088-6,1459887420739,47,speaker,blue
+8088-6,1459887447264,48,speaker,blue
+8088-6,1459887455497,49,speaker,purple
+8088-6,1459887463852,50,speaker,yellow
+5248-d,1459887721692,1,speaker,the bright green
+5248-d,1459887731771,2,speaker,grey
+5248-d,1459887739428,3,speaker,blue
+5248-d,1459887748228,4,speaker,yellow
+5248-d,1459887759459,5,speaker,the target is the last one . ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+5248-d,1459887773093,6,speaker,green
+5248-d,1459887784560,7,speaker,blue
+5248-d,1459887796968,8,speaker,orange
+5248-d,1459887807414,9,speaker,green
+5248-d,1459887820212,10,speaker,the target is the last one . ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+5248-d,1459887829873,11,speaker,brown
+5248-d,1459887838648,12,speaker,purple
+5248-d,1459887847925,13,speaker,green
+5248-d,1459887865055,14,speaker,grey
+5248-d,1459887879212,15,speaker,purple
+5248-d,1459887891752,16,speaker,red
+5248-d,1459887908441,17,speaker,pink
+5248-d,1459887920104,18,speaker,purple
+5248-d,1459887927515,19,speaker,purple
+5248-d,1459887935011,20,speaker,bright green
+5248-d,1459887974300,21,speaker,blue
+5248-d,1459887986250,22,speaker,bright green
+5248-d,1459887995863,23,speaker,green
+5248-d,1459888010024,24,speaker,bright green
+5248-d,1459888021741,25,speaker,purple
+5248-d,1459888033901,26,speaker,the target is the <unk> one
+5248-d,1459888046241,27,speaker,green
+5248-d,1459888053114,28,speaker,red
+5248-d,1459888067838,29,speaker,bright blue
+5248-d,1459888081362,30,speaker,orange
+5248-d,1459888094116,31,speaker,olive green
+5248-d,1459888109652,32,speaker,grey
+5248-d,1459888118027,33,speaker,blue
+5248-d,1459888133312,34,speaker,"the target is the bright green , the <unk> <unk> ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~"
+5248-d,1459888147142,35,speaker,purple
+5248-d,1459888161373,36,speaker,grey
+5248-d,1459888177242,37,speaker,brown
+5248-d,1459888189184,38,speaker,the target is the three
+5248-d,1459888210264,39,speaker,brown
+5248-d,1459888223004,40,speaker,yellow
+5248-d,1459888249149,41,speaker,the target is the three
+5248-d,1459888271890,42,speaker,purple
+5248-d,1459888278727,43,speaker,blue
+5248-d,1459888287234,44,speaker,purple
+5248-d,1459888306547,45,speaker,grey
+5248-d,1459888321875,46,speaker,orange
+5248-d,1459888342018,47,speaker,purple
+5248-d,1459888369074,48,speaker,the target is the three
+5248-d,1459888387865,49,speaker,gray
+5248-d,1459888399290,50,speaker,green
+4647-2,1459886645298,1,speaker,the target is the two one
+4647-2,1459886661621,2,speaker,red
+4647-2,1459886682268,3,speaker,green
+4647-2,1459886738522,4,speaker,blue
+4647-2,1459886780782,5,speaker,the target is the three
+4647-2,1459886818250,6,speaker,the target is the <unk> <unk> <unk> ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+4647-2,1459886831224,7,speaker,grey
+4647-2,1459886870101,8,speaker,the target is the <unk> one
+4647-2,1459886936867,9,speaker,grey
+4647-2,1459886960299,10,speaker,purple
+4647-2,1459886970537,11,speaker,blue
+4647-2,1459886992892,12,speaker,olive green
+4647-2,1459887013291,13,speaker,yellow
+4647-2,1459887034432,14,speaker,purple
+4647-2,1459887059403,15,speaker,purple
+4647-2,1459887073037,16,speaker,purple
+4647-2,1459887084209,17,speaker,the target is the <unk> <unk> ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+4647-2,1459887108687,18,speaker,green
+4647-2,1459887119478,19,speaker,green
+4647-2,1459887139112,20,speaker,grey
+4647-2,1459887150703,21,speaker,grey
+4647-2,1459887160578,22,speaker,bright blue
+4647-2,1459887167935,23,speaker,orange
+4647-2,1459887197030,24,speaker,the target is the <unk> green .
+4647-2,1459887204887,25,speaker,blue
+4647-2,1459887240150,26,speaker,pink
+4647-2,1459887279931,27,speaker,green
+4647-2,1459887290219,28,speaker,green
+4647-2,1459887340243,29,speaker,grey
+4647-2,1459887383623,30,speaker,green
+4647-2,1459887418572,31,speaker,brown
+4647-2,1459887436143,32,speaker,yellow
+4647-2,1459887497142,33,speaker,red
+4647-2,1459887540764,34,speaker,the target is the <unk> one
+4647-2,1459887558780,35,speaker,the target is the three
+4647-2,1459887584723,36,speaker,red
+4647-2,1459887603035,37,speaker,green
+4647-2,1459887611048,38,speaker,purple
+4647-2,1459887627037,39,speaker,green
+4647-2,1459887670778,40,speaker,blue
+4647-2,1459887682225,41,speaker,the target is blue
+4647-2,1459887701720,42,speaker,purple
+4647-2,1459887721852,43,speaker,brown
+4647-2,1459887739039,44,speaker,bright blue
+4647-2,1459887750791,45,speaker,brown
+4647-2,1459887779429,46,speaker,red
+4647-2,1459887808157,47,speaker,grey
+4647-2,1459887816274,48,speaker,purple
+4647-2,1459887874131,49,speaker,blue
+4647-2,1459887972631,50,listener,gray
+5800-8,1459886642108,1,speaker,bright purple
+5800-8,1459886682644,2,speaker,purple
+5800-8,1459886756270,3,speaker,the target is the <unk> one
+5800-8,1459886794036,4,speaker,gray
+5800-8,1459886817280,5,speaker,blue
+5800-8,1459886858840,6,speaker,grey
+5800-8,1459886886421,7,speaker,blue
+5800-8,1459886924101,8,speaker,green
+5800-8,1459886954574,9,speaker,the target is the <unk> one
+5800-8,1459886968121,10,speaker,purple
+5800-8,1459886988026,11,speaker,bright green
+5800-8,1459887002432,12,speaker,bright green
+5800-8,1459887019415,13,speaker,orange
+5800-8,1459887065151,14,speaker,green
+5800-8,1459887141691,15,speaker,pink
+5800-8,1459887183762,16,speaker,green
+5800-8,1459887214200,17,speaker,green
+5800-8,1459887233241,18,speaker,grey
+5800-8,1459887257802,19,speaker,the target is the three
+5800-8,1459887270376,20,speaker,yellow
+5800-8,1459887290183,21,speaker,purple
+5800-8,1459887321143,22,speaker,purple
+5800-8,1459887347137,23,speaker,bright green
+5800-8,1459887377725,24,speaker,purple
+5800-8,1459887401766,25,speaker,the target is the three
+5800-8,1459887424771,26,speaker,purple
+5800-8,1459887453556,27,speaker,grey
+5800-8,1459887490713,28,speaker,blue
+5800-8,1459887503221,29,speaker,grey
+5800-8,1459887516412,30,speaker,yellow
+5800-8,1459887533853,31,speaker,blue
+5800-8,1459887551959,32,speaker,green
+5800-8,1459887562021,33,speaker,yellow
+5800-8,1459887581316,34,speaker,brown
+5800-8,1459887621907,35,speaker,orange
+5800-8,1459887639393,36,speaker,red
+5800-8,1459887649797,37,speaker,green
+5800-8,1459887665033,38,speaker,green
+5800-8,1459887687148,39,speaker,the target is the bright green
+5800-8,1459887712567,40,speaker,grey
+5800-8,1459887723487,41,speaker,pink
+5800-8,1459887739924,42,speaker,purple
+5800-8,1459887785477,43,speaker,green
+5800-8,1459887812857,44,speaker,the target is the <unk> one
+5800-8,1459887835965,45,speaker,gray
+5800-8,1459887858753,46,speaker,purple
+5800-8,1459887872214,47,speaker,purple
+5800-8,1459887886528,48,speaker,yellow
+5800-8,1459887898092,49,speaker,yellow
+5800-8,1459887914442,50,speaker,pink
+9666-b,1459888786875,1,speaker,grey
+9666-b,1459888805145,2,speaker,green
+9666-b,1459888818397,3,speaker,bright green
+9666-b,1459888831176,4,speaker,the target is the three
+9666-b,1459888844039,5,speaker,green
+9666-b,1459888861038,6,speaker,purple
+9666-b,1459888890004,7,speaker,purple
+9666-b,1459888902569,8,speaker,purple
+9666-b,1459888912566,9,speaker,bright blue
+9666-b,1459888931620,10,speaker,orange
+9666-b,1459888948157,11,speaker,purple
+9666-b,1459888964112,12,speaker,green
+9666-b,1459888980391,13,speaker,green
+9666-b,1459888995004,14,speaker,the target is the bright green
+9666-b,1459889020104,15,speaker,brown
+9666-b,1459889033612,16,speaker,bright purple
+9666-b,1459889041697,17,speaker,orange
+9666-b,1459889049700,18,speaker,purple
+9666-b,1459889088370,19,speaker,green
+9666-b,1459889106913,20,speaker,green
+9666-b,1459889116827,21,speaker,blue
+9666-b,1459889145834,22,speaker,pink
+9666-b,1459889154603,23,speaker,yellow
+9666-b,1459889180681,24,speaker,green
+9666-b,1459889191656,25,speaker,grey
+9666-b,1459889206428,26,speaker,grey
+9666-b,1459889224234,27,speaker,green
+9666-b,1459889241195,28,speaker,green
+9666-b,1459889255484,29,speaker,brown
+9666-b,1459889265238,30,speaker,blue
+9666-b,1459889273703,31,speaker,purple
+9666-b,1459889287320,32,speaker,the target is the three
+9666-b,1459889297503,33,speaker,pink
+9666-b,1459889320180,34,speaker,grey
+9666-b,1459889337645,35,speaker,grey
+9666-b,1459889347351,36,speaker,yellow
+9666-b,1459889359021,37,speaker,pink
+9666-b,1459889367439,38,speaker,grey
+9666-b,1459889379170,39,speaker,red
+9666-b,1459889391127,40,speaker,pink
+9666-b,1459889403147,41,speaker,grey
+9666-b,1459889418250,42,speaker,"the target is the bright green , the <unk> <unk> . ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~"
+9666-b,1459889434785,43,speaker,green
+9666-b,1459889443588,44,speaker,pink
+9666-b,1459889464510,45,speaker,brown
+9666-b,1459889478992,46,speaker,blue
+9666-b,1459889492425,47,speaker,green
+9666-b,1459889504356,48,speaker,purple
+9666-b,1459889519670,49,speaker,green
+9666-b,1459889529790,50,speaker,green
+6888-9,1459888868068,1,speaker,grey
+6888-9,1459888906675,2,speaker,blue
+6888-9,1459888921302,3,speaker,grey
+6888-9,1459888932721,4,speaker,orange
+6888-9,1459888946227,5,speaker,grey
+6888-9,1459889028117,6,speaker,the target is the two one
+6888-9,1459889049530,7,speaker,green
+6888-9,1459889061640,8,speaker,orange
+6888-9,1459889078231,9,speaker,grey
+6888-9,1459889096970,10,speaker,purple
+6888-9,1459889118485,11,speaker,grey
+6888-9,1459889133829,12,speaker,teal
+6888-9,1459889156989,13,speaker,bright green
+6888-9,1459889170711,14,speaker,purple
+6888-9,1459889180188,15,speaker,gray
+6888-9,1459889192055,16,speaker,blue
+6888-9,1459889219330,17,speaker,blue
+6888-9,1459889243592,18,speaker,brown
+6888-9,1459889258443,19,speaker,grey
+6888-9,1459889292514,20,speaker,purple
+6888-9,1459889303718,21,speaker,blue
+6888-9,1459889328898,22,speaker,the target is the three
+6888-9,1459889352260,23,speaker,olive green
+6888-9,1459889377207,24,speaker,blue
+6888-9,1459889428267,25,speaker,purple
+6888-9,1459889450595,26,speaker,green
+6888-9,1459889468266,27,speaker,grey
+6888-9,1459889480304,28,speaker,blue
+6888-9,1459889490180,29,speaker,blue
+6888-9,1459889592882,30,speaker,green
+6888-9,1459889614555,31,speaker,purple
+6888-9,1459889673814,32,speaker,grey
+6888-9,1459889709945,33,speaker,teal
+6888-9,1459889736729,34,speaker,green
+6888-9,1459889783332,35,speaker,pink
+6888-9,1459889804843,36,speaker,grey
+6888-9,1459889821694,37,speaker,grey
+6888-9,1459889837372,38,speaker,blue
+6888-9,1459889861524,39,speaker,blue
+6888-9,1459889903134,40,speaker,blue
+6888-9,1459889926317,41,speaker,pink
+6888-9,1459889996262,42,speaker,green
+6888-9,1459890014798,43,speaker,red
+6888-9,1459890040512,44,speaker,blue
+6888-9,1459890070292,45,speaker,green
+6888-9,1459890124940,46,speaker,green
+6888-9,1459890137270,47,speaker,brown
+6888-9,1459890159249,48,speaker,blue
+6888-9,1459890183889,49,speaker,purple
+6888-9,1459890195790,50,speaker,purple
+6442-4,1459888791220,1,speaker,the target is blue
+6442-4,1459888850495,2,speaker,blue
+6442-4,1459888903258,3,speaker,bright pink
+6442-4,1459888926788,4,speaker,the target is the three
+6442-4,1459888943357,5,speaker,yellow
+6442-4,1459888959077,6,speaker,purple
+6442-4,1459889043405,7,speaker,green
+6442-4,1459889099289,8,speaker,green
+6442-4,1459889146157,9,speaker,blue
+6442-4,1459889164520,10,speaker,yellow
+6442-4,1459889258657,11,listener,gray
+6442-4,1459889271090,12,speaker,brown
+6442-4,1459889282040,13,speaker,grey
+6442-4,1459889292698,14,speaker,green
+6442-4,1459889324986,15,speaker,brown
+6442-4,1459889351998,16,speaker,green
+6442-4,1459889367659,17,speaker,green
+6442-4,1459889405736,18,speaker,green
+6442-4,1459889425755,19,speaker,orange
+6442-4,1459889447862,20,speaker,blue
+6442-4,1459889458004,21,speaker,grey
+6442-4,1459889468346,22,speaker,blue
+6442-4,1459889494496,23,listener,purple
+6442-4,1459889499279,24,speaker,grey
+6442-4,1459889516935,25,speaker,blue
+6442-4,1459889531641,26,speaker,bright blue
+6442-4,1459889539005,27,speaker,green
+6442-4,1459889551515,28,speaker,brown
+6442-4,1459889564323,29,speaker,orange
+6442-4,1459889588293,30,speaker,the target is the <unk> one
+6442-4,1459889602512,31,speaker,red
+6442-4,1459889615031,32,speaker,green
+6442-4,1459889631571,33,speaker,yellow
+6442-4,1459889668130,34,speaker,green
+6442-4,1459889678378,35,speaker,green
+6442-4,1459889692623,36,speaker,bright purple
+6442-4,1459889703412,37,speaker,purple
+6442-4,1459889711454,38,speaker,red
+6442-4,1459889718430,39,speaker,blue
+6442-4,1459889734474,40,speaker,the target is the three
+6442-4,1459889764193,41,speaker,the target is the three
+6442-4,1459889780998,42,speaker,blue
+6442-4,1459889789740,43,speaker,yellow
+6442-4,1459889797188,44,speaker,blue
+6442-4,1459889806118,45,speaker,grey
+6442-4,1459889817581,46,speaker,blue
+6442-4,1459889824623,47,speaker,grey
+6442-4,1459889832657,48,speaker,blue
+6442-4,1459889844784,49,speaker,blue
+6442-4,1459889852790,50,speaker,purple
+2400-e,1459886669943,1,speaker,purple
+2400-e,1459886684568,2,speaker,blue
+2400-e,1459886700191,3,speaker,yellow
+2400-e,1459886719040,4,speaker,blue
+2400-e,1459886731762,5,speaker,teal
+2400-e,1459886738779,6,speaker,brown
+2400-e,1459886755762,7,speaker,green
+2400-e,1459886776749,8,speaker,grey
+2400-e,1459886785206,9,speaker,bright green
+2400-e,1459886796061,10,speaker,purple
+2400-e,1459886806424,11,speaker,bright blue
+2400-e,1459886818530,12,speaker,blue
+2400-e,1459886831921,13,speaker,purple
+2400-e,1459886854977,14,speaker,the target is the three
+2400-e,1459886876797,15,speaker,purple
+2400-e,1459886892083,16,speaker,brown
+2400-e,1459886903797,17,speaker,pink
+2400-e,1459886911077,18,speaker,orange
+2400-e,1459886921103,19,speaker,green
+2400-e,1459886927817,20,speaker,pink
+2400-e,1459886936347,21,speaker,purple
+2400-e,1459886952329,22,speaker,green
+2400-e,1459886963400,23,speaker,green
+2400-e,1459886971010,24,speaker,orange
+2400-e,1459886983130,25,speaker,brown
+2400-e,1459887004025,26,speaker,brown
+2400-e,1459887013326,27,speaker,brown
+2400-e,1459887024105,28,speaker,blue
+2400-e,1459887041126,29,speaker,green
+2400-e,1459887058965,30,speaker,purple
+2400-e,1459887070671,31,speaker,green
+2400-e,1459887086276,32,speaker,orange
+2400-e,1459887101287,33,speaker,brown
+2400-e,1459887139820,34,speaker,grey
+2400-e,1459887163495,35,speaker,grey
+2400-e,1459887174788,36,speaker,the target is the two one
+2400-e,1459887184853,37,speaker,orange
+2400-e,1459887192801,38,speaker,purple
+2400-e,1459887206383,39,speaker,pink
+2400-e,1459887218871,40,speaker,brown
+2400-e,1459887233876,41,speaker,brown
+2400-e,1459887242475,42,speaker,green
+2400-e,1459887263017,43,speaker,green
+2400-e,1459887277548,44,speaker,blue
+2400-e,1459887293521,45,speaker,blue
+2400-e,1459887330486,46,speaker,grey
+2400-e,1459887338970,47,speaker,green
+2400-e,1459887348543,48,speaker,blue
+2400-e,1459887376620,49,speaker,purple
+2400-e,1459887384672,50,speaker,red
+9536-4,1459888811100,1,speaker,grey
+9536-4,1459888825990,2,speaker,blue
+9536-4,1459888841337,3,speaker,blue
+9536-4,1459888850520,4,speaker,green
+9536-4,1459888877253,5,speaker,grey
+9536-4,1459888894071,6,speaker,grey
+9536-4,1459888903725,7,speaker,grey
+9536-4,1459888913354,8,speaker,green
+9536-4,1459888925442,9,speaker,green
+9536-4,1459888939945,10,speaker,green
+9536-4,1459888953484,11,speaker,orange
+9536-4,1459888964443,12,speaker,bright blue
+9536-4,1459888978036,13,speaker,bright purple
+9536-4,1459888987759,14,speaker,green
+9536-4,1459889001983,15,speaker,grey
+9536-4,1459889013558,16,speaker,darker green
+9536-4,1459889026797,17,speaker,green
+9536-4,1459889041106,18,speaker,purple
+9536-4,1459889063204,19,speaker,the target is the three
+9536-4,1459889072892,20,speaker,green
+9536-4,1459889081344,21,speaker,red
+9536-4,1459889090637,22,speaker,grey
+9536-4,1459889099700,23,speaker,blue
+9536-4,1459889107188,24,speaker,purple
+9536-4,1459889116887,25,speaker,blue
+9536-4,1459889127062,26,speaker,red
+9536-4,1459889136235,27,speaker,purple
+9536-4,1459889145557,28,speaker,green
+9536-4,1459889159216,29,speaker,blue
+9536-4,1459889166459,30,speaker,blue
+9536-4,1459889176834,31,speaker,purple
+9536-4,1459889190432,32,speaker,brown
+9536-4,1459889207499,33,speaker,pink
+9536-4,1459889228175,34,speaker,purple
+9536-4,1459889241230,35,speaker,blue
+9536-4,1459889250951,36,speaker,brown
+9536-4,1459889261852,37,speaker,purple
+9536-4,1459889270504,38,speaker,pink
+9536-4,1459889284476,39,speaker,teal
+9536-4,1459889293657,40,speaker,purple
+9536-4,1459889306055,41,speaker,green
+9536-4,1459889318623,42,speaker,purple
+9536-4,1459889330580,43,speaker,gray
+9536-4,1459889347353,44,speaker,purple
+9536-4,1459889358442,45,speaker,purple
+9536-4,1459889368311,46,speaker,purple
+9536-4,1459889379194,47,speaker,green
+9536-4,1459889392638,48,speaker,brown
+9536-4,1459889400994,49,speaker,pink
+9536-4,1459889417471,50,speaker,purple
+7614-6,1459889015897,1,speaker,the target is the <unk> one .
+7614-6,1459889057578,2,speaker,bright green
+7614-6,1459889079965,3,speaker,yellow
+7614-6,1459889097098,4,speaker,purple
+7614-6,1459889128696,5,speaker,grey
+7614-6,1459889152181,6,speaker,green
+7614-6,1459889180050,7,speaker,blue
+7614-6,1459889208508,8,speaker,blue
+7614-6,1459889231616,9,speaker,grey
+7614-6,1459889264044,10,speaker,grey
+7614-6,1459889296017,11,speaker,green
+7614-6,1459889357721,12,speaker,purple
+7614-6,1459889376848,13,speaker,dark green
+7614-6,1459889397255,14,speaker,bright purple
+7614-6,1459889413707,15,speaker,green
+7614-6,1459889464706,16,speaker,bright blue
+7614-6,1459889481941,17,speaker,purple
+7614-6,1459889496164,18,speaker,green
+7614-6,1459889512118,19,speaker,bright green
+7614-6,1459889537699,20,speaker,orange
+7614-6,1459889553889,21,speaker,purple
+7614-6,1459889571169,22,speaker,yellow
+7614-6,1459889590424,23,speaker,purple
+7614-6,1459889607245,24,speaker,green
+7614-6,1459889619734,25,speaker,blue
+7614-6,1459889646627,26,speaker,grey
+7614-6,1459889664692,27,speaker,purple
+7614-6,1459889684414,28,speaker,blue
+7614-6,1459889704430,29,speaker,purple
+7614-6,1459889721327,30,speaker,gray
+7614-6,1459889751225,31,speaker,pink
+7614-6,1459889768908,32,speaker,red
+7614-6,1459889800330,33,speaker,grey
+7614-6,1459889812365,34,speaker,bright pink
+7614-6,1459889840773,35,speaker,orange
+7614-6,1459889863240,36,speaker,pink
+7614-6,1459889883755,37,speaker,red
+7614-6,1459889903356,38,speaker,gray
+7614-6,1459889926041,39,speaker,bright purple
+7614-6,1459889940537,40,speaker,brown
+7614-6,1459889965917,41,speaker,orange
+7614-6,1459889982004,42,speaker,red
+7614-6,1459890007233,43,speaker,brown
+7614-6,1459890025551,44,speaker,green
+7614-6,1459890036588,45,speaker,brown
+7614-6,1459890051525,46,speaker,bright blue
+7614-6,1459890071026,47,speaker,grey
+7614-6,1459890084931,48,speaker,yellow
+7614-6,1459890112889,49,speaker,yellow
+7614-6,1459890131281,50,speaker,brown
+4178-b,1459889062511,1,speaker,orange
+4178-b,1459889129021,2,speaker,blue
+4178-b,1459889271972,3,speaker,pink
+4178-b,1459889282613,4,speaker,brown
+4178-b,1459889340742,5,speaker,bright purple
+4178-b,1459889353797,6,speaker,blue
+4178-b,1459889362908,7,speaker,teal
+4178-b,1459889373288,8,speaker,purple
+4178-b,1459889396722,9,speaker,the target is the <unk> <unk> ~ <unk> ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+4178-b,1459889409691,10,speaker,blue
+4178-b,1459889450159,11,speaker,bright blue
+4178-b,1459889472133,12,speaker,gray
+4178-b,1459889484040,13,speaker,purple
+4178-b,1459889495096,14,speaker,blue
+4178-b,1459889513253,15,speaker,the target is the three
+4178-b,1459889533491,16,speaker,green
+4178-b,1459889607135,17,speaker,bright purple
+4178-b,1459889618283,18,speaker,blue
+4178-b,1459889629203,19,speaker,bright blue
+4178-b,1459889697154,20,speaker,red
+4178-b,1459889717800,21,speaker,green
+4178-b,1459889765880,22,speaker,the target is teal
+4178-b,1459889790424,23,speaker,the target is the <unk> one
+4178-b,1459889805707,24,speaker,purple
+4178-b,1459889819426,25,speaker,blue
+4178-b,1459889846866,26,speaker,green
+4178-b,1459889888085,27,speaker,gray
+4178-b,1459889969327,28,speaker,pink
+4178-b,1459890014684,29,speaker,orange
+4178-b,1459890059269,30,speaker,brown
+4178-b,1459890087590,31,speaker,brown
+4178-b,1459890123798,32,speaker,yellow
+4178-b,1459890138147,33,speaker,brown
+4178-b,1459890146241,34,speaker,blue
+4178-b,1459890182792,35,speaker,blue
+4178-b,1459890226655,36,speaker,purple
+4178-b,1459890251749,37,speaker,bright green
+4178-b,1459890282341,38,speaker,pink
+4178-b,1459890296764,39,speaker,grey
+4178-b,1459890361874,40,speaker,purple
+4178-b,1459890436911,41,speaker,grey
+4178-b,1459890508700,42,speaker,purple
+4178-b,1459890556316,43,speaker,blue
+4178-b,1459890567714,44,speaker,blue
+4178-b,1459890585746,45,speaker,grey
+4178-b,1459890614223,46,speaker,grey
+4178-b,1459890666442,47,speaker,purple
+4178-b,1459890703080,48,speaker,teal
+4178-b,1459890711893,49,speaker,purple
+4178-b,1459890788661,50,speaker,gray
+2267-6,1459889410544,1,speaker,purple
+2267-6,1459889427019,2,speaker,purple
+2267-6,1459889449536,3,speaker,the target is the <unk> <unk> ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+2267-6,1459889466958,4,speaker,purple
+2267-6,1459889481934,5,speaker,blue
+2267-6,1459889493836,6,speaker,bright green
+2267-6,1459889511450,7,speaker,green
+2267-6,1459889523112,8,speaker,green
+2267-6,1459889555203,9,speaker,the target is the <unk> one ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+2267-6,1459889564551,10,speaker,red
+2267-6,1459889576681,11,speaker,the bright green
+2267-6,1459889585138,12,speaker,red
+2267-6,1459889592486,13,speaker,blue
+2267-6,1459889603843,14,speaker,bright green
+2267-6,1459889611463,15,speaker,purple
+2267-6,1459889620576,16,speaker,the target is the two one
+2267-6,1459889632007,17,speaker,green
+2267-6,1459889659484,18,speaker,grey
+2267-6,1459889670498,19,speaker,grey
+2267-6,1459889677744,20,speaker,blue
+2267-6,1459889684682,21,speaker,grey
+2267-6,1459889713305,22,speaker,grey
+2267-6,1459889722172,23,speaker,green
+2267-6,1459889727814,24,speaker,red
+2267-6,1459889742205,25,speaker,blue
+2267-6,1459889761700,26,speaker,blue
+2267-6,1459889774802,27,speaker,the target is the three
+2267-6,1459889805303,28,speaker,blue
+2267-6,1459889817065,29,speaker,green
+2267-6,1459889825976,30,speaker,pink
+2267-6,1459889833996,31,speaker,brown
+2267-6,1459889848517,32,speaker,brown
+2267-6,1459889862134,33,speaker,yellow
+2267-6,1459889871620,34,speaker,blue
+2267-6,1459889886108,35,speaker,the target is the <unk> <unk> ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+2267-6,1459889902606,36,speaker,bright green
+2267-6,1459889913263,37,speaker,brown
+2267-6,1459889924944,38,speaker,orange
+2267-6,1459889932670,39,speaker,brown
+2267-6,1459889948175,40,speaker,the target is hot pink
+2267-6,1459890025489,41,speaker,green
+2267-6,1459890035586,42,speaker,green
+2267-6,1459890046692,43,speaker,bright purple
+2267-6,1459890057015,44,speaker,the target is the bright green
+2267-6,1459890085338,45,speaker,orange
+2267-6,1459890093980,46,speaker,green
+2267-6,1459890105961,47,speaker,yellow
+2267-6,1459890118772,48,speaker,purple
+2267-6,1459890126708,49,speaker,purple
+2267-6,1459890134885,50,speaker,the target is the three
+6431-a,1459889432024,1,speaker,blue
+6431-a,1459889470528,2,speaker,purple
+6431-a,1459889493353,3,speaker,purple
+6431-a,1459889517456,4,speaker,purple
+6431-a,1459889543557,5,speaker,purple
+6431-a,1459889570078,6,speaker,blue
+6431-a,1459889609420,7,speaker,blue
+6431-a,1459889625244,8,speaker,red
+6431-a,1459889636853,9,speaker,green
+6431-a,1459889654575,10,speaker,purple
+6431-a,1459889688116,11,speaker,blue
+6431-a,1459889717265,12,speaker,grey
+6431-a,1459889737966,13,speaker,bright green
+6431-a,1459889767469,14,speaker,purple
+6431-a,1459889787254,15,speaker,pink
+6431-a,1459889820436,16,speaker,blue
+6431-a,1459889847396,17,speaker,green
+6431-a,1459889881065,18,speaker,purple
+6431-a,1459889888686,19,speaker,red
+6431-a,1459889912735,20,listener,blue
+6431-a,1459889917806,21,speaker,green
+6431-a,1459889926044,22,speaker,orange
+6431-a,1459889982758,23,listener,orange
+6431-a,1459889999055,24,speaker,purple
+6431-a,1459890011516,25,speaker,green
+6431-a,1459890020370,26,speaker,grey
+6431-a,1459890027646,27,speaker,blue
+6431-a,1459890042735,28,speaker,the target is the three
+6431-a,1459890055496,29,speaker,gray
+6431-a,1459890067584,30,speaker,green
+6431-a,1459890078596,31,speaker,grey
+6431-a,1459890096586,32,speaker,grey
+6431-a,1459890104519,33,speaker,bright blue
+6431-a,1459890117097,34,speaker,grey
+6431-a,1459890142011,35,speaker,green
+6431-a,1459890165443,36,speaker,grey
+6431-a,1459890186956,37,listener,bright blue
+6431-a,1459890198558,38,speaker,bright green
+6431-a,1459890223670,39,speaker,grey
+6431-a,1459890268390,40,speaker,red
+6431-a,1459890287102,41,speaker,the target is the three
+6431-a,1459890295128,42,speaker,pink
+6431-a,1459890302881,43,speaker,purple
+6431-a,1459890309346,44,speaker,pink
+6431-a,1459890317700,45,speaker,purple
+6431-a,1459890326532,46,speaker,green
+6431-a,1459890333994,47,speaker,grey
+6431-a,1459890341789,48,speaker,bright green
+6431-a,1459890358795,49,speaker,orange
+6431-a,1459890362286,50,speaker,the target is the three
+3792-7,1459889560255,1,speaker,purple
+3792-7,1459889604048,2,speaker,blue
+3792-7,1459889640415,3,speaker,the target is the <unk> <unk> ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+3792-7,1459889664318,4,speaker,yellow
+3792-7,1459889677471,5,speaker,pink
+3792-7,1459889690349,6,speaker,purple
+3792-7,1459889722704,7,speaker,brown
+3792-7,1459889737757,8,speaker,bright pink
+3792-7,1459889752767,9,speaker,purple
+3792-7,1459889768491,10,speaker,purple
+3792-7,1459889778095,11,speaker,purple
+3792-7,1459889787788,12,speaker,green
+3792-7,1459889825218,13,speaker,pink
+3792-7,1459889844012,14,speaker,pink
+3792-7,1459889913482,15,speaker,purple
+3792-7,1459889954527,16,speaker,pink
+3792-7,1459889986030,17,speaker,purple
+3792-7,1459889993901,18,speaker,blue
+3792-7,1459890007712,19,speaker,blue
+3792-7,1459890047711,20,speaker,purple
+3792-7,1459890057286,21,speaker,purple
+3792-7,1459890080293,22,speaker,yellow
+3792-7,1459890093727,23,speaker,purple
+3792-7,1459890110177,24,speaker,purple
+3792-7,1459890127614,25,speaker,grey
+3792-7,1459890152078,26,speaker,the target is the two one
+3792-7,1459890164591,27,speaker,purple
+3792-7,1459890178589,28,speaker,bright pink
+3792-7,1459890271919,29,speaker,green
+3792-7,1459890324913,30,speaker,pink
+3792-7,1459890378259,31,speaker,purple
+3792-7,1459890430864,32,speaker,the target is the <unk> <unk> ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+3792-7,1459890447121,33,speaker,red
+3792-7,1459890488917,34,speaker,purple
+3792-7,1459890513776,35,speaker,pink
+3792-7,1459890532084,36,speaker,purple
+3792-7,1459890551936,37,speaker,green
+3792-7,1459890568541,38,speaker,blue
+3792-7,1459890590050,39,speaker,blue
+3792-7,1459890602688,40,speaker,grey
+3792-7,1459890614543,41,speaker,bright pink
+3792-7,1459890634222,42,speaker,pink
+3792-7,1459890656208,43,speaker,orange
+3792-7,1459890672848,44,speaker,purple
+3792-7,1459890687838,45,speaker,purple
+3792-7,1459890702704,46,speaker,the target is the three
+3792-7,1459890714088,47,speaker,the target is blue
+3792-7,1459890722143,48,speaker,purple
+3792-7,1459890738765,49,listener,green
+3792-7,1459890752817,50,speaker,green
+4042-9,1459889662040,1,speaker,purple
+4042-9,1459889677839,2,speaker,green
+4042-9,1459889689220,3,speaker,the target is the three
+4042-9,1459889699184,4,speaker,blue
+4042-9,1459889709047,5,speaker,green
+4042-9,1459889718003,6,speaker,gray
+4042-9,1459889726090,7,speaker,bright pink
+4042-9,1459889764073,8,speaker,bright green
+4042-9,1459889791780,9,speaker,brown
+4042-9,1459889820896,10,speaker,purple
+4042-9,1459889836535,11,speaker,brown
+4042-9,1459889846479,12,speaker,blue
+4042-9,1459889855694,13,speaker,green
+4042-9,1459889867210,14,speaker,the target is the three
+4042-9,1459889897497,15,speaker,purple
+4042-9,1459889910556,16,speaker,green
+4042-9,1459889969565,17,speaker,bright green
+4042-9,1459890007806,18,speaker,olive green
+4042-9,1459890012921,19,speaker,blue
+4042-9,1459890029412,20,speaker,pink
+4042-9,1459890040338,21,speaker,the target is teal
+4042-9,1459890050921,22,speaker,green
+4042-9,1459890065090,23,speaker,purple
+4042-9,1459890074764,24,speaker,blue
+4042-9,1459890097580,25,speaker,green
+4042-9,1459890110709,26,speaker,purple
+4042-9,1459890121027,27,speaker,green
+4042-9,1459890146780,28,speaker,purple
+4042-9,1459890167636,29,speaker,grey
+4042-9,1459890185162,30,speaker,green
+4042-9,1459890199847,31,speaker,green
+4042-9,1459890209205,32,speaker,pink
+4042-9,1459890218801,33,speaker,red
+4042-9,1459890228376,34,speaker,gray
+4042-9,1459890244059,35,speaker,bright green
+4042-9,1459890256425,36,speaker,purple
+4042-9,1459890285799,37,speaker,purple
+4042-9,1459890309873,38,speaker,green
+4042-9,1459890368262,39,speaker,the target is the last one . ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+4042-9,1459890380492,40,speaker,red
+4042-9,1459890392633,41,speaker,orange
+4042-9,1459890402484,42,speaker,purple
+4042-9,1459890413682,43,speaker,grey
+4042-9,1459890422702,44,speaker,red
+4042-9,1459890435320,45,speaker,blue
+4042-9,1459890444359,46,speaker,blue
+4042-9,1459890467127,47,speaker,green
+4042-9,1459890479065,48,speaker,green
+4042-9,1459890486930,49,speaker,green
+4042-9,1459890498853,50,speaker,purple
+9817-a,1459889996165,1,speaker,red
+9817-a,1459890021700,2,speaker,bright blue
+9817-a,1459890045159,3,speaker,gray
+9817-a,1459890061959,4,speaker,bright green
+9817-a,1459890107036,5,speaker,blue
+9817-a,1459890122622,6,speaker,pink
+9817-a,1459890148754,7,speaker,the target is the <unk> <unk> ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+9817-a,1459890168580,8,speaker,purple
+9817-a,1459890179397,9,speaker,blue
+9817-a,1459890190197,10,speaker,green
+9817-a,1459890200887,11,speaker,the target is the three
+9817-a,1459890219259,12,speaker,grey
+9817-a,1459890228298,13,speaker,purple
+9817-a,1459890236796,14,speaker,red
+9817-a,1459890244477,15,speaker,purple
+9817-a,1459890261904,16,speaker,the target is the three
+9817-a,1459890272400,17,speaker,blue
+9817-a,1459890283891,18,speaker,the target is the <unk> one
+9817-a,1459890297075,19,speaker,pink
+9817-a,1459890309076,20,speaker,purple
+9817-a,1459890324871,21,speaker,green
+9817-a,1459890345192,22,speaker,green
+9817-a,1459890372940,23,speaker,yellow
+9817-a,1459890383648,24,speaker,purple
+9817-a,1459890396430,25,speaker,pink
+9817-a,1459890408097,26,speaker,grey
+9817-a,1459890417442,27,speaker,teal
+9817-a,1459890427876,28,speaker,pink
+9817-a,1459890435540,29,speaker,blue
+9817-a,1459890447509,30,speaker,red
+9817-a,1459890464135,31,speaker,the target is the <unk> one
+9817-a,1459890479162,32,speaker,purple
+9817-a,1459890527006,33,speaker,blue
+9817-a,1459890544608,34,speaker,orange
+9817-a,1459890558340,35,speaker,blue
+9817-a,1459890587495,36,speaker,brown
+9817-a,1459890598857,37,speaker,orange
+9817-a,1459890607369,38,speaker,the target is the <unk> <unk> ~ <unk> ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+9817-a,1459890628287,39,speaker,purple
+9817-a,1459890645885,40,speaker,blue
+9817-a,1459890659023,41,speaker,green
+9817-a,1459890676323,42,speaker,blue
+9817-a,1459890689601,43,speaker,yellow
+9817-a,1459890720900,44,speaker,yellow
+9817-a,1459890737992,45,speaker,yellow
+9817-a,1459890813040,46,speaker,green
+9817-a,1459890817057,47,speaker,orange
+9817-a,1459890837203,48,speaker,pink
+9817-a,1459890848920,49,speaker,blue
+9817-a,1459890859862,50,speaker,red
+4607-5,1459886919982,1,speaker,bright green
+4607-5,1459886931997,2,speaker,green
+4607-5,1459886946539,3,speaker,the bright green
+4607-5,1459886967124,4,speaker,blue
+4607-5,1459886977454,5,speaker,blue
+4607-5,1459887004563,6,speaker,the target is hot pink
+4607-5,1459887028561,7,speaker,the target is the target is the <unk> one
+4607-5,1459887042783,8,speaker,teal
+4607-5,1459887050952,9,speaker,pink
+4607-5,1459887063684,10,speaker,pink
+4607-5,1459887074599,11,speaker,green
+4607-5,1459887091412,12,speaker,brown
+4607-5,1459887103968,13,speaker,the target is the three
+4607-5,1459887127554,14,speaker,blue
+4607-5,1459887147706,15,speaker,purple
+4607-5,1459887159034,16,speaker,yellow
+4607-5,1459887167004,17,speaker,grey
+4607-5,1459887176081,18,speaker,yellow
+4607-5,1459887188428,19,speaker,gray
+4607-5,1459887197402,20,speaker,purple
+4607-5,1459887208107,21,speaker,purple
+4607-5,1459887223713,22,speaker,blue
+4607-5,1459887233919,23,speaker,blue
+4607-5,1459887241301,24,speaker,purple
+4607-5,1459887251471,25,speaker,green
+4607-5,1459887262348,26,speaker,gray
+4607-5,1459887270512,27,speaker,gray
+4607-5,1459887278716,28,speaker,purple
+4607-5,1459887289052,29,speaker,gray
+4607-5,1459887316135,30,speaker,purple
+4607-5,1459887334643,31,speaker,grey
+4607-5,1459887342918,32,speaker,bright purple
+4607-5,1459887360370,33,speaker,purple
+4607-5,1459887374761,34,speaker,green
+4607-5,1459887382583,35,speaker,blue
+4607-5,1459887393537,36,speaker,green
+4607-5,1459887404152,37,speaker,pink
+4607-5,1459887412680,38,speaker,green
+4607-5,1459887452578,39,speaker,the target is the three
+4607-5,1459887465027,40,speaker,bright green
+4607-5,1459887502215,41,speaker,grey
+4607-5,1459887530876,42,speaker,blue
+4607-5,1459887603357,43,speaker,red
+4607-5,1459887616188,44,listener,purple
+4607-5,1459887636093,45,speaker,pink
+4607-5,1459887660945,46,speaker,olive green
+4607-5,1459887684894,47,speaker,green
+4607-5,1459887726249,48,speaker,blue
+4607-5,1459887735410,49,speaker,brown
+4607-5,1459887746337,50,speaker,green
+4522-0,1459890035862,1,speaker,blue
+4522-0,1459890047768,2,speaker,bright purple
+4522-0,1459890059593,3,speaker,red
+4522-0,1459890067349,4,speaker,gray
+4522-0,1459890078649,5,speaker,purple
+4522-0,1459890088675,6,speaker,green
+4522-0,1459890104915,7,speaker,orange
+4522-0,1459890113156,8,speaker,the target is the sky blue
+4522-0,1459890138633,9,speaker,the target is the <unk> green .
+4522-0,1459890170664,10,speaker,purple
+4522-0,1459890177941,11,speaker,bright blue
+4522-0,1459890195341,12,speaker,grey
+4522-0,1459890211566,13,speaker,green
+4522-0,1459890220858,14,speaker,orange
+4522-0,1459890229804,15,speaker,the target is the sky blue
+4522-0,1459890242890,16,speaker,green
+4522-0,1459890255210,17,speaker,green
+4522-0,1459890262907,18,speaker,grey
+4522-0,1459890278567,19,speaker,green
+4522-0,1459890289570,20,speaker,purple
+4522-0,1459890298097,21,speaker,brown
+4522-0,1459890307860,22,speaker,purple
+4522-0,1459890316068,23,speaker,purple
+4522-0,1459890323844,24,speaker,blue
+4522-0,1459890334287,25,speaker,green
+4522-0,1459890350527,26,speaker,green
+4522-0,1459890361092,27,speaker,blue
+4522-0,1459890370772,28,speaker,the target is the last one is the last one is the last one is the last one is the last one is the last one is the last one is the last one is the last one is the last one is the last one is the last one is the last one is the last one is the last one is the last one is the last one is the last one is the last one is the last one is the
+4522-0,1459890411230,29,speaker,blue
+4522-0,1459890426234,30,speaker,blue
+4522-0,1459890437448,31,speaker,purple
+4522-0,1459890468951,32,speaker,green
+4522-0,1459890478401,33,speaker,purple
+4522-0,1459890486057,34,speaker,brown
+4522-0,1459890492228,35,speaker,blue
+4522-0,1459890508804,36,speaker,red
+4522-0,1459890522270,37,speaker,the target is the one
+4522-0,1459890530324,38,speaker,purple
+4522-0,1459890538286,39,speaker,yellow
+4522-0,1459890550812,40,speaker,purple
+4522-0,1459890567454,41,speaker,orange
+4522-0,1459890587564,42,speaker,pink
+4522-0,1459890595172,43,speaker,gray
+4522-0,1459890617675,44,speaker,grey
+4522-0,1459890629330,45,speaker,purple
+4522-0,1459890664083,46,speaker,green
+4522-0,1459890680325,47,speaker,yellow
+4522-0,1459890697261,48,speaker,blue
+4522-0,1459890710986,49,speaker,brown
+4522-0,1459890718635,50,speaker,grey
+7209-c,1459890828760,1,speaker,purple
+7209-c,1459890852050,2,speaker,grey
+7209-c,1459890878294,3,speaker,green
+7209-c,1459890949536,4,speaker,purple
+7209-c,1459891004208,5,speaker,blue
+7209-c,1459891029729,6,speaker,pink
+7209-c,1459891060905,7,speaker,blue
+7209-c,1459891120676,8,speaker,brown
+7209-c,1459891164003,9,speaker,green
+7209-c,1459891185588,10,speaker,green
+7209-c,1459891233364,11,speaker,purple
+7209-c,1459891268971,12,speaker,grey
+7209-c,1459891314692,13,speaker,purple
+7209-c,1459891343775,14,speaker,purple
+7209-c,1459891363896,15,speaker,blue
+7209-c,1459891386617,16,speaker,bright blue
+7209-c,1459891422309,17,speaker,green
+7209-c,1459891479426,18,speaker,green
+7209-c,1459891515488,19,speaker,green
+7209-c,1459891540517,20,speaker,bright green
+7209-c,1459891567581,21,speaker,bright blue
+7209-c,1459891595833,22,speaker,the target is the <unk> one
+7209-c,1459891629047,23,speaker,blue
+7209-c,1459891667271,24,speaker,orange
+7209-c,1459891697963,25,speaker,brown
+7209-c,1459891726823,26,speaker,blue
+7209-c,1459891767216,27,speaker,green
+7209-c,1459891867571,28,speaker,purple
+7209-c,1459891886361,29,speaker,bright blue
+7209-c,1459891901476,30,speaker,pink
+7209-c,1459891927497,31,speaker,purple
+7209-c,1459891965363,32,speaker,the target is the last one . ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+7209-c,1459891992902,33,speaker,green
+7209-c,1459892013869,34,speaker,orange
+7209-c,1459892036231,35,speaker,red
+7209-c,1459892057501,36,speaker,brown
+7209-c,1459892085744,37,speaker,purple
+7209-c,1459892111995,38,speaker,pink
+7209-c,1459892141517,39,speaker,olive green
+7209-c,1459892203800,40,speaker,purple
+7209-c,1459892227778,41,speaker,green
+7209-c,1459892261763,42,speaker,pink
+7209-c,1459892284600,43,speaker,brown
+7209-c,1459892316330,44,speaker,purple
+7209-c,1459892334128,45,speaker,bright blue
+7209-c,1459892379402,46,speaker,yellow
+7209-c,1459892464080,48,speaker,yellow
+7209-c,1459892523592,49,speaker,purple
+7209-c,1459892556919,50,speaker,purple
+3071-c,1459890978193,1,speaker,pink
+3071-c,1459891010451,2,speaker,blue
+3071-c,1459891042168,3,speaker,green
+3071-c,1459891072774,4,speaker,bright blue
+3071-c,1459891103805,5,speaker,pink
+3071-c,1459891141752,6,speaker,red
+3071-c,1459891199007,7,speaker,pink
+3071-c,1459891242268,8,speaker,pink
+3071-c,1459891279758,9,speaker,red
+3071-c,1459891309465,10,speaker,green
+3071-c,1459891346874,11,speaker,green
+3071-c,1459891391673,12,speaker,purple
+3071-c,1459891425458,13,speaker,purple
+3071-c,1459891445997,14,speaker,bright pink
+3071-c,1459891475115,15,speaker,brown
+3071-c,1459891508267,16,speaker,grey
+3071-c,1459891543085,17,speaker,green
+3071-c,1459891575132,18,speaker,blue
+3071-c,1459891599178,19,speaker,the target is the bright purple
+3071-c,1459891638915,20,speaker,purple
+3071-c,1459891681294,21,speaker,pink
+3071-c,1459891712713,22,speaker,purple
+3071-c,1459891752708,23,speaker,purple
+3071-c,1459891779670,24,speaker,grey
+3071-c,1459891804229,25,speaker,bright green
+3071-c,1459891830057,26,speaker,blue
+3071-c,1459891852524,27,speaker,grey
+3071-c,1459891890630,28,speaker,brown
+3071-c,1459891925483,29,speaker,the target is the two one
+3071-c,1459891946858,30,speaker,purple
+3071-c,1459891985342,31,speaker,purple
+3071-c,1459892044164,32,speaker,grey
+3071-c,1459892076459,33,speaker,green
+3071-c,1459892100429,34,speaker,purple
+3071-c,1459892119487,35,speaker,purple
+3071-c,1459892148676,36,speaker,yellow
+3071-c,1459892180558,37,speaker,pink
+3071-c,1459892208547,38,speaker,purple
+3071-c,1459892223267,39,speaker,green
+3071-c,1459892238799,40,speaker,purple
+3071-c,1459892248709,41,speaker,blue
+3071-c,1459892260198,42,speaker,bright blue
+3071-c,1459892275485,43,speaker,pink
+3071-c,1459892285044,44,speaker,brown
+3071-c,1459892298608,45,speaker,grey
+3071-c,1459892307725,46,speaker,green
+3071-c,1459892330324,47,speaker,blue
+3071-c,1459892344699,48,speaker,grey
+3071-c,1459892361239,49,speaker,pink
+3071-c,1459892372793,50,speaker,purple
+6305-1,1459891217373,1,speaker,purple
+6305-1,1459891226245,2,speaker,orange
+6305-1,1459891249149,3,speaker,bright blue
+6305-1,1459891259415,4,speaker,grey
+6305-1,1459891271298,5,speaker,the bright green
+6305-1,1459891279188,6,speaker,grey
+6305-1,1459891287364,7,speaker,blue
+6305-1,1459891294467,8,speaker,purple
+6305-1,1459891306882,9,speaker,brown
+6305-1,1459891317424,10,speaker,brown
+6305-1,1459891341243,11,speaker,the target is the last one . ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+6305-1,1459891348767,12,speaker,brown
+6305-1,1459891355574,13,speaker,red
+6305-1,1459891366929,14,speaker,bright blue
+6305-1,1459891391505,15,listener,blue
+6305-1,1459891398070,16,speaker,blue
+6305-1,1459891409087,17,listener,purple
+6305-1,1459891448722,18,speaker,red
+6305-1,1459891456773,19,speaker,the target is blue
+6305-1,1459891476859,20,listener,red
+6305-1,1459891491382,21,speaker,yellow
+6305-1,1459891504385,22,speaker,purple
+6305-1,1459891514380,23,listener,gray
+6305-1,1459891590821,24,speaker,bright green
+6305-1,1459891612327,25,listener,orange
+6305-1,1459891624850,26,speaker,brown
+6305-1,1459891636028,27,speaker,the target is the <unk> one
+6305-1,1459891645217,28,speaker,bright green
+6305-1,1459891703517,29,speaker,grey
+6305-1,1459891713788,30,speaker,red
+6305-1,1459891750028,31,speaker,purple
+6305-1,1459891810104,32,speaker,blue
+6305-1,1459891818258,33,speaker,green
+6305-1,1459891824958,34,speaker,gray
+6305-1,1459891832095,35,speaker,brown
+6305-1,1459891886354,36,speaker,purple
+6305-1,1459891903132,37,speaker,red
+6305-1,1459891909928,38,speaker,brown
+6305-1,1459891948775,39,speaker,green
+6305-1,1459891988118,40,speaker,purple
+6305-1,1459892039469,41,speaker,blue
+6305-1,1459892049804,42,speaker,the target is the three
+6305-1,1459892058965,43,speaker,purple
+6305-1,1459892069508,44,speaker,green
+6305-1,1459892082265,45,speaker,grey
+6305-1,1459892089317,46,speaker,red
+6305-1,1459892104818,47,speaker,blue
+6305-1,1459892113306,48,speaker,teal
+6305-1,1459892148393,49,speaker,grey
+6305-1,1459892169711,50,speaker,purple
+0429-9,1459891357588,1,speaker,pink
+0429-9,1459891401708,2,speaker,blue
+0429-9,1459891434262,3,speaker,bright blue
+0429-9,1459891457493,4,speaker,pink
+0429-9,1459891485133,5,speaker,grey
+0429-9,1459891514476,6,speaker,blue
+0429-9,1459891560089,7,speaker,blue
+0429-9,1459891582476,8,speaker,blue
+0429-9,1459891621147,9,speaker,green
+0429-9,1459891654491,10,speaker,purple
+0429-9,1459891676622,11,speaker,grey
+0429-9,1459891697214,12,speaker,grey
+0429-9,1459891710129,13,speaker,purple
+0429-9,1459891742375,14,speaker,blue
+0429-9,1459891762999,15,speaker,bright purple
+0429-9,1459891813574,16,speaker,purple
+0429-9,1459891861872,17,speaker,green
+0429-9,1459891884159,18,speaker,brown
+0429-9,1459891950504,19,speaker,green
+0429-9,1459891991829,20,speaker,bright green
+0429-9,1459892019575,21,speaker,bright purple
+0429-9,1459892048507,22,speaker,grey
+0429-9,1459892090549,23,speaker,the target is the three
+0429-9,1459892120432,24,speaker,brown
+0429-9,1459892150318,25,speaker,green
+0429-9,1459892171519,26,speaker,bright purple
+0429-9,1459892196287,27,speaker,orange
+0429-9,1459892231992,28,speaker,bright purple
+0429-9,1459892265851,29,speaker,orange
+0429-9,1459892282187,30,speaker,green
+0429-9,1459892317507,31,speaker,blue
+0429-9,1459892341057,32,speaker,bright blue
+0429-9,1459892420346,33,speaker,bright green
+0429-9,1459892488652,34,speaker,grey
+0429-9,1459892535256,35,speaker,purple
+0429-9,1459892640500,36,speaker,purple
+0429-9,1459892687677,37,speaker,bright purple
+0429-9,1459892732407,38,speaker,green
+0429-9,1459892785252,39,speaker,blue
+0429-9,1459892805553,40,speaker,green
+0429-9,1459892835535,41,speaker,green
+0429-9,1459892872158,42,speaker,blue
+0429-9,1459892906233,43,speaker,bright blue
+0429-9,1459892939461,44,speaker,grey
+0429-9,1459892962750,45,speaker,green
+0429-9,1459892987489,46,speaker,brown
+0429-9,1459893007911,47,speaker,orange
+0429-9,1459893020085,48,speaker,pink
+0429-9,1459893037159,49,speaker,the target is blue
+0429-9,1459893073776,50,speaker,grey
+8730-c,1459891293995,1,speaker,green
+8730-c,1459891314915,2,speaker,bright purple
+8730-c,1459891329774,3,speaker,grey
+8730-c,1459891363470,4,speaker,green
+8730-c,1459891378102,5,speaker,grey
+8730-c,1459891390931,6,speaker,red
+8730-c,1459891405063,7,speaker,gray
+8730-c,1459891414142,8,speaker,grey
+8730-c,1459891432522,9,speaker,green
+8730-c,1459891446954,10,speaker,blue
+8730-c,1459891455102,11,speaker,blue
+8730-c,1459891465747,12,speaker,blue
+8730-c,1459891476160,13,speaker,red
+8730-c,1459891489600,14,speaker,pink
+8730-c,1459891499351,15,speaker,purple
+8730-c,1459891512311,16,speaker,orange
+8730-c,1459891521632,17,speaker,blue
+8730-c,1459891546146,18,speaker,purple
+8730-c,1459891567242,19,speaker,grey
+8730-c,1459891577103,20,speaker,grey
+8730-c,1459891590313,21,speaker,blue
+8730-c,1459891621991,22,speaker,green
+8730-c,1459891631748,23,speaker,the target is the last one . ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+8730-c,1459891644236,24,speaker,orange
+8730-c,1459891657495,25,speaker,pink
+8730-c,1459891674732,26,speaker,purple
+8730-c,1459891687228,27,speaker,grey
+8730-c,1459891697350,28,speaker,bright green
+8730-c,1459891716432,29,speaker,yellow
+8730-c,1459891728257,30,speaker,blue
+8730-c,1459891737446,31,speaker,blue
+8730-c,1459891746236,32,speaker,blue
+8730-c,1459891761528,33,speaker,blue
+8730-c,1459891771691,34,speaker,orange
+8730-c,1459891783215,35,speaker,grey
+8730-c,1459891793647,36,speaker,the target is the <unk> one
+8730-c,1459891804340,37,speaker,orange
+8730-c,1459891811906,38,speaker,green
+8730-c,1459891823761,39,speaker,brown
+8730-c,1459891838192,40,speaker,bright purple
+8730-c,1459891846942,41,speaker,orange
+8730-c,1459891869899,42,speaker,purple
+8730-c,1459891879019,43,speaker,blue
+8730-c,1459891892024,44,speaker,pink
+8730-c,1459891929436,45,speaker,green
+8730-c,1459891940950,46,speaker,purple
+8730-c,1459891957016,47,speaker,green
+8730-c,1459891974615,48,speaker,blue
+8730-c,1459891985788,49,speaker,brown
+8730-c,1459891996011,50,speaker,purple
+8961-d,1459891397684,1,speaker,bright pink
+8961-d,1459891417721,2,speaker,green
+8961-d,1459891436120,3,speaker,bright green
+8961-d,1459891479021,4,speaker,green
+8961-d,1459891502371,5,speaker,teal
+8961-d,1459891531225,6,speaker,bright green
+8961-d,1459891579450,7,speaker,grey
+8961-d,1459891597545,8,speaker,green
+8961-d,1459891641979,9,speaker,orange
+8961-d,1459891700504,10,speaker,grey
+8961-d,1459891719529,11,speaker,green
+8961-d,1459891760121,12,speaker,blue
+8961-d,1459891769168,13,speaker,green
+8961-d,1459891779550,14,speaker,purple
+8961-d,1459891903332,15,speaker,green
+8961-d,1459891923603,16,speaker,orange
+8961-d,1459891989317,17,listener,yellow
+8961-d,1459892005637,18,speaker,bright purple
+8961-d,1459892033012,19,speaker,pink
+8961-d,1459892067833,20,speaker,purple
+8961-d,1459892100945,21,speaker,green
+8961-d,1459892141136,22,speaker,gray
+8961-d,1459892155882,23,speaker,purple
+8961-d,1459892171243,24,speaker,blue
+8961-d,1459892213953,25,speaker,purple
+8961-d,1459892328310,26,speaker,purple
+8961-d,1459892337129,27,speaker,brown
+8961-d,1459892344892,28,speaker,bright purple
+8961-d,1459892362141,29,speaker,green
+8961-d,1459892386606,30,speaker,green
+8961-d,1459892402719,31,speaker,blue
+8961-d,1459892415153,32,speaker,yellow
+8961-d,1459892435442,33,speaker,green
+8961-d,1459892468296,34,speaker,purple
+8961-d,1459892498687,35,speaker,grey
+8961-d,1459892531860,36,speaker,red
+8961-d,1459892542086,37,speaker,red
+8961-d,1459892558110,38,speaker,orange
+8961-d,1459892573034,39,speaker,blue
+8961-d,1459892600348,40,speaker,pink
+8961-d,1459892611157,41,speaker,the target is the <unk> <unk> ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+8961-d,1459892636666,42,speaker,purple
+8961-d,1459892693134,43,speaker,green
+8961-d,1459892705098,44,speaker,red
+8961-d,1459892732336,45,speaker,the target is the two one
+8961-d,1459892752304,46,speaker,pink
+8961-d,1459892780833,47,speaker,<unk> blue
+8961-d,1459892806661,48,speaker,blue
+8961-d,1459892842663,49,listener,grey
+8961-d,1459892864888,50,speaker,green
+2653-0,1459891435636,1,speaker,blue
+2653-0,1459891461754,2,speaker,pink
+2653-0,1459891467306,3,speaker,green
+2653-0,1459891476551,4,speaker,grey
+2653-0,1459891483828,5,speaker,purple
+2653-0,1459891493204,6,speaker,the target is the bright one
+2653-0,1459891503034,7,speaker,purple
+2653-0,1459891511226,8,speaker,brown
+2653-0,1459891526609,9,speaker,purple
+2653-0,1459891534894,10,speaker,green
+2653-0,1459891546826,11,speaker,purple
+2653-0,1459891561278,12,speaker,purple
+2653-0,1459891569569,13,speaker,bright green
+2653-0,1459891578148,14,speaker,grey
+2653-0,1459891587863,15,speaker,green
+2653-0,1459891596282,16,speaker,brown
+2653-0,1459891618068,17,speaker,red
+2653-0,1459891627002,18,speaker,pink
+2653-0,1459891634151,19,speaker,green
+2653-0,1459891641342,20,speaker,blue
+2653-0,1459891652042,21,speaker,purple
+2653-0,1459891659057,22,speaker,green
+2653-0,1459891665534,23,speaker,blue
+2653-0,1459891673642,24,speaker,purple
+2653-0,1459891682839,25,speaker,purple
+2653-0,1459891693009,26,speaker,pink
+2653-0,1459891704337,27,speaker,purple
+2653-0,1459891711418,28,speaker,yellow
+2653-0,1459891719924,29,speaker,grey
+2653-0,1459891729853,30,speaker,pink
+2653-0,1459891746746,31,speaker,purple
+2653-0,1459891776254,32,speaker,brown
+2653-0,1459891785809,33,speaker,pink
+2653-0,1459891793966,34,speaker,grey
+2653-0,1459891804954,35,speaker,yellow
+2653-0,1459891813905,36,speaker,purple
+2653-0,1459891822865,37,speaker,green
+2653-0,1459891829396,38,speaker,pink
+2653-0,1459891841594,39,speaker,purple
+2653-0,1459891853156,40,speaker,bright purple
+2653-0,1459891863230,41,speaker,green
+2653-0,1459891874359,42,speaker,purple
+2653-0,1459891881745,43,speaker,the target is the <unk> one
+2653-0,1459891890458,44,speaker,purple
+2653-0,1459891899665,45,speaker,the target is the <unk> one
+2653-0,1459891906967,46,speaker,teal
+2653-0,1459891914289,47,speaker,bright purple
+2653-0,1459891921751,48,speaker,the target is the three
+2653-0,1459891933409,49,speaker,green
+2653-0,1459891945406,50,speaker,green
+7975-c,1459891637333,1,speaker,grey
+7975-c,1459891657370,2,speaker,purple
+7975-c,1459891679486,3,speaker,blue
+7975-c,1459891705171,4,speaker,grey
+7975-c,1459891720301,5,speaker,blue
+7975-c,1459891735117,6,speaker,bright blue
+7975-c,1459891744779,7,speaker,yellow
+7975-c,1459891759581,8,speaker,grey
+7975-c,1459891779925,9,speaker,grey
+7975-c,1459891793725,10,speaker,red
+7975-c,1459891812746,11,speaker,blue
+7975-c,1459891825968,12,speaker,brown
+7975-c,1459891836216,13,speaker,purple
+7975-c,1459891846845,14,speaker,green
+7975-c,1459891854815,15,speaker,brown
+7975-c,1459891866390,16,speaker,blue
+7975-c,1459891877340,17,speaker,gray
+7975-c,1459891893274,18,speaker,green
+7975-c,1459891909853,19,speaker,blue
+7975-c,1459891922051,20,speaker,the target is the <unk> one
+7975-c,1459891932366,21,speaker,blue
+7975-c,1459891948332,22,speaker,the target is the <unk> one
+7975-c,1459891957980,23,speaker,yellow
+7975-c,1459891965571,24,speaker,purple
+7975-c,1459891980373,25,speaker,pink
+7975-c,1459891999972,26,speaker,pink
+7975-c,1459892010468,27,speaker,brown
+7975-c,1459892017482,28,speaker,purple
+7975-c,1459892023868,29,speaker,purple
+7975-c,1459892031683,30,speaker,blue
+7975-c,1459892045933,31,speaker,green
+7975-c,1459892060715,32,speaker,bright green
+7975-c,1459892073985,33,speaker,green
+7975-c,1459892083353,34,speaker,blue
+7975-c,1459892093129,35,speaker,grey
+7975-c,1459892103089,36,speaker,grey
+7975-c,1459892110816,37,speaker,grey
+7975-c,1459892121502,38,speaker,bright pink
+7975-c,1459892129233,39,speaker,purple
+7975-c,1459892136689,40,speaker,yellow
+7975-c,1459892145960,41,speaker,bright green
+7975-c,1459892166278,42,speaker,the target is the three
+7975-c,1459892178824,43,speaker,brown
+7975-c,1459892187448,44,speaker,brown
+7975-c,1459892198839,45,speaker,brown
+7975-c,1459892214864,46,speaker,grey
+7975-c,1459892227916,47,speaker,green
+7975-c,1459892236871,48,speaker,grey
+7975-c,1459892248570,49,speaker,brown
+7975-c,1459892262994,50,speaker,blue
+9146-e,1459891743368,1,speaker,purple
+9146-e,1459891762091,2,speaker,pink
+9146-e,1459891774017,3,speaker,green
+9146-e,1459891792645,4,speaker,green
+9146-e,1459891807033,5,speaker,purple
+9146-e,1459891814904,6,speaker,blue
+9146-e,1459891823157,7,speaker,purple
+9146-e,1459891846928,8,speaker,bright blue
+9146-e,1459891867025,9,speaker,pink
+9146-e,1459891889281,10,speaker,purple
+9146-e,1459891901517,11,speaker,brown
+9146-e,1459891912391,12,speaker,grey
+9146-e,1459891922021,13,speaker,green
+9146-e,1459891934748,14,speaker,gray
+9146-e,1459891958666,15,speaker,orange
+9146-e,1459891976384,16,speaker,purple
+9146-e,1459891985218,17,speaker,purple
+9146-e,1459891992760,18,speaker,red
+9146-e,1459891999785,19,speaker,blue
+9146-e,1459892007257,20,speaker,purple
+9146-e,1459892018644,21,speaker,green
+9146-e,1459892043526,22,speaker,purple
+9146-e,1459892053970,23,speaker,blue
+9146-e,1459892074190,24,speaker,the target is the last one . ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+9146-e,1459892084135,25,speaker,purple
+9146-e,1459892096652,26,speaker,bright purple
+9146-e,1459892113912,27,speaker,blue
+9146-e,1459892121601,28,speaker,green
+9146-e,1459892130960,29,speaker,pink
+9146-e,1459892140017,30,speaker,pink
+9146-e,1459892150304,31,speaker,grey
+9146-e,1459892154720,32,speaker,the target is the <unk> one
+9146-e,1459892166743,33,speaker,yellow
+9146-e,1459892175954,34,speaker,brown
+9146-e,1459892185532,35,speaker,blue
+9146-e,1459892192606,36,speaker,blue
+9146-e,1459892200281,37,speaker,pink
+9146-e,1459892209588,38,speaker,green
+9146-e,1459892223835,39,speaker,gray
+9146-e,1459892237061,40,speaker,purple
+9146-e,1459892250553,41,speaker,grey
+9146-e,1459892258957,42,speaker,green
+9146-e,1459892267553,43,speaker,purple
+9146-e,1459892279410,44,speaker,green
+9146-e,1459892302181,45,speaker,red
+9146-e,1459892323991,46,speaker,grey
+9146-e,1459892341032,47,speaker,purple
+9146-e,1459892369674,48,speaker,green
+9146-e,1459892379435,49,speaker,brown
+9146-e,1459892388852,50,speaker,green
+3432-6,1459891833928,1,speaker,blue
+3432-6,1459891846236,2,speaker,orange
+3432-6,1459891863130,3,speaker,the target is the <unk> <unk> ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+3432-6,1459891888610,4,speaker,green
+3432-6,1459891916438,5,speaker,yellow
+3432-6,1459891945143,6,speaker,purple
+3432-6,1459891958119,7,speaker,blue
+3432-6,1459891969158,8,speaker,green
+3432-6,1459891995918,9,speaker,the target is the target is the <unk> one
+3432-6,1459892006182,10,speaker,orange
+3432-6,1459892031393,11,speaker,purple
+3432-6,1459892046870,12,speaker,green
+3432-6,1459892056185,13,speaker,pink
+3432-6,1459892064256,14,speaker,green
+3432-6,1459892079806,15,speaker,the target is the bright green
+3432-6,1459892087070,16,speaker,green
+3432-6,1459892114405,17,speaker,blue
+3432-6,1459892126459,18,speaker,grey
+3432-6,1459892135813,19,speaker,pink
+3432-6,1459892143341,20,speaker,purple
+3432-6,1459892155253,21,speaker,purple
+3432-6,1459892179911,22,speaker,brown
+3432-6,1459892192485,23,speaker,brown
+3432-6,1459892199866,24,speaker,bright pink
+3432-6,1459892217319,25,speaker,green
+3432-6,1459892276341,26,speaker,green
+3432-6,1459892289973,27,speaker,green
+3432-6,1459892309246,28,speaker,grey
+3432-6,1459892319679,29,speaker,green
+3432-6,1459892357349,30,speaker,purple
+3432-6,1459892390909,31,speaker,the target is the <unk> one
+3432-6,1459892403404,32,speaker,orange
+3432-6,1459892422308,33,speaker,blue
+3432-6,1459892436848,34,speaker,red
+3432-6,1459892459348,35,speaker,purple
+3432-6,1459892480813,36,speaker,purple
+3432-6,1459892494237,37,speaker,purple
+3432-6,1459892512467,38,speaker,the target is the <unk> <unk> ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+3432-6,1459892525301,39,speaker,green
+3432-6,1459892540418,40,speaker,blue
+3432-6,1459892549389,41,speaker,pink
+3432-6,1459892575829,42,speaker,the target is the three
+3432-6,1459892614110,43,speaker,purple
+3432-6,1459892639036,44,speaker,bright blue
+3432-6,1459892662316,45,speaker,pink
+3432-6,1459892675939,46,speaker,orange
+3432-6,1459892686931,47,speaker,green
+3432-6,1459892741667,48,speaker,brown
+3432-6,1459892776258,49,listener,bright purple
+3432-6,1459892794669,50,speaker,grey
+2986-a,1459891971542,1,speaker,green
+2986-a,1459891981931,2,speaker,purple
+2986-a,1459891990342,3,speaker,pink
+2986-a,1459892016474,4,listener,purple
+2986-a,1459892051721,5,speaker,purple
+2986-a,1459892086550,6,listener,purple
+2986-a,1459892095613,7,speaker,pink
+2986-a,1459892124953,8,speaker,green
+2986-a,1459892147223,9,speaker,green
+2986-a,1459892162921,10,speaker,brown
+2986-a,1459892172722,11,speaker,orange
+2986-a,1459892179703,12,speaker,grey
+2986-a,1459892190191,13,speaker,blue
+2986-a,1459892200002,14,speaker,purple
+2986-a,1459892208165,15,speaker,bright purple
+2986-a,1459892217503,16,speaker,purple
+2986-a,1459892228493,17,speaker,blue
+2986-a,1459892240861,18,speaker,green
+2986-a,1459892273659,19,speaker,grey
+2986-a,1459892283567,20,speaker,purple
+2986-a,1459892293094,21,speaker,purple
+2986-a,1459892300921,22,speaker,orange
+2986-a,1459892308050,23,speaker,purple
+2986-a,1459892315945,24,speaker,grey
+2986-a,1459892328333,25,speaker,purple
+2986-a,1459892334135,26,speaker,red
+2986-a,1459892355085,27,speaker,gray
+2986-a,1459892394225,28,speaker,purple
+2986-a,1459892404960,29,speaker,yellow
+2986-a,1459892412929,30,speaker,yellow
+2986-a,1459892420651,31,speaker,purple
+2986-a,1459892434129,32,speaker,blue
+2986-a,1459892444405,33,speaker,grey
+2986-a,1459892454405,34,speaker,blue
+2986-a,1459892460646,35,speaker,grey
+2986-a,1459892467381,36,speaker,purple
+2986-a,1459892478453,37,speaker,purple
+2986-a,1459892487684,38,speaker,pink
+2986-a,1459892498026,39,speaker,the target is the three
+2986-a,1459892509762,40,speaker,bright purple
+2986-a,1459892518093,41,speaker,pink
+2986-a,1459892529888,42,speaker,purple
+2986-a,1459892538116,43,speaker,yellow
+2986-a,1459892545031,44,speaker,blue
+2986-a,1459892559735,45,speaker,pink
+2986-a,1459892593684,46,speaker,blue
+2986-a,1459892601831,47,speaker,grey
+2986-a,1459892608308,48,speaker,purple
+2986-a,1459892628613,49,speaker,grey
+2986-a,1459892750178,50,speaker,green
+1220-a,1459892086159,1,speaker,grey
+1220-a,1459892101723,2,speaker,green
+1220-a,1459892120979,3,speaker,brown
+1220-a,1459892140973,4,speaker,grey
+1220-a,1459892156036,5,speaker,green
+1220-a,1459892178496,6,speaker,blue
+1220-a,1459892213282,7,speaker,purple
+1220-a,1459892223526,8,speaker,blue
+1220-a,1459892245851,9,speaker,grey
+1220-a,1459892282865,10,speaker,yellow
+1220-a,1459892311356,11,speaker,pink
+1220-a,1459892320109,12,speaker,grey
+1220-a,1459892334851,13,speaker,orange
+1220-a,1459892354857,14,speaker,green
+1220-a,1459892388251,15,speaker,blue
+1220-a,1459892409819,16,speaker,red
+1220-a,1459892420529,17,speaker,bright green
+1220-a,1459892456083,18,speaker,green
+1220-a,1459892465675,19,speaker,blue
+1220-a,1459892488553,20,speaker,red
+1220-a,1459892501489,21,speaker,purple
+1220-a,1459892549911,22,speaker,bright green
+1220-a,1459892554715,23,speaker,orange
+1220-a,1459892571419,24,speaker,the target is the three
+1220-a,1459892584374,25,speaker,brown
+1220-a,1459892620030,26,speaker,grey
+1220-a,1459892627791,27,speaker,green
+1220-a,1459892637033,28,speaker,brown
+1220-a,1459892645965,29,speaker,purple
+1220-a,1459892657338,30,speaker,bright pink
+1220-a,1459892677512,31,speaker,purple
+1220-a,1459892687063,32,speaker,the target is the three
+1220-a,1459892697895,33,speaker,purple
+1220-a,1459892705154,34,speaker,grey
+1220-a,1459892728417,35,speaker,green
+1220-a,1459892740848,36,speaker,grey
+1220-a,1459892752689,37,speaker,yellow
+1220-a,1459892773232,38,speaker,purple
+1220-a,1459892799830,39,speaker,purple
+1220-a,1459892811790,40,speaker,yellow
+1220-a,1459892827212,41,speaker,brown
+1220-a,1459892850281,42,speaker,the bright green
+1220-a,1459892863363,43,speaker,green
+1220-a,1459892883327,44,speaker,gray
+1220-a,1459892898883,45,speaker,yellow
+1220-a,1459892913174,46,speaker,purple
+1220-a,1459892925048,47,speaker,brown
+1220-a,1459892934151,48,speaker,purple
+1220-a,1459892983570,49,listener,brown
+1220-a,1459893043870,50,listener,brown
+5711-e,1459892162822,1,speaker,blue
+5711-e,1459892215779,2,speaker,the target is the three
+5711-e,1459892276483,3,speaker,red
+5711-e,1459892395402,4,speaker,purple
+5711-e,1459892419921,5,speaker,blue
+5711-e,1459892436426,6,speaker,green
+5711-e,1459892480032,7,speaker,blue
+5711-e,1459892510101,8,speaker,pink
+5711-e,1459892590057,9,speaker,purple
+5711-e,1459892628390,10,speaker,brown
+5711-e,1459892677292,11,speaker,the target is the three
+5711-e,1459892756026,12,speaker,purple
+5711-e,1459892779511,13,speaker,green
+5711-e,1459892794076,14,speaker,green
+5711-e,1459892809169,15,speaker,green
+5711-e,1459892854991,16,speaker,purple
+5711-e,1459892897516,17,speaker,blue
+5711-e,1459892922056,18,speaker,blue
+5711-e,1459892955336,19,speaker,green
+5711-e,1459892971335,20,speaker,the target is the three
+5711-e,1459892994754,21,speaker,bright green
+5711-e,1459893025629,22,speaker,the target is the three
+5711-e,1459893043150,23,speaker,orange
+5711-e,1459893056745,24,speaker,purple
+5711-e,1459893082119,25,speaker,purple
+5711-e,1459893110008,26,speaker,bright purple
+5711-e,1459893140520,27,speaker,blue
+5711-e,1459893162306,28,speaker,green
+5711-e,1459893234375,29,speaker,pink
+5711-e,1459893253273,30,speaker,green
+5711-e,1459893270279,31,speaker,grey
+5711-e,1459893289655,32,speaker,green
+5711-e,1459893323680,33,speaker,the target is the <unk> one
+5711-e,1459893343692,34,speaker,yellow
+5711-e,1459893362670,35,speaker,the target is the <unk> one
+5711-e,1459893373949,36,speaker,blue
+5711-e,1459893422984,37,speaker,yellow
+5711-e,1459893474858,38,speaker,purple
+5711-e,1459893501570,39,speaker,grey
+5711-e,1459893514591,40,speaker,pink
+5711-e,1459893531618,41,speaker,bright blue
+5711-e,1459893544847,42,speaker,bright blue
+5711-e,1459893568853,43,speaker,brown
+5711-e,1459893582118,44,speaker,green
+5711-e,1459893597988,45,speaker,purple
+5711-e,1459893618008,46,speaker,green
+5711-e,1459893638598,47,speaker,brown
+5711-e,1459893675104,48,speaker,bright purple
+5711-e,1459893685527,49,speaker,the target is the <unk> one
+5711-e,1459893700697,50,speaker,purple
+2806-5,1459892263090,1,speaker,blue
+2806-5,1459892276242,2,speaker,gray
+2806-5,1459892341880,3,speaker,purple
+2806-5,1459892400822,4,speaker,purple
+2806-5,1459892413966,5,speaker,blue
+2806-5,1459892435822,6,speaker,the target is the three
+2806-5,1459892466036,7,speaker,pink
+2806-5,1459892486655,8,speaker,grey
+2806-5,1459892507136,9,speaker,bright pink
+2806-5,1459892527573,10,speaker,grey
+2806-5,1459892547488,11,speaker,bright blue
+2806-5,1459892581459,12,speaker,blue
+2806-5,1459892602172,13,speaker,blue
+2806-5,1459892625975,14,speaker,grey
+2806-5,1459892644238,15,speaker,bright pink
+2806-5,1459892678503,16,speaker,green
+2806-5,1459892694324,17,speaker,the target is the three
+2806-5,1459892712926,18,speaker,olive green
+2806-5,1459892756570,19,speaker,green
+2806-5,1459892787765,20,speaker,purple
+2806-5,1459892810627,21,speaker,pink
+2806-5,1459892852589,22,speaker,orange
+2806-5,1459892868495,23,speaker,blue
+2806-5,1459892883743,24,speaker,green
+2806-5,1459892918980,25,speaker,brown
+2806-5,1459892936285,26,speaker,green
+2806-5,1459892974790,27,speaker,purple
+2806-5,1459893002660,28,speaker,red
+2806-5,1459893033593,29,speaker,the target is the <unk> one
+2806-5,1459893075967,30,speaker,purple
+2806-5,1459893095170,31,speaker,brown
+2806-5,1459893114159,32,speaker,grey
+2806-5,1459893134848,33,speaker,red
+2806-5,1459893154479,34,speaker,purple
+2806-5,1459893181675,35,speaker,grey
+2806-5,1459893205578,36,speaker,yellow
+2806-5,1459893212849,37,speaker,blue
+2806-5,1459893231679,38,speaker,green
+2806-5,1459893261898,39,speaker,pink
+2806-5,1459893289475,40,speaker,the target is the last one . ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+2806-5,1459893309486,41,speaker,blue
+2806-5,1459893325008,42,speaker,green
+2806-5,1459893345074,43,speaker,blue
+2806-5,1459893370917,44,speaker,brown
+2806-5,1459893381570,45,speaker,purple
+2806-5,1459893394754,46,speaker,green
+2806-5,1459893417369,47,speaker,blue
+2806-5,1459893446948,48,speaker,bright purple
+2806-5,1459893468395,49,speaker,green
+2806-5,1459893482229,50,speaker,green
+9923-6,1459892351589,1,speaker,green
+9923-6,1459892410594,2,speaker,green
+9923-6,1459892427932,3,speaker,red
+9923-6,1459892478025,4,speaker,brown
+9923-6,1459892499104,5,speaker,bright blue
+9923-6,1459892527043,6,speaker,purple
+9923-6,1459892538752,7,speaker,purple
+9923-6,1459892552104,8,speaker,pink
+9923-6,1459892567626,9,speaker,teal
+9923-6,1459892583254,10,speaker,purple
+9923-6,1459892636490,11,speaker,the bright green
+9923-6,1459892656711,12,speaker,purple
+9923-6,1459892668076,13,speaker,purple
+9923-6,1459892676310,14,speaker,purple
+9923-6,1459892715877,15,speaker,bright green
+9923-6,1459892752961,16,speaker,the target is the <unk> one .
+9923-6,1459892809791,17,speaker,the target is the bright green
+9923-6,1459892828901,18,speaker,yellow
+9923-6,1459892839873,19,speaker,brown
+9923-6,1459892856509,20,speaker,blue
+9923-6,1459892899224,21,speaker,the target is the three
+9923-6,1459892920746,22,speaker,bright green
+9923-6,1459892932536,23,speaker,green
+9923-6,1459892979979,24,speaker,olive green
+9923-6,1459893028674,25,speaker,green
+9923-6,1459893047354,26,speaker,purple
+9923-6,1459893056134,27,speaker,blue
+9923-6,1459893079022,28,speaker,blue
+9923-6,1459893098322,29,speaker,green
+9923-6,1459893110851,30,speaker,grey
+9923-6,1459893147124,31,speaker,the target is the bright green
+9923-6,1459893158447,32,speaker,purple
+9923-6,1459893172121,33,speaker,purple
+9923-6,1459893183333,34,speaker,brown
+9923-6,1459893189877,35,speaker,green
+9923-6,1459893209655,36,speaker,green
+9923-6,1459893233710,37,speaker,purple
+9923-6,1459893256081,38,speaker,grey
+9923-6,1459893295904,39,speaker,the target is the three
+9923-6,1459893311228,40,speaker,green
+9923-6,1459893321423,41,speaker,purple
+9923-6,1459893335593,42,speaker,brown
+9923-6,1459893360025,43,speaker,brown
+9923-6,1459893376677,44,speaker,brown
+9923-6,1459893399775,45,speaker,blue
+9923-6,1459893412762,46,speaker,bright blue
+9923-6,1459893428813,47,speaker,green
+9923-6,1459893438397,48,speaker,green
+9923-6,1459893448243,49,speaker,grey
+9923-6,1459893460846,50,speaker,red
+7601-b,1459892442587,1,speaker,green
+7601-b,1459892455986,2,speaker,green
+7601-b,1459892469698,3,speaker,pink
+7601-b,1459892483602,4,speaker,purple
+7601-b,1459892495658,5,speaker,bright pink
+7601-b,1459892502498,6,speaker,orange
+7601-b,1459892508346,7,speaker,purple
+7601-b,1459892527258,8,speaker,brown
+7601-b,1459892538218,9,speaker,purple
+7601-b,1459892547970,10,speaker,blue
+7601-b,1459892559154,11,speaker,bright purple
+7601-b,1459892572315,12,speaker,bright blue
+7601-b,1459892609443,13,speaker,grey
+7601-b,1459892621235,14,speaker,yellow
+7601-b,1459892629299,15,speaker,blue
+7601-b,1459892639875,16,speaker,pink
+7601-b,1459892675499,17,speaker,green
+7601-b,1459892688812,18,speaker,blue
+7601-b,1459892701059,19,speaker,green
+7601-b,1459892722603,20,speaker,purple
+7601-b,1459892746835,21,speaker,purple
+7601-b,1459892755907,22,speaker,green
+7601-b,1459892764100,23,speaker,brown
+7601-b,1459892772268,24,speaker,pink
+7601-b,1459892782043,25,speaker,purple
+7601-b,1459892794651,26,speaker,yellow
+7601-b,1459892806276,27,speaker,bright blue
+7601-b,1459892812643,28,speaker,grey
+7601-b,1459892819083,29,speaker,bright blue
+7601-b,1459892830164,30,speaker,purple
+7601-b,1459892838067,31,speaker,purple
+7601-b,1459892844035,32,speaker,green
+7601-b,1459892853099,33,speaker,bright green
+7601-b,1459892874884,34,speaker,brown
+7601-b,1459892883204,35,speaker,brown
+7601-b,1459892889364,36,speaker,green
+7601-b,1459892899332,37,speaker,purple
+7601-b,1459892910164,38,speaker,gray
+7601-b,1459892917180,39,speaker,blue
+7601-b,1459892933132,40,speaker,pink
+7601-b,1459892941524,41,speaker,purple
+7601-b,1459892948796,42,speaker,bright blue
+7601-b,1459892956756,43,speaker,grey
+7601-b,1459892963764,44,speaker,grey
+7601-b,1459892969916,45,speaker,brown
+7601-b,1459892977020,46,speaker,brown
+7601-b,1459892986092,47,speaker,the target is the last one . ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+7601-b,1459892992044,48,speaker,blue
+7601-b,1459892997716,49,speaker,green
+7601-b,1459893010252,50,speaker,bright blue
