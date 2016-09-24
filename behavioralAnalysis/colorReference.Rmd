@@ -14,6 +14,8 @@ library(dplyr)
 library(qdap)
 library(stringr)
 library(knitr)
+library(xtable)
+setwd("~/Repos/coop-nets/behavioralAnalysis/")
 ```
 
 # Pre-processing human data
@@ -23,14 +25,13 @@ First, we want to clean the data: join data frames together, remove games where 
 Note: there's a bunch of additional pre-processing that it's still be nice to do. For instance, it would be nice to strip all the meta-commentary (e.g. "oops" after missing, complaining about task, etc.)
 
 ```{r}
-setwd("~/Repos/coop-nets/behavioralAnalysis")
-
 msgs = read.csv("./humanOutput/colorReferenceMessage.csv") %>%
   rename(msgTime = time, 
          role = sender)
 
 clks = read.csv("./humanOutput/colorReferenceClicks.csv") %>%
-  mutate(condition = factor(condition, levels = c("closer", "further", "equal"), labels = c("hard", "medium", "easy"))) %>%
+  mutate(condition = factor(condition, levels = c("closer", "further", "equal"), 
+                            labels = c("far", "split", "close"))) %>%
   rename(clkTime = time)
 
 subjInfo = read.csv("./humanOutput/colorReference-subject_information.csv") %>%
@@ -47,7 +48,8 @@ goodGames <- unique((rawAggregated %>%
   group_by(gameid) %>%
   filter(length(unique(roundNum)) == 50))$gameid)
 
-combined_human <- rawAggregated %>%
+combined_human <- clks %>%
+  left_join(msgs, by = c("gameid", "roundNum")) %>%
   filter(gameid %in% goodGames) %>%
   mutate(numOutcome = ifelse(outcome == "true", 1, 0)) %>%
   mutate(numRawWords = 1 + str_count(contents, fixed(" "))) %>%
@@ -64,11 +66,12 @@ combined_human <- rawAggregated %>%
 
 ```{r}
 robo_msgs = read.csv("./modelOutput/speaker_reccontext_tuned_message.csv") %>%
-  rename(msgTime = time, 
-         role = sender)
+  rename(msgTime = time, role = sender) %>%
+  mutate(role = "speaker")
 
-robo_clks = read.csv("./modelOutput/listener_lsl_blend_sampled_clickedObj.csv") %>%
-  mutate(condition = factor(condition, levels = c("closer", "further", "equal"), labels = c("hard", "medium", "easy"))) %>%
+robo_clks = read.csv("./modelOutput/listener_gaussian_tuned_clickedObj.csv") %>%
+  mutate(condition = factor(condition, levels = c("closer", "further", "equal"), 
+                            labels = c("far", "split", "close"))) %>%
   rename(clkTime = time)
 
 robo_rawAggregated <- robo_clks %>% 
@@ -87,7 +90,7 @@ combined_model <- robo_rawAggregated %>%
 ```
 
 ```{r}
-combined = rbind(combined_human, combined_model)
+combined = rbind(combined_human, combined_model) 
 ```
 
 # Listener analysis: Do people make more mistakes on harder trials?
@@ -123,12 +126,13 @@ listenerSummary %>%
 ### Make bar plot
 
 ```{r}
+pdf("../writing/2016/figures/listenerAccuracy.pdf", width = 6, height = 3)
 ggplot(listenerSummary, aes(x = condition, y = percentCorrect, fill = source)) +
     geom_bar(stat = "identity", position = "dodge") +
     geom_errorbar(aes(ymax = percentCorrect + se, ymin = percentCorrect - se), 
                   position=dodge, width=0.25) + 
     theme_bw()
-
+dev.off()
 ```
 
 # Generate latex table for TACL paper:
@@ -138,9 +142,8 @@ Note that taggedColorMsgs.csv is created in tagPOS.ipynb.
 We're going to run both human and model output through a pipeline to get a table with the different conditions as columns and different metrics as rows... 
 
 ```{r}
-# TODO: include model metrics in table as well
-# TODO: use stanford pos tagger
-taggedDF = read.csv("color/taggedColorMsgs.csv")
+# TODO: include model metrics in table as well (need to run model through ipynb)
+taggedDF = read.csv("taggedColorMsgs.csv")
 
 # TODO: present se in table (e.g. in parens after mean)
 resultTable = combined %>% 
@@ -154,9 +157,9 @@ resultTable = combined %>%
              numNegatives = str_count(paste(contents, collapse=" "),
                                       fixed("not"))/length(numCleanWords),
              levelOfRef = NA) %>%
-  mutate(condition = ordered(condition, levels = c("easy", "medium", "hard"),
-                               labels = c("far", "split", "close"))) %>%
    group_by(condition) %>% 
+    mutate(condition = factor(condition, levels = c("closer", "further", "equal"), 
+                            labels = c("far", "split", "close"))) %>%
    summarize("# WordsM" = mean(numWordsPerMessage), 
              "# CharsM" = mean(numCharsPerMessage),
              numWordsPerMessageSE = sd(numWordsPerMessage)/sqrt(length(numWordsPerMessage)),
@@ -169,6 +172,6 @@ resultTable = combined %>%
   mutate("metric (per message)" = gsub(".$", "", metric)) %>%
   select(-ends_with("SE"), -metric) %>%
   spread(condition, mu)
-
+View(resultTable)
 print(xtable(resultTable, label = "table:metrics"), include.rownames = FALSE)
 ```
