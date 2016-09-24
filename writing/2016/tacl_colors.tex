@@ -54,17 +54,17 @@ asdf asdf asdf
 \begin{figure}
 \includegraphics[scale = .2]{figures/speakerView.png}
 \caption{Example trial in corpus collection task, from speaker's perspective}
-\label{taskScreenshot}
+\label{fig:taskScreenshot}
 \end{figure}
 
-To collect a corpus of natural color reference data across varying contexts, we recruited 210 participants from Amazon Mechanical Turk to play a real-time, multi-player communication game \cite{Hawkins15_RealTimeWebExperiments}. Participants were sorted into dyads, assigned the role of speaker or listener, and placed in a game environment containing a chat box and an array of three color patches (Fig. \ref{taskScreenshot}). 
+To collect a corpus of natural color reference data across varying contexts, we recruited 210 participants from Amazon Mechanical Turk to play a real-time, multi-player communication game \cite{Hawkins15_RealTimeWebExperiments}. Participants were sorted into dyads, assigned the role of speaker or listener, and placed in a game environment containing a chat box and an array of three color patches (Fig. \ref{fig:taskScreenshot}). 
 
 On each round, one of the three colors was chosen to be the ``target'' and highlighted for the speaker. They were instructed to communicate this information to the listener, who could then click on one of the colors to advance to the next trial. Both participants were free to use the chat box at any point during the trial. 
 
 To ensure a range of difficulty, we randomly interspersed an equal number of trials from three different conditions: (1) \emph{close}, where colors were all within a distance of $\theta$ from one another but still perceptible\footnote{We used the most recent CIEDE standard to measure color differences, which is calibrated to human vision \cite{SharmaWuDalal05_DeltaE}. All distances were constrained to be larger than a lower bound of $\epsilon = 5$ to ensure perceptible differences, and we used a threshold value of $\theta = 20$ to create conditions}, (2) \emph{split}, where one distractor was within a distance of $\theta$ of the target, but the other distractor was further than $\theta$, and (3) \emph{far}, where all colors were farther than $\theta$ from one another. Colors were rejection sampled uniformly from RGB space to meet these constraints. 
 
 % latex table generated in R 3.3.0 by xtable 1.8-2 package
-% Fri Sep 16 19:22:21 2016
+% Fri Sep 23 19:47:29 2016
 \begin{table}[ht]
 \centering
 \begin{tabular}{lrrr}
@@ -72,9 +72,9 @@ To ensure a range of difficulty, we randomly interspersed an equal number of tri
 metric (per message) & far & split & close \\ 
   \hline
 \# Chars & 8.17 & 11.87 & 13.12 \\ 
-  \# Comparatives & 0.01 & 0.06 & 0.06 \\ 
+  \# Comparatives & 0.01 & 0.15 & 0.13 \\ 
   \# Negatives & 0.05 & 0.09 & 0.11 \\ 
-  \# Superlatives & 0.03 & 0.07 & 0.16 \\ 
+  \# Superlatives & 0.04 & 0.08 & 0.20 \\ 
   \# Words & 1.54 & 2.11 & 2.27 \\ 
    \hline
 \end{tabular}
@@ -84,11 +84,23 @@ metric (per message) & far & split & close \\
 
 \section{Behavioral results}
 
+\begin{figure}
+\includegraphics[scale = .5]{figures/listenerAccuracy.pdf}
+\caption{Listener performance across conditions, for both human participants and model output}
+\label{fig:listenerAccuracy}
+\end{figure}
+
+\subsection{Listener behavior}
+
+Since color reference is a difficult task even for humans, we compared listener accuracy across conditions to calibrate our expectations about model performance. While participant accuracy was close to ceiling (95\%) on the `far' condition, they made many more errors on the `split' (86\%) and `close' (81\%) conditions (see Fig.~\ref{fig:listenerAccuracy}). 
+
+\subsection{Speaker behavior}
+
 For ease of comparison to computational results, we focus on five metrics capturing different aspects of the rich pragmatic behavior displayed by speakers in our task (see Table \ref{table:metrics}. 
 
 \noindent{\bf Words and characters:} We counted the average number of words and characters per message, after removing stop words and punctuation. We found that participants used longer messages when distractors were closer to the target in color space.
 
-\noindent{\bf Comparatives and superlatives:} We used the StanfordNLP POS tagger to count the number of comparatives (JJR or RBR) and superlatives (JJS or RBS) per message. We found that participants were more likely to use these constructions when one or more distractors were close to the target. Additionally, we found evidence of an asymmetry in the use of these constructions across the \emph{split} and \emph{close} conditions. Comparatives were used equally often in both conditions, while superlatives were twice as likely to be used when all colors were equally close. \todo[inline]{Note that these results were actually computed using the terrible built-in nltk tagger because the stanford nlp server is down; it counts ``forest green'' as a superlative and thinks that ``brightest'' is a noun, so take it with a grain of salt.}
+\noindent{\bf Comparatives and superlatives:} We used the StanfordNLP POS tagger to count the number of comparatives (JJR or RBR) and superlatives (JJS or RBS) per message. We found that participants were more likely to use these constructions when one or more distractors were close to the target. Additionally, we found evidence of an asymmetry in the use of these constructions across the \emph{split} and \emph{close} conditions. Comparatives were used somewhat more often in the `split' condition, where only one distractor was close to the target, while superlatives were much more likely to be used in the `close' condition.
 
 \noindent{\bf Negatives:} We counted occurrences of the string `not.' Participants were more likely to use negative constructions when one or more distractors were close to the target.
 
