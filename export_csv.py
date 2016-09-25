@@ -1,6 +1,7 @@
 import csv
 import os
 import StringIO
+import warnings
 
 from stanza.research import config
 from html_report import get_output
@@ -44,7 +45,12 @@ def csv_output(output, template_file, listener):
 
     writer.writerow(rows[0])
     for inst_dict, pred in zip(output.data, output.predictions):
-        orig_row = row_table[tuple(inst_dict['source'])]
+        lookup_id = tuple(inst_dict['source'])
+        try:
+            orig_row = row_table[lookup_id]
+        except KeyError:
+            warnings.warn('Missing row: %s#%s' % lookup_id)
+            continue
         if listener:
             replaced_row = replace_row_listener(orig_row, pred)
         else:
