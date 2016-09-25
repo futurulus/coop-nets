@@ -142,7 +142,7 @@ class ExhaustiveL2Learner(Learner):
 
     @property
     def num_params(self):
-        options = self.get_options()
+        # options = self.get_options()
         total = self.base.num_params
         # This is causing pickle problems; ignore these parameters for now
         # if options.exhaustive_num_samples > 0:
@@ -164,9 +164,12 @@ class ExhaustiveL2Learner(Learner):
         context_len = len(eval_instances[0].alt_outputs)
         if options.exhaustive_num_samples > 0:
             num_alt_utts = options.exhaustive_num_samples * context_len + 1
+            num_sample_sets = options.exhaustive_num_sample_sets
         else:
             num_alt_utts = len(sym_vec.tokens) + 1
-        true_batch_size = max(1, options.listener_eval_batch_size / (num_alt_utts * context_len))
+            num_sample_sets = 1
+        true_batch_size = max(options.listener_eval_batch_size /
+                              (num_alt_utts * num_sample_sets * context_len), 1)
         batches = iterators.iter_batches(eval_instances, true_batch_size)
         num_batches = (len(eval_instances) - 1) // true_batch_size + 1
 
@@ -177,37 +180,44 @@ class ExhaustiveL2Learner(Learner):
             progress.progress(batch_num)
             batch = list(batch)
             output_grid = self.build_grid(batch, sym_vec.tokens)
-            assert len(output_grid) == len(batch) * context_len * num_alt_utts, \
+            assert len(output_grid) == len(batch) * num_sample_sets * context_len * num_alt_utts, \
                 'Context must be the same number of colors for all examples %s' % \
-                ((len(output_grid), len(batch), num_alt_utts, context_len),)
+                ((len(output_grid), len(batch), num_sample_sets, context_len, num_alt_utts),)
             true_indices = np.array([inst.output for inst in batch])
             grid_scores = self.base.score(output_grid, verbosity=verbosity)
-            l0_log_probs = np.array(grid_scores).reshape((len(batch), context_len, num_alt_utts))
+            l0_log_probs = np.array(grid_scores).reshape((len(batch), num_sample_sets,
+                                                          context_len, num_alt_utts))
             # Renormalize over only the context colors, and extract the score of
             # the true color according to the base model.
-            l0_log_probs -= logsumexp(l0_log_probs, axis=1)[:, np.newaxis, :]
-            assert l0_log_probs.shape == (len(batch), context_len, num_alt_utts), l0_log_probs.shape
-            orig_log_probs = l0_log_probs[np.arange(len(batch)), :, 0]
+            l0_log_probs -= logsumexp(l0_log_probs, axis=2)[:, :, np.newaxis, :]
+            assert l0_log_probs.shape == (len(batch), num_sample_sets,
+                                          context_len, num_alt_utts), l0_log_probs.shape
+            orig_log_probs = l0_log_probs[np.arange(len(batch)), 0, :, 0]
             assert orig_log_probs.shape == (len(batch), context_len), orig_log_probs.shape
             # Normalize across utterances. Note that the listener returns probability
             # densities over colors.
-            s1_log_probs = l0_log_probs - logsumexp(l0_log_probs, axis=2)[:, :, np.newaxis]
-            assert s1_log_probs.shape == (len(batch), context_len, num_alt_utts), s1_log_probs.shape
+            s1_log_probs = l0_log_probs - logsumexp(l0_log_probs, axis=3)[:, :, :, np.newaxis]
+            assert s1_log_probs.shape == (len(batch), num_sample_sets,
+                                          context_len, num_alt_utts), s1_log_probs.shape
             # Normalize again across context colors.
-            l2_log_probs = s1_log_probs - logsumexp(s1_log_probs, axis=1)[:, np.newaxis, :]
-            assert l2_log_probs.shape == (len(batch), context_len, num_alt_utts), l2_log_probs.shape
-            # Extract the score of the true color according to the L2 model.
-            log_probs = l2_log_probs[np.arange(len(batch)), :, 0]
-            assert log_probs.shape == (len(batch), context_len), log_probs.shape
+            l2_log_probs = s1_log_probs - logsumexp(s1_log_probs, axis=2)[:, :, np.newaxis, :]
+            assert l2_log_probs.shape == (len(batch), num_sample_sets,
+                                          context_len, num_alt_utts), l2_log_probs.shape
+            # Extract the score of each color for the input utterance according to the L2 model.
+            log_probs = l2_log_probs[np.arange(len(batch)), :, :, 0]
+            assert log_probs.shape == (len(batch), num_sample_sets, context_len), log_probs.shape
             # Blend L0 and L2 (if enabled) to produce final score.
             if options.exhaustive_base_weight:
                 w = options.exhaustive_base_weight
-                log_probs = w * orig_log_probs + (1.0 - w) * log_probs
+                log_probs = w * orig_log_probs[:, np.newaxis, :] + (1.0 - w) * log_probs
+            # Average (in probability space) over sample sets
+            log_probs = logsumexp(log_probs, axis=1) - np.log(log_probs.shape[1])
             if random:
                 pred_indices = sample(np.exp(log_probs))
             else:
                 pred_indices = np.argmax(log_probs, axis=1)
             predictions.extend(pred_indices)
+            # Extract the score of the true color according to the combined model.
             scores.extend(log_probs[np.arange(len(batch)), true_indices].tolist())
         progress.end_task()
 
@@ -215,29 +225,34 @@ class ExhaustiveL2Learner(Learner):
 
     def build_grid(self, batch, all_utts):
         # for inst in batch:
-        #     for i in range(len(inst.context)):
-        #         for utt in sample_utts(inst.context, i):
-        #             (utt -> inst.context, i)
+        #     for j in range(num_sample_sets):
+        #         for i in range(len(inst.context)):
+        #             for utt in sample_utts(inst.context, i):
+        #                 (utt -> inst.context, i)
         options = self.get_options()
         if options.exhaustive_num_samples > 0:
             sampler_inputs = [instance.Instance(i, None, alt_inputs=inst.alt_outputs)
                               for inst in batch
-                              for i in range(len(inst.alt_outputs))]
-            outputs = [[] for _ in range(len(sampler_inputs))]
-            for _ in range(options.exhaustive_num_samples):
-                for sublist, utt in zip(outputs, self.sampler.sample(sampler_inputs)):
-                    sublist.append(utt)
-
-            samples_inst = []
-            sublist_iter = iter(outputs)
-            for inst in batch:
-                inst_sublist = []
-                for i in range(len(inst.alt_outputs)):
-                    inst_sublist.extend(next(sublist_iter))
-                samples_inst.append(inst_sublist)
+                              for _ in range(options.exhaustive_num_sample_sets)
+                              for i in range(len(inst.alt_outputs))
+                              for _ in range(options.exhaustive_num_samples)]
+            context_len = len(batch[0].alt_outputs)
+            assert len(sampler_inputs) == (len(batch) *
+                                           options.exhaustive_num_sample_sets *
+                                           context_len *
+                                           options.exhaustive_num_samples), \
+                'Building grid: inconsistent context length %s' % \
+                (len(sampler_inputs), len(batch), options.exhaustive_num_sample_sets,
+                 context_len, options.exhaustive_num_samples)
+            outputs = self.sampler.sample(sampler_inputs)
+            outputs = (np.array(outputs)
+                         .reshape(len(batch), options.exhaustive_num_sample_sets,
+                                  context_len * options.exhaustive_num_samples)
+                         .tolist())
 
             return [instance.Instance(utt, j, alt_outputs=inst.alt_outputs)
-                    for inst, samples in zip(batch, samples_inst)
+                    for inst, sample_sets in zip(batch, outputs)
+                    for samples in sample_sets
                     for j in range(len(inst.alt_outputs))
                     for utt in [inst.input] + samples]
         else:
@@ -475,6 +490,10 @@ parser.add_argument('--exhaustive_sampler_model', default=None,
 parser.add_argument('--exhaustive_num_samples', default=0, type=int,
                     help='The number of samples to take per context color for use as alternative '
                          'utterances. If 0 or negative, use the entire training corpus.')
+parser.add_argument('--exhaustive_num_sample_sets', default=1, type=int,
+                    help='The number of sets of alternative utterances to sample. L2 probabilities '
+                         'will be averaged over alternative sets. Should be at least 1. Not used '
+                         'if exhaustive_num_samples <= 0.')
 parser.add_argument('--direct_base_learner', default='Listener',
                     choices=learners.LEARNERS.keys(),
                     help='The name of the model to use as the level-0 agent for direct score-based '
