@@ -194,9 +194,11 @@ class ExhaustiveL2Learner(Learner):
                                           context_len, num_alt_utts), l0_log_probs.shape
             orig_log_probs = l0_log_probs[np.arange(len(batch)), 0, :, 0]
             assert orig_log_probs.shape == (len(batch), context_len), orig_log_probs.shape
+            # Apply temperature parameter before speaker.
+            utilities = options.exhaustive_inv_temperature * l0_log_probs
             # Normalize across utterances. Note that the listener returns probability
             # densities over colors.
-            s1_log_probs = l0_log_probs - logsumexp(l0_log_probs, axis=3)[:, :, :, np.newaxis]
+            s1_log_probs = utilities - logsumexp(utilities, axis=3)[:, :, :, np.newaxis]
             assert s1_log_probs.shape == (len(batch), num_sample_sets,
                                           context_len, num_alt_utts), s1_log_probs.shape
             # Normalize again across context colors.
@@ -480,6 +482,10 @@ parser.add_argument('--exhaustive_base_learner', default='Listener',
 parser.add_argument('--exhaustive_base_weight', default=0.0, type=float,
                     help='Weight given to the base agent for the exhaustive RSA model. The RSA '
                          "agent's weight will be 1 - exhaustive_base_weight.")
+parser.add_argument('--exhaustive_inv_temperature', default=1.0, type=float,
+                    help="RSA inverse temperature parameter (lambda/alpha) for "
+                         "ExhaustiveL2Learner. (Not yet implemented in ExhaustiveS1Learner as of "
+                         "9/25/2016.)")
 parser.add_argument('--exhaustive_sampler_learner', default='Speaker',
                     choices=learners.LEARNERS.keys(),
                     help='The name of the model to use as the speaker for sampling utterances in '
