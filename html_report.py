@@ -203,6 +203,10 @@ def format_error_analysis(output, compare=None, per_token=False):
     score_template = '<td>{}</td>'
     show_alt_inputs = max_len(output.data, 'alt_inputs')
     show_alt_outputs = max_len(output.data, 'alt_outputs')
+
+    if compare and 'input' not in compare.data[0]:
+        compare = None
+
     collated = []
     for i, (inst, score, pred) in enumerate(zip(output.data, output.scores, output.predictions)):
         example = {}
