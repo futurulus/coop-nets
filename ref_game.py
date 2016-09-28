@@ -201,6 +201,17 @@ class ExhaustiveL2Learner(Learner):
             s1_log_probs = utilities - logsumexp(utilities, axis=3)[:, :, :, np.newaxis]
             assert s1_log_probs.shape == (len(batch), num_sample_sets,
                                           context_len, num_alt_utts), s1_log_probs.shape
+            if options.exhaustive_output_speaker_samples or \
+                    options.exhaustive_output_speaker_predictions:
+                speaker_dist = s1_log_probs[np.arange(len(batch)), :, true_indices, :]
+                if options.exhaustive_output_speaker_samples:
+                    speaker_sample_indices = sample(np.exp(speaker_dist))
+                    self.write_speaker_utterances('s0_samples.%s.jsons', output_grid,
+                                                  speaker_sample_indices, l0_log_probs.shape)
+                if options.exhaustive_output_speaker_predictions:
+                    speaker_pred_indices = np.argmax(speaker_dist, axis=1)
+                    self.write_speaker_utterances('s0_predictions.%s.jsons', output_grid,
+                                                  speaker_pred_indices, l0_log_probs.shape)
             # Normalize again across context colors.
             l2_log_probs = s1_log_probs - logsumexp(s1_log_probs, axis=2)[:, :, np.newaxis, :]
             assert l2_log_probs.shape == (len(batch), num_sample_sets,
@@ -224,6 +235,24 @@ class ExhaustiveL2Learner(Learner):
         progress.end_task()
 
         return predictions, scores
+
+    def write_speaker_utterances(self, file_pattern, output_grid, indices, tensor_shape):
+        batch_size, num_sample_sets, context_len, num_alt_utts = tensor_shape
+        for i in range(num_sample_sets):
+            utts = []
+            sample_set_indices = indices[:, i]
+            for j, index in enumerate(sample_set_indices):
+                utts.append(output_grid[np.ravel_multi_index((j, i, 0, index),
+                                                             tensor_shape)].input)
+            config.dump(utts, file_pattern % (i,), lines=True)
+
+    def get_output_grid_index(self, tensor_shape, indices):
+        stride = 1
+        result = 0
+        for dim, idx in reversed(zip(tensor_shape, indices)):
+            result += idx * stride
+            stride *= dim
+        return result
 
     def build_grid(self, batch, all_utts):
         # for inst in batch:
@@ -500,6 +529,14 @@ parser.add_argument('--exhaustive_num_sample_sets', default=1, type=int,
                     help='The number of sets of alternative utterances to sample. L2 probabilities '
                          'will be averaged over alternative sets. Should be at least 1. Not used '
                          'if exhaustive_num_samples <= 0.')
+parser.add_argument('--exhaustive_output_speaker_samples', default=False, type=config.boolean,
+                    help='If True, write a file to the run directory containing an utterance '
+                         'sampled from S(L0) [only for ExhaustiveL2Learner] for each test '
+                         'instance.')
+parser.add_argument('--exhaustive_output_speaker_predictions', default=False, type=config.boolean,
+                    help='If True, write a file to the run directory containing the top-1 '
+                         'utterance from S(L0) [only for ExhaustiveL2Learner] for each test '
+                         'instance.')
 parser.add_argument('--direct_base_learner', default='Listener',
                     choices=learners.LEARNERS.keys(),
                     help='The name of the model to use as the level-0 agent for direct score-based '
