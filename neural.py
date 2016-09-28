@@ -431,6 +431,8 @@ class NeuralLearner(Learner):
 
     @property
     def num_params(self):
+        if hasattr(self, 'quickpickle_numparams'):
+            return self.quickpickle_numparams
         all_params = self.params()
         return sum(np.prod(p.get_value().shape) for p in all_params)
 

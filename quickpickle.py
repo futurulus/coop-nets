@@ -17,8 +17,12 @@ def patch(model):
         state['quickpickle'] = True
         return state
 
+    def __quickpickle_numparams__(self):
+        return self.quickpickle_numparams
+
     model.__getstate__ = types.MethodType(__quickpickle_getstate__, model)
     model.__setstate__ = types.MethodType(__quickpickle_setstate__, model)
+    model.quickpickle_numparams = model.num_params
 
 
 if __name__ == '__main__':
