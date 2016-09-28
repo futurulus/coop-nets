@@ -223,6 +223,9 @@ class ExhaustiveL2Learner(Learner):
             if options.exhaustive_base_weight:
                 w = options.exhaustive_base_weight
                 log_probs = w * orig_log_probs[:, np.newaxis, :] + (1.0 - w) * log_probs
+            # Normalize across context one more time to prevent cheating when
+            # blending.
+            log_probs -= logsumexp(log_probs, axis=2)[:, :, np.newaxis]
             # Average (in probability space) over sample sets
             log_probs = logsumexp(log_probs, axis=1) - np.log(log_probs.shape[1])
             if random:
