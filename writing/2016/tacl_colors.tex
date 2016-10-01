@@ -24,6 +24,27 @@
 \usepackage[hidelinks]{hyperref}
 \DeclareMathOperator*{\argmax}{arg\,max}
 
+\newcommand{\Listener}{L}
+\newcommand{\Speaker}{S}
+\newcommand{\utt}{u}
+\newcommand{\uttlen}{N}
+\newcommand{\referent}{c}
+\newcommand{\context}{C}
+\newcommand{\contextlen}{K}
+\newcommand{\target}{t}
+\newcommand{\numsamples}{m}
+\renewcommand{\|}{\mid}
+
+\newcommand{\Secref}[1]{Section~\ref{#1}}
+\newcommand{\secref}[1]{Section~\ref{#1}}
+\newcommand{\dashsecref}[2]{Sections~\ref{#1}--\ref{#2}}
+\newcommand{\Figref}[1]{Figure~\ref{#1}}
+\newcommand{\figref}[1]{Figure~\ref{#1}}
+\newcommand{\dashfigref}[2]{Figures~\ref{#1}--\ref{#2}}
+\newcommand{\Tabref}[1]{Table~\ref{#1}}
+\newcommand{\tabref}[1]{Table~\ref{#1}}
+\newcommand{\pararef}[1]{\textbf{#1}}
+
 \setlength\titlebox{6.5cm}    % Expanding the titlebox
 
 \title{Instructions for TACL Submissions}
@@ -48,6 +69,79 @@
 asdf asdf asdf 
 
 \end{abstract}
+
+\section{Introduction}
+
+\section{Task}
+
+We compare agents on a task of language understanding in a reference game. An agent $\Listener$ is presented with a list of colors $\context = \{\referent_i, i=1..\contextlen\}$ and an utterance $\utt$ that describes the target color $\referent_\target \in \context$ in natural language. The agent does not know the index $\target$ of the target color and must guess it from $\utt$.
+
+\section{Models}
+
+\subsection{Classifier listener}
+
+Our base listener agent $L_0$ is an LSTM encoder model that produces a Gaussian
+distribution over colors in a transformed representation space. This representation
+space is a Fourier-transformed vector as in \newcite{MonroeGoodmanPotts16_Color}, but
+with a different resolution in each dimension: 2$\times$2$\times$1 instead of
+3$\times$3$\times$3.
+
+The words in the input are embedded in a 100-dimensional vector space. Word embeddings
+are initialized randomly [todo: how?] and trained. The sequence of word vectors are
+used as input to an LSTM with 100-dimensional hidden state, and a linear
+transformation is applied to the output representation to produce a covariance matrix
+and mean vector for a Gaussian distribution in color representation space. 
+The Gaussian scores for each of the $\contextlen$ context colors are normalized to
+produce a probability distribution over the context colors. We denote this probability
+distribution by $\Listener_0(\target \| \utt, \context; \theta)$, where $\theta$ represents the
+vector of parameters that define the trained model.
+
+\subsection{Classifier speaker}\label{sec:s0}
+
+In order to avoid enumerating an exponentially large space of possible utterances,
+we also employ a probabilistic speaker model
+$\Speaker_0(\utt \| \target, \context; \phi)$ to generate sets of alternative
+utterances for each context.
+
+The speaker model consists of a recurrent neural network (RNN) context encoder
+and an RNN description decoder. In this model, the colors of the context
+$\referent_i \in \context$ are transformed into the Fourier representation space
+of \newcite{MonroeGoodmanPotts16_Color} (we use the original 3$\times$3$\times$3
+basis for the speaker model), and the sequence of color
+representations is passed through a "vanilla" recurrent neural network
+[todo: write out math] with 100-dimensional hidden state.
+
+The output of this recurrent neural network is concatenated with a
+100-dimensional embedding for the previous token at each time step in decoding.
+The resulting vector is input along with the previous cell state to a "vanilla" RNN
+cell, and an affine transformation and softmax function are applied to the output to
+produce a probability distribution predicting the following token of the description.
+
+\subsection{Pragmatic listener}
+
+From the base classifier listener, we build a listener agent that performs
+pragmatic inference using an embedded speaker model. This agent is based on the
+pragmatic listener of \newcite{BergenLevyGoodman15_Reasoning}, denoted
+$\Listener(\Speaker(\Listener_0))$: a listener modeling a speaker modeling the
+base listener.
+
+Formally, our pragmatic listener $\Listener_2$ is defined in terms of the base
+listener as follows:
+\begin{align}
+\Speaker_1(\utt \| \target, \context; \theta) &\propto \Listener_0(\target \| \utt, \context; \theta)^\alpha \label{eq:s1} \\
+\Listener_2(\target \| \utt, \context; \theta) &\propto \Speaker_1(\utt \| \target, \context; \theta) \nonumber
+\end{align}
+In practice, computing the constant of proportionality in \eqref{eq:s1} requires
+enumerating over space of potential utterances that is exponentially large in the
+maximum utterance length. As mentioned in \secref{sec:s0}, we limit this search by
+taking $\numsamples = 3$ samples from $\Speaker_0(\utt \| i, \context; \phi)$ for
+each possible target index $i$, adding the actual utterance from the testing example,
+and taking the resulting set as the universe of possible utterances for the
+proportionality in \eqref{eq:s1}.
+
+We find we can obtain an additional small improvement in listener accuracy
+by blending the pragmatic listener with the base listener:
+\[\Listener^{*}(\target \| \utt, \context; \theta) \propto {\Listener_0}(\target \| \utt, \context; \theta)^{\beta} \cdot \Listener_2(\target \| \utt, \context; \theta)^{1-\beta}\]
 
 \section{Corpus collection}
 
@@ -103,6 +197,28 @@ For ease of comparison to computational results, we focus on five metrics captur
 \noindent{\bf Comparatives and superlatives:} We used the StanfordNLP POS tagger to count the number of comparatives (JJR or RBR) and superlatives (JJS or RBS) per message. We found that participants were more likely to use these constructions when one or more distractors were close to the target. Additionally, we found evidence of an asymmetry in the use of these constructions across the \emph{split} and \emph{close} conditions. Comparatives were used somewhat more often in the `split' condition, where only one distractor was close to the target, while superlatives were much more likely to be used in the `close' condition.
 
 \noindent{\bf Negatives:} We counted occurrences of the string `not.' Participants were more likely to use negative constructions when one or more distractors were close to the target.
+
+\section{Related work}
+
+\newcite{AndreasKlein16_NeuralPragmatics} also combine neural speaker and listener
+models to model pragmatics. They implement and evaluate a pragmatic speaker
+$\Speaker(\Listener_0)$, with sampling from a neural $\Speaker_0$ model to limit
+the search space and regularize the model toward human-like utterances.
+
+Our approach goes one step beyond theirs, in that we build a two-level derived
+pragmatic model $\Listener(\Speaker(\Listener_0))$; i.e., we use a similar sampling
+scheme to limit the search space in speaker modeling, and then explicitly normalize
+over the colors in the context to derive a pragmatic listener.
+
+Additionally, we use more powerful recurrent models for both the base speaker and the
+base listener; \newcite{AndreasKlein16_NeuralPragmatics} use multi-layer perceptron
+models over $n$-gram features. We also use a different strategy for blending the
+pragmatic and base models: their model blends the base speaker and base listener
+$\Speaker_0^{\beta} \cdot \Listener_0^{\beta}$ and
+normalizes across utterances to implicitly define a different pragmatic model,
+whereas we first compute the full normalized pragmatic
+model $\Listener(\Speaker(\Listener_0))$ and blend it with a base listener by
+$\Listener_0^{\beta} \cdot \Listener(\Speaker(\Listener_0))^{1 - \beta}$.
 
 %\section{Credits}
 %
