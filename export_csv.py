@@ -88,7 +88,7 @@ def replace_row_listener(orig_row, pred):
 
 
 def replace_row_speaker(orig_row, pred):
-    return orig_row[:-1] + [pred]
+    return orig_row[:-2] + ['speaker', pred]
 
 
 if __name__ == '__main__':
