@@ -1,3 +1,4 @@
+import json
 import numpy as np
 from scipy.misc import logsumexp
 from sklearn.linear_model import LogisticRegression
@@ -173,6 +174,11 @@ class ExhaustiveL2Learner(Learner):
         batches = iterators.iter_batches(eval_instances, true_batch_size)
         num_batches = (len(eval_instances) - 1) // true_batch_size + 1
 
+        if options.exhaustive_output_speaker_samples:
+            self.truncate_utterances_files('s0_samples.%s.jsons', num_sample_sets)
+        if options.exhaustive_output_speaker_predictions:
+            self.truncate_utterances_files('s0_predictions.%s.jsons', num_sample_sets)
+
         if options.verbosity + verbosity >= 2:
             print('Testing')
         progress.start_task('Eval batch', num_batches)
@@ -247,7 +253,26 @@ class ExhaustiveL2Learner(Learner):
             for j, index in enumerate(sample_set_indices):
                 utts.append(output_grid[np.ravel_multi_index((j, i, 0, index),
                                                              tensor_shape)].input)
-            config.dump(utts, file_pattern % (i,), lines=True)
+            filename = file_pattern % (i,)
+            try:
+                with config.open(filename, 'a') as outfile:
+                    for utt in utts:
+                        json.dump(utt, outfile)
+                        outfile.write('\n')
+            except IOError:
+                traceback.print_exc()
+                print >>sys.stderr, 'Unable to write %s' % filename
+
+    def truncate_utterances_files(self, file_pattern, num_sample_sets):
+        for i in range(num_sample_sets):
+            filename = file_pattern % (i,)
+            try:
+                with config.open(filename, 'w') as outfile:
+                    pass
+            except IOError:
+                # We'll come to another error soon enough, no need for more
+                # diagnostic output
+                pass
 
     def get_output_grid_index(self, tensor_shape, indices):
         stride = 1
