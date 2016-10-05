@@ -86,7 +86,7 @@ combined_model <- robo_rawAggregated %>%
   mutate(numCleanChars = nchar(as.character(cleanMsg))) %>%
   mutate(numCleanWords = 1 + str_count(cleanMsg, fixed(" "))) %>%
   filter(numCleanWords < mean(numCleanWords) + 3*sd(numCleanWords)) %>%
-  mutate(source = "model")
+  mutate(source = "model") 
 ```
 
 ```{r}
@@ -127,6 +127,7 @@ listenerSummary %>%
 
 ```{r}
 pdf("../writing/2016/figures/listenerAccuracy.pdf", width = 6, height = 3)
+dodge <- position_dodge(width=0.9)
 ggplot(listenerSummary, aes(x = condition, y = percentCorrect, fill = source)) +
     geom_bar(stat = "identity", position = "dodge") +
     geom_errorbar(aes(ymax = percentCorrect + se, ymin = percentCorrect - se), 
@@ -147,9 +148,9 @@ taggedDF = read.csv("taggedColorMsgs.csv")
 
 # TODO: present se in table (e.g. in parens after mean)
 resultTable = combined %>% 
-  left_join(taggedDF, by = c("gameid", "roundNum", "contents")) %>%
+  left_join(taggedDF, by = c("gameid", "roundNum", "contents", "source")) %>%
    filter(role == "speaker") %>%
-   group_by(gameid, condition) %>%
+   group_by(gameid, condition, source) %>%
    summarise(numWordsPerMessage = sum(numCleanWords)/length(numCleanWords),
              numCharsPerMessage = sum(numCleanChars)/length(numCleanChars),
              numComparatives = sum(numComp)/length(numComp),
@@ -157,9 +158,7 @@ resultTable = combined %>%
              numNegatives = str_count(paste(contents, collapse=" "),
                                       fixed("not"))/length(numCleanWords),
              levelOfRef = NA) %>%
-   group_by(condition) %>% 
-    mutate(condition = factor(condition, levels = c("closer", "further", "equal"), 
-                            labels = c("far", "split", "close"))) %>%
+   group_by(condition, source) %>% 
    summarize("# WordsM" = mean(numWordsPerMessage), 
              "# CharsM" = mean(numCharsPerMessage),
              numWordsPerMessageSE = sd(numWordsPerMessage)/sqrt(length(numWordsPerMessage)),
@@ -171,7 +170,23 @@ resultTable = combined %>%
   #gather(garbage, se, ends_with("SE")) %>%
   mutate("metric (per message)" = gsub(".$", "", metric)) %>%
   select(-ends_with("SE"), -metric) %>%
-  spread(condition, mu)
-View(resultTable)
-print(xtable(resultTable, label = "table:metrics"), include.rownames = FALSE)
+  unite(comb, source,condition) %>%
+  mutate(comb = ordered(comb, 
+                        levels = c('human_far', 'human_split', 'human_close',
+                                  'model_far', 'model_split', 'model_close'))) %>%
+  spread(comb, mu)
+
+topRow <- paste0(paste0('& \\multicolumn{3}{c}{', 
+                        unique(combined$source), 
+                        '}', collapse=''), '\\\\')
+secondRow <- paste0('& ', 
+                    paste0(rep(unique(combined$condition), 2), collapse='& '),
+                    '\\\\')
+
+addtorow <- list(
+  pos = list(-1, 0), 
+  command = c(topRow,secondRow)
+)
+print(xtable(resultTable, label = "table:metrics", align = "llrrr|rrr"), 
+      add.to.row= addtorow, include.rownames = FALSE, include.colnames = F)
 ```
