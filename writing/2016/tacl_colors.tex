@@ -34,6 +34,7 @@
 \newcommand{\target}{t}
 \newcommand{\numsamples}{m}
 \renewcommand{\|}{\mid}
+\newcommand{\best}[1]{\textbf{#1}}
 
 \newcommand{\Secref}[1]{Section~\ref{#1}}
 \newcommand{\secref}[1]{Section~\ref{#1}}
@@ -179,7 +180,7 @@ To ensure a range of difficulty, we randomly interspersed an equal number of tri
 \section{Behavioral results}
 
 \begin{figure}
-\includegraphics[scale = .5]{figures/listenerAccuracy.pdf}
+\includegraphics[scale = .5]{figures/allListenerAccuracy.eps}
 \caption{Listener performance across conditions, for both human participants and model output}
 \label{fig:listenerAccuracy}
 \end{figure}
@@ -197,6 +198,78 @@ For ease of comparison to computational results, we focus on five metrics captur
 \noindent{\bf Comparatives and superlatives:} We used the StanfordNLP POS tagger to count the number of comparatives (JJR or RBR) and superlatives (JJS or RBS) per message. We found that participants were more likely to use these constructions when one or more distractors were close to the target. Additionally, we found evidence of an asymmetry in the use of these constructions across the \emph{split} and \emph{close} conditions. Comparatives were used somewhat more often in the `split' condition, where only one distractor was close to the target, while superlatives were much more likely to be used in the `close' condition.
 
 \noindent{\bf Negatives:} We counted occurrences of the string `not.' Participants were more likely to use negative constructions when one or more distractors were close to the target.
+
+\begin{table}[t]
+\centering
+\begin{tabular}{lrr}
+  \hline
+  model & accuracy & perplexity \\
+  \hline
+  $\Listener_0$ & 69.0 & 3.04 \\
+  $\Listener_2$ & \best{69.4} & \best{2.25} \\
+  \hline
+  human & 87.5 & -- \\
+   \hline
+\end{tabular}
+\caption{Overall accuracy of the base listener, pragmatic listener, and human participants, plus model perplexity.}
+\label{table:overallAccuracy}
+\end{table}
+
+\section{Model results}
+
+\subsection{Listener accuracy}
+
+We find that the pragmatic model is slightly more accurate at interpreting the
+utterances of human speakers (\tabref{table:overallAccuracy}).
+
+Breaking out the accuracy by condition (\figref{fig:listenerAccuracy}) reveals that
+the primary gain from the pragmatic model is in the $close$ condition, when the
+model has to pick up on the most subtle distinctions.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.8\columnwidth]{figures/byLength.eps}
+\caption{Listener accuracy on utterances 6 words or less (``0'') and longer than
+6 words (``1''), for both human participants and model outputs.}
+\label{fig:byLength}
+\end{figure}
+
+We also see that the pragmatic model is more effective on shorter utterances
+(\figref{fig:byLength}). This suggests that pragmatic considerations are more
+important when the speaker is less informative.
+
+\begin{table}[t]
+\centering
+\begin{tabular}{lrr}
+  \hline
+   & $\Listener_0$ & $\Listener_2$  \\
+  \hline
+  human        & 69.0 &       69.4  \\
+  \hline
+  $\Speaker_0$ & 73.3 &       73.1  \\
+  $\Speaker_1$ & 80.0 & \best{80.2} \\
+  \hline
+\end{tabular}
+\caption{Effectiveness of the speaker models communicating with the listener models,
+measured by listener accuracy.}
+\label{table:speakerVsListener}
+\end{table}
+
+\subsection{Speaker effectiveness}
+
+\Tabref{table:speakerVsListener} shows the effectiveness of the two speaker models
+(base speaker $\Speaker_0$ and pragmatic speaker $\Speaker_1$) at describing the
+target color to the listener models.
+
+The pragmatic speaker is better at communicating
+with the listener models, which is unsurprising, because in the case of
+$\Listener_0$, the speaker has access to the listener's thought process, and in
+the case of $\Listener_2$, the listener has access to the speaker's thought process.
+
+Additionally, however, the listeners are able to understand even $\Speaker_0$'s
+utterances better than humans'. This is surprising, because $\Listener_0$ does not
+contain an embedded model of either speaker, and $\Listener_2$ uses $\Speaker_0$
+only indirectly, as a source of alternative utterances to consider.
 
 \section{Related work}
 
