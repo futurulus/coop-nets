@@ -158,23 +158,23 @@ On each round, one of the three colors was chosen to be the ``target'' and highl
 To ensure a range of difficulty, we randomly interspersed an equal number of trials from three different conditions: (1) \emph{close}, where colors were all within a distance of $\theta$ from one another but still perceptible\footnote{We used the most recent CIEDE standard to measure color differences, which is calibrated to human vision \cite{SharmaWuDalal05_DeltaE}. All distances were constrained to be larger than a lower bound of $\epsilon = 5$ to ensure perceptible differences, and we used a threshold value of $\theta = 20$ to create conditions}, (2) \emph{split}, where one distractor was within a distance of $\theta$ of the target, but the other distractor was further than $\theta$, and (3) \emph{far}, where all colors were farther than $\theta$ from one another. Colors were rejection sampled uniformly from RGB space to meet these constraints. 
 
 % latex table generated in R 3.3.0 by xtable 1.8-2 package
-% Fri Sep 23 19:47:29 2016
-\begin{table}[ht]
+% Wed Oct  5 12:20:44 2016
+\begin{table*}[t]
 \centering
-\begin{tabular}{lrrr}
-  \hline
-metric (per message) & far & split & close \\ 
-  \hline
-\# Chars & 8.17 & 11.87 & 13.12 \\ 
-  \# Comparatives & 0.01 & 0.15 & 0.13 \\ 
-  \# Negatives & 0.05 & 0.09 & 0.11 \\ 
-  \# Superlatives & 0.04 & 0.08 & 0.20 \\ 
-  \# Words & 1.54 & 2.11 & 2.27 \\ 
+\begin{tabular}{lrrr|rrr}
+  & \multicolumn{3}{c}{human}& \multicolumn{3}{c}{model}\\ \hline
+  & far& close& split& far& close& split\\ \hline
+\# Chars & 13.12 & 11.87 & 8.17 & 7.14 & 6.00 & 5.21 \\ 
+  \# Comparatives & 0.13 & 0.15 & 0.01 & 0.00 & 0.00 & 0.00 \\ 
+  \# Negatives & 0.11 & 0.09 & 0.05 & 0.00 & 0.00 & 0.00 \\ 
+  \# Superlatives & 0.20 & 0.08 & 0.04 & 0.00 & 0.00 & 0.00 \\ 
+  \# Words & 2.27 & 2.11 & 1.54 & 1.37 & 1.19 & 1.07 \\ 
    \hline
 \end{tabular}
+\todo[inline]{rh: could also make plots, but a table seemed more economical. a couple notes: (1) need to put errors in, (2) `\% messages containing...' might be a more natural measure for negatives/superlatives/comparatives than counts, (3) not sure we need both chars \& words, and (4) could add additional measures about level of specificity, use of analogy constructions}
 \label{table:metrics}
-\todo[inline]{rh: could also make plots, but a table seemed more economical. a couple notes: (1) need to put errors in, (2) percentages might be a more natural measure for negatives/superlatives/comparatives, (3) not sure we need both chars \& words, and (4) need to add another measure about level of specificity}
-\end{table}
+\end{table*}
+
 
 \section{Behavioral results}
 
