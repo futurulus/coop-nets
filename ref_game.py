@@ -175,9 +175,9 @@ class ExhaustiveL2Learner(Learner):
         num_batches = (len(eval_instances) - 1) // true_batch_size + 1
 
         if options.exhaustive_output_speaker_samples:
-            self.truncate_utterances_files('s0_samples.%s.jsons', num_sample_sets)
+            self.truncate_utterances_files('s1_samples.%s.jsons', num_sample_sets)
         if options.exhaustive_output_speaker_predictions:
-            self.truncate_utterances_files('s0_predictions.%s.jsons', num_sample_sets)
+            self.truncate_utterances_files('s1_predictions.%s.jsons', num_sample_sets)
 
         if options.verbosity + verbosity >= 2:
             print('Testing')
@@ -212,11 +212,11 @@ class ExhaustiveL2Learner(Learner):
                 speaker_dist = s1_log_probs[np.arange(len(batch)), :, true_indices, :]
                 if options.exhaustive_output_speaker_samples:
                     speaker_sample_indices = sample(np.exp(speaker_dist))
-                    self.write_speaker_utterances('s0_samples.%s.jsons', output_grid,
+                    self.write_speaker_utterances('s1_samples.%s.jsons', output_grid,
                                                   speaker_sample_indices, l0_log_probs.shape)
                 if options.exhaustive_output_speaker_predictions:
                     speaker_pred_indices = np.argmax(speaker_dist, axis=1)
-                    self.write_speaker_utterances('s0_predictions.%s.jsons', output_grid,
+                    self.write_speaker_utterances('s1_predictions.%s.jsons', output_grid,
                                                   speaker_pred_indices, l0_log_probs.shape)
             # Normalize again across context colors.
             l2_log_probs = s1_log_probs - logsumexp(s1_log_probs, axis=2)[:, :, np.newaxis, :]
