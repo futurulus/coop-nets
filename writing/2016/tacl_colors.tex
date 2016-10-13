@@ -17,12 +17,16 @@
 \usepackage{graphicx}
 \usepackage{todonotes}
 \usepackage{url}
+\usepackage{color}
+\usepackage[inline]{enumitem}
 \makeatletter
 \newcommand{\@BIBLABEL}{\@emptybiblabel}
 \newcommand{\@emptybiblabel}[1]{}
 \makeatother
 \usepackage[hidelinks]{hyperref}
 \DeclareMathOperator*{\argmax}{arg\,max}
+
+\newcommand{\term}{\textit}
 
 \newcommand{\Listener}{L}
 \newcommand{\Speaker}{S}
@@ -46,9 +50,11 @@
 \newcommand{\tabref}[1]{Table~\ref{#1}}
 \newcommand{\pararef}[1]{\textbf{#1}}
 
+\newcommand{\todocheck}[1]{\textcolor{red}{#1}}
+
 \setlength\titlebox{6.5cm}    % Expanding the titlebox
 
-\title{Instructions for TACL Submissions}
+\title{Colors in Context: Pragmatic Models of Color Description Understanding}
 
 \author{First Author \\
   Affiliation / Address line 1 \\
@@ -67,11 +73,50 @@
 \maketitle
 \begin{abstract}
 
-asdf asdf asdf 
+We present a two-layer model of pragmatic interpretation: a listener
+modeling a speaker modeling a listener, where the base listener is a
+recurrent neural network classifier. Our model \todocheck{outperforms} the
+base listener at a task of color reference understanding, evaluated on a
+newly-collected corpus of human utterances in color reference games.
+We find the model primarily benefits from pragmatic reasoning in the hardest
+cases: when it must distinguish colors that are very similar, or when
+it must interpret \todocheck{less informative} utterances.
 
 \end{abstract}
 
 \section{Introduction}
+
+Grounded language use requires adapting language to the context at hand: trying
+to identify an object by describing it as ``blue'' will be unhelpful if all
+accessible objects are some shade of blue. We assume our interlocutors know
+this and adapt our interpretation of grounded language accordingly.
+
+In this paper, we present a model of pragmatic interpretation that uses a
+recurrent neural network model of color description understanding and a
+Bayesian formalization of pragmatic reasoning through embedded agent modeling.
+
+We evaluate our model in a \term{reference game} task: given a context consisting
+of a set of potential \term{referents}, one referent is selected as the \term{target}
+and its identity indicated secretly to the \term{speaker}. The speaker then must
+convey the identity of the target to a \term{listener}. Our model plays the
+role of the listener in this game, attempting to resolve a human utterance
+to the correct referent.
+% todo (wm): explain reference games here? or can we wait for section 2?
+
+This paper presents a new corpus of reference games in which the referents
+are patches of color. The corpus includes \todocheck{\#?}\ games with
+\todocheck{\#?}\ utterances produced by humans playing these games with real-time
+feedback.
+
+Experiments on this data show that our pragmatic model \todocheck{improves} accuracy
+in interpreting human-produced descriptions over the RNN-based classifier
+alone. Moreover, the improvements from pragmatic reasoning come primarily
+in the hardest cases. By this we mean \begin{enumerate*}[label=(\arabic*)]
+\item contexts featuring colors that are very similar, thus
+requiring the interpretation of descriptions that convey fine distinctions; and
+\item descriptions that are shorter and less informative, thus
+requiring more "reading between the lines".
+\end{enumerate*}
 
 \section{Task}
 
@@ -219,7 +264,7 @@ For ease of comparison to computational results, we focus on five metrics captur
 
 \subsection{Listener accuracy}
 
-We find that the pragmatic model is slightly more accurate at interpreting the
+We find that the pragmatic model is \todocheck{slightly} more accurate at interpreting the
 utterances of human speakers (\tabref{table:overallAccuracy}).
 
 Breaking out the accuracy by condition (\figref{fig:listenerAccuracy}) reveals that
@@ -234,9 +279,9 @@ model has to pick up on the most subtle distinctions.
 \label{fig:byLength}
 \end{figure}
 
-We also see that the pragmatic model is more effective on shorter utterances
+We also see that the pragmatic model is \todocheck{more effective} on shorter utterances
 (\figref{fig:byLength}). This suggests that pragmatic considerations are more
-important when the speaker is less informative.
+important when the speaker is \todocheck{less informative}.
 
 \begin{table}[t]
 \centering
