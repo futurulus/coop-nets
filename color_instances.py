@@ -352,18 +352,24 @@ def reference_game(insts, gen_func, listener=False):
     return insts
 
 
-def hawkins_context(listener=False):
+def hawkins_context(listener=False, suffix=''):
     messages = defaultdict(list)
-    with open('hawkins_data/colorReferenceMessage.csv', 'r') as infile:
+    with open('hawkins_data/colorReferenceMessage%s.csv' % suffix, 'r') as infile:
         for row in csv.DictReader(infile):
             if row['sender'] == 'speaker':
                 message = row['contents']  # TODO: clean, tokenize?
                 messages[(row['gameid'], row['roundNum'])].append(message)
 
     result = []
-    with open('hawkins_data/colorReferenceClicks.csv', 'r') as infile:
+    with open('hawkins_data/colorReferenceClicks%s.csv' % suffix, 'r') as infile:
         reader = csv.DictReader(infile)
+        seen = set()
         for row in reader:
+            key = (row['gameid'], row['roundNum'])
+            if key in seen:
+                # print('Duplicate key: %s' % (key,))
+                continue
+            seen.add(key)
             context = [
                 (hsl_to_hsv((row['%sColH' % i],
                              row['%sColS' % i],
@@ -376,7 +382,6 @@ def hawkins_context(listener=False):
             assert len(target_idx) == 1, context
             target_idx = target_idx[0]
             alt_colors = [c for (c, _, _) in context]
-            key = (row['gameid'], row['roundNum'])
             message = ' ~ '.join(messages[key])
 
             if listener:
@@ -399,41 +404,61 @@ def hawkins_target(listener=False):
             for inst in insts]
 
 
-def hawkins_train(listener=False):
-    insts = hawkins_context(listener=listener)
+def hawkins_train(listener=False, suffix=''):
+    insts = hawkins_context(listener=listener, suffix=suffix)
     num_insts = len(insts) / 3
     train_insts = insts[:num_insts]
     rng.shuffle(train_insts)
     return train_insts
 
 
-def hawkins_dev(listener=False):
-    insts = hawkins_context(listener=listener)
+def hawkins_dev(listener=False, suffix=''):
+    insts = hawkins_context(listener=listener, suffix=suffix)
     num_insts = len(insts) / 3
     dev_insts = insts[num_insts:num_insts * 2]
     return dev_insts
 
 
-def hawkins_test(listener=False):
-    insts = hawkins_context(listener=listener)
+def hawkins_test(listener=False, suffix=''):
+    insts = hawkins_context(listener=listener, suffix=suffix)
     num_insts = len(insts) / 3
     train_insts = insts[num_insts * 2:]
     return train_insts
 
 
-def hawkins_tune_train(listener=False):
-    insts = hawkins_context(listener=listener)
+def hawkins_tune_train(listener=False, suffix='', tuning_insts=350):
+    insts = hawkins_context(listener=listener, suffix=suffix)
     num_insts = len(insts) / 3
-    train_insts = insts[:num_insts - 350]
+    train_insts = insts[:num_insts - tuning_insts]
     rng.shuffle(train_insts)
     return train_insts
 
 
-def hawkins_tune_test(listener=False):
-    insts = hawkins_context(listener=listener)
+def hawkins_tune_test(listener=False, suffix='', tuning_insts=350):
+    insts = hawkins_context(listener=listener, suffix=suffix)
     num_insts = len(insts) / 3
-    tune_insts = insts[num_insts - 350:num_insts]
+    tune_insts = insts[num_insts - tuning_insts:num_insts]
     return tune_insts
+
+
+def hawkins_big_train(listener=False):
+    return hawkins_train(listener=listener, suffix='2')
+
+
+def hawkins_big_dev(listener=False):
+    return hawkins_dev(listener=listener, suffix='2')
+
+
+def hawkins_big_test(listener=False):
+    return hawkins_test(listener=listener, suffix='2')
+
+
+def hawkins_big_tune_train(listener=False):
+    return hawkins_tune_train(listener=listener, suffix='2', tuning_insts=3500)
+
+
+def hawkins_big_tune_test(listener=False):
+    return hawkins_tune_test(listener=listener, suffix='2', tuning_insts=3500)
 
 
 def uniform(color):

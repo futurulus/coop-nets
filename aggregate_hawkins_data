@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -o errexit
+
+cd hawkins_data
+
+co=reference_games/data/colorReference/clickedObj
+m=reference_games/data/colorReference/message
+(head -n 1 colorReferenceClicks.csv &&
+ tail -qn +2 "$co"/batch1/2016-*.csv "$co"/batch2/2016-*.csv "$co"/2016-*.csv) > colorReferenceClicks2.csv
+(head -n 1 colorReferenceMessage.csv &&
+ tail -qn +2 "$m"/batch*/2016-*.csv "$m"/batch2/2016-*.csv "$m"/2016-*.csv) > colorReferenceMessage2.csv
