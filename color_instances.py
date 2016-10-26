@@ -386,10 +386,10 @@ def hawkins_context(listener=False, suffix=''):
 
             if listener:
                 inst = Instance(input=message, output=target_idx, alt_outputs=alt_colors,
-                                source=key)
+                                source=key + (row['condition'],))
             else:
                 inst = Instance(input=target_idx, alt_inputs=alt_colors, output=message,
-                                source=key)
+                                source=key + (row['condition'],))
             result.append(inst)
     return result
 
@@ -441,6 +441,21 @@ def hawkins_tune_test(listener=False, suffix='', tuning_insts=350):
     return tune_insts
 
 
+def hawkins_easy(listener=False, suffix=''):
+    insts = hawkins_context(listener=listener, suffix=suffix)
+    num_insts = (len(insts) / 3) * 2
+    train_insts = [i for i in insts[:num_insts] if i.source[2] == 'equal']
+    rng.shuffle(train_insts)
+    return train_insts
+
+
+def hawkins_hard(listener=False, suffix=''):
+    insts = hawkins_context(listener=listener, suffix=suffix)
+    num_insts = (len(insts) / 3) * 2
+    eval_insts = [i for i in insts[:num_insts] if i.source[2] == 'closer']
+    return eval_insts
+
+
 def hawkins_big_train(listener=False):
     return hawkins_train(listener=listener, suffix='2')
 
@@ -451,6 +466,14 @@ def hawkins_big_dev(listener=False):
 
 def hawkins_big_test(listener=False):
     return hawkins_test(listener=listener, suffix='2')
+
+
+def hawkins_big_easy(listener=False):
+    return hawkins_easy(listener=listener, suffix='2')
+
+
+def hawkins_big_hard(listener=False):
+    return hawkins_hard(listener=listener, suffix='2')
 
 
 def hawkins_big_tune_train(listener=False):
@@ -513,9 +536,11 @@ SOURCES = {
     'hawkins_dev': DataSource(hawkins_train, hawkins_dev),
     'hawkins_test': DataSource(hawkins_train, hawkins_test),
     'hawkins_tune': DataSource(hawkins_tune_train, hawkins_tune_test),
+    'hawkins_easyhard':  DataSource(hawkins_easy, hawkins_hard),
     'hawkins_big_dev': DataSource(hawkins_big_train, hawkins_big_dev),
     'hawkins_big_test': DataSource(hawkins_big_train, hawkins_big_test),
     'hawkins_big_tune': DataSource(hawkins_big_tune_train, hawkins_big_tune_test),
+    'hawkins_big_easyhard':  DataSource(hawkins_big_easy, hawkins_big_hard),
     'ams_literal': DataSource(amsterdam_literal_train, amsterdam_test),
     'ams_unambig': DataSource(amsterdam_unambiguous_train, amsterdam_test),
     'ams_1word': DataSource(amsterdam_1word_train, amsterdam_test),
