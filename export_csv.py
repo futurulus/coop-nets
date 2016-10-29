@@ -11,6 +11,9 @@ parser = config.get_options_parser()
 parser.add_argument('--listener', type=config.boolean, default=False,
                     help='If True, create a listener "clickedObj" csv file. Otherwise '
                          'create a speaker "message" csv file.')
+parser.add_argument('--suffix', type=str, default='',
+                    help='Append this to the end of filenames (before the ".csv") when '
+                         'locating the Hawkins data.')
 
 ID_COLUMNS = (0, 2)
 SPEAKER_REPLACE_COLUMN = 4
@@ -23,10 +26,10 @@ def generate_csv(run_dir=None):
     run_dir = run_dir or options.run_dir
     if options.listener:
         out_path = os.path.join(run_dir, 'clickedObj.csv')
-        in_path = 'hawkins_data/colorReferenceClicks.csv'
+        in_path = 'hawkins_data/colorReferenceClicks%s.csv' % options.suffix
     else:
         out_path = os.path.join(run_dir, 'message.csv')
-        in_path = 'hawkins_data/colorReferenceMessage.csv'
+        in_path = 'hawkins_data/colorReferenceMessage%s.csv' % options.suffix
     output = get_output(run_dir, 'eval')
     if 'error' in output.data[0]:
         output = get_output(run_dir, 'hawkins_dev')
@@ -39,7 +42,7 @@ def generate_csv(run_dir=None):
 
 def csv_output(output, template_file, listener):
     buff = StringIO.StringIO()
-    writer = csv.writer(buff)
+    writer = csv.writer(buff, quoting=csv.QUOTE_ALL)
     rows = [r for r in csv.reader(template_file)]
     row_table = build_row_table(rows)
 
@@ -88,7 +91,7 @@ def replace_row_listener(orig_row, pred):
 
 
 def replace_row_speaker(orig_row, pred):
-    return orig_row[:-2] + ['speaker', pred]
+    return orig_row[:-2] + ['speaker', pred.replace('"', '""')]
 
 
 if __name__ == '__main__':
