@@ -7218,7 +7218,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 3830-5,1476466261193,8,speaker,Yellowish,human,0,0
 3830-5,1476466267350,9,speaker,Pink,human,0,0
 3830-5,1476466291365,10,speaker,The grey box that has more color to it. A little bit green. Not the brown one.,human,0,1
-3830-5,1476466327301,11,speaker,"The grey box that is a bit more warm"". Not cool. Let me know if you are confused""",human,0,1
+3830-5,1476466327301,11,speaker,The grey box that is a bit more 'warm'. Not cool. Let me know if you are confused,human,0,1
 3830-5,1476466349813,12,speaker,The greyer of the blues. More light than others,human,0,1
 3830-5,1476466359783,13,speaker,purple,human,0,0
 3830-5,1476466376073,14,speaker,Rose pink. closer to red than the other. The other is more magenta / purple,human,0,2
@@ -7228,7 +7228,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 3830-5,1476466417429,18,speaker,Dull pink. Not that bright,human,0,0
 3830-5,1476466425860,19,speaker,Neon green,human,0,0
 3830-5,1476466432069,20,speaker,Blue,human,0,0
-3830-5,1476466474006,21,speaker,"Grey that looks warm"". More like a smokey type of grey. Darker than the other one.""",human,0,2
+3830-5,1476466474006,21,speaker,Grey that looks 'warm'. More like a smokey type of grey. Darker than the other one.,human,0,2
 3830-5,1476466489797,22,speaker,Purple,human,0,0
 3830-5,1476466511684,23,speaker,Pinkish purple or just pink,human,0,0
 3830-5,1476466519700,24,speaker,Green,human,0,0
@@ -7245,7 +7245,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 3830-5,1476466628052,34,speaker,Green,human,0,0
 3830-5,1476466636196,35,speaker,Pink,human,0,0
 3830-5,1476466645812,36,speaker,Purple,human,0,0
-3830-5,1476466674452,37,speaker,"There are two greys. Pick the one that is more blue-ish"". It is slightly lighter than the other.""",human,0,2
+3830-5,1476466674452,37,speaker,There are two greys. Pick the one that is more 'blue-ish'. It is slightly lighter than the other.,human,0,2
 3830-5,1476466687347,38,speaker,Pink,human,0,0
 3830-5,1476466707012,39,speaker,The purple that is duller than the others. Not as bright. Closer to grey,human,0,2
 3830-5,1476466719203,40,speaker,Blue,human,0,0
@@ -8887,7 +8887,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 8953-9,1476470375477,32,speaker,Of the two grays ONE looks MORE gray.  The NON TARGET looks more blue.  But this is hard,human,0,2
 8953-9,1476470399844,33,speaker,Bright blue,human,0,0
 8953-9,1476470415732,34,speaker,teal with more blue to it,human,0,1
-8953-9,1476470442340,35,speaker,"Cement gray.  I see a brown or red gray, a blue gray and gray gray""""",human,0,0
+8953-9,1476470442340,35,speaker,"Cement gray.  I see a brown or red gray, a blue gray and 'gray gray'",human,0,0
 8953-9,1476470460890,35,speaker,gray gray would be the target,human,0,0
 8953-9,1476470473450,36,speaker,Orange,human,0,0
 8953-9,1476470482634,37,speaker,Darkest/Royal blue,human,0,0
@@ -9604,8 +9604,8 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 9520-5,1476471292278,31,speaker,the same color as last time,human,0,0
 9520-5,1476471305023,32,speaker,colors?,human,0,0
 9520-5,1476471314148,32,listener,"purple, orange, and a bluish color",human,0,0
-9520-5,1476471321580,32,speaker,"wat :""
-9520-5,1476471330794,32,speaker,uh bluish color""",human,0,0
+9520-5,1476471321580,32,speaker,wat :\,human,0,0
+9520-5,1476471330794,32,speaker,uh bluish color,human,0,0
 9520-5,1476471340375,33,speaker,blue,human,0,0
 9520-5,1476471351356,34,speaker,green,human,0,0
 9520-5,1476471361236,35,speaker,blue,human,0,0
@@ -10096,7 +10096,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 7757-1,1476471713870,4,speaker,the target is a darker version of the Lakers or Vikings jerseys,human,0,1
 7757-1,1476471757472,5,speaker,the target is the more subdued of the 3,human,0,1
 7757-1,1476471802290,6,speaker,the target is very slightly brighter than the similar color,human,0,1
-7757-1,1476471831621,7,speaker,"the target is typically thought of as a ""female"" color, sorry for being sexist",human,0,0
+7757-1,1476471831621,7,speaker,"the target is typically thought of as a 'female' color, sorry for being sexist",human,0,0
 7757-1,1476471849565,8,speaker,the target is similar to the color of dirt,human,0,0
 7757-1,1476471889389,9,speaker,the target is similar to Mary Kay cadillacs,human,0,0
 7757-1,1476471918449,10,speaker,the target is the color of LA Dodgers or Chicago Cubs uniforms,human,0,0
@@ -10121,19 +10121,19 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 7757-1,1476472419125,29,speaker,one of the 2 very similar but slightly brighter,human,0,1
 7757-1,1476472443724,30,speaker,sort of like Vikings jerseys again but lighter,human,0,1
 7757-1,1476472476075,31,speaker,kind of ocean color but not the brightest; has a touch of leaf color,human,1,0
-7757-1,1476472505261,32,speaker,"very bright ""feminine"" color (again, sorry)",human,0,0
+7757-1,1476472505261,32,speaker,"very bright 'feminine' color (again, sorry)",human,0,0
 7757-1,1476472521163,33,speaker,bright color of leaves,human,0,0
 7757-1,1476472554078,34,speaker,duller of the 2 similar colors,human,0,1
 7757-1,1476472582702,35,speaker,"similar to the last choice, almost neon leaf color",human,0,0
 7757-1,1476472606642,36,speaker,looks like a Dodgers or Cubs jersey that's faded from the laundry,human,0,0
 7757-1,1476472624876,37,speaker,like a cloudy sky,human,0,0
-7757-1,1476472642122,38,speaker,"very bright ""feminine"" color",human,0,0
+7757-1,1476472642122,38,speaker,very bright 'feminine' color,human,0,0
 7757-1,1476472675947,39,speaker,not very close but like a rose,human,0,0
 7757-1,1476472696512,40,speaker,looks like a very very faded Lakers or Vikings jersey,human,0,0
 7757-1,1476472714589,41,speaker,color of summer leaves but bright,human,0,0
 7757-1,1476472731612,42,speaker,same color but much brighter,human,0,0
 7757-1,1476472752090,43,speaker,same general color but much duller,human,0,1
-7757-1,1476472764858,44,speaker,"bright ""feminine"" color",human,0,0
+7757-1,1476472764858,44,speaker,bright 'feminine' color,human,0,0
 7757-1,1476472782220,45,speaker,very similar but a touch of rose color,human,0,0
 7757-1,1476472797348,46,speaker,sort of like a cloudy sky,human,0,0
 7757-1,1476472825978,47,speaker,sort of glow in the dark neon color,human,0,0
@@ -11771,8 +11771,8 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 1293-8,1476474091207,35,speaker,orange,human,0,0
 1293-8,1476474105312,36,speaker,blue,human,0,0
 1293-8,1476474115382,37,speaker,brown or mustard,human,0,0
-1293-8,1476474130875,38,speaker,"brightest one, looks yellow""
-1293-8,1476474146084,39,speaker,orange""",human,1,0
+1293-8,1476474130875,38,speaker,"brightest one, looks yellow\",human,1,0
+1293-8,1476474146084,39,speaker,orange,human,0,0
 1293-8,1476474154069,40,speaker,pink,human,0,0
 1293-8,1476474168741,41,speaker,most purple or red of the grays,human,1,0
 1293-8,1476474191268,42,speaker,The red that looks like a mix of the other two,human,0,0
@@ -12294,7 +12294,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 6421-c,1476474442509,3,speaker,pick the grayest green,human,1,0
 6421-c,1476474463846,4,speaker,pick the lightest green,human,1,0
 6421-c,1476474491833,5,speaker,pick the bright green,human,0,0
-6421-c,1476474506218,6,listener,"You don't need to say pick the""""",human,0,0
+6421-c,1476474506218,6,listener,You don't need to say 'pick the',human,0,0
 6421-c,1476474510940,6,listener,Just the color :),human,0,0
 6421-c,1476474517103,6,speaker,purple,human,0,0
 6421-c,1476474532493,7,speaker,green-gray,human,0,0
@@ -13003,7 +13003,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 3424-d,1476472204470,7,speaker,dullest green,human,1,0
 3424-d,1476472225083,8,speaker,almost brown?,human,0,0
 3424-d,1476472236278,9,speaker,mustard,human,0,0
-3424-d,1476472266872,10,speaker,"the green with the most pop"" still dull thop""",human,1,0
+3424-d,1476472266872,10,speaker,the green with the most 'pop' still dull thop,human,1,0
 3424-d,1476472291315,11,speaker,dullest green,human,1,0
 3424-d,1476472302876,12,speaker,more red,human,0,1
 3424-d,1476472313343,13,speaker,barney,human,0,0
@@ -13346,7 +13346,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 6568-5,1476475539146,5,listener,light or darker,human,0,1
 6568-5,1476475550252,5,speaker,iddle,human,0,0
 6568-5,1476475552908,5,speaker,middle,human,0,0
-6568-5,1476475566672,5,listener,"in the instructions it says positions will be different""""",human,0,0
+6568-5,1476475566672,5,listener,in the instructions it says 'positions will be different',human,0,0
 6568-5,1476475583482,5,speaker,i mean medium brown. hard to describe,human,0,0
 6568-5,1476475595094,6,speaker,orange,human,0,0
 6568-5,1476475602851,7,speaker,orange,human,0,0
@@ -14095,7 +14095,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 0082-c,1476478482917,1,speaker,Hello,human,0,0
 0082-c,1476478504557,1,listener,Would you mind if we started?,human,0,0
 0082-c,1476478511472,1,speaker,Try and click on the left square,human,0,0
-0082-c,1476478538997,1,listener,"in the instructions it states the objects will be in different placing""""",human,0,0
+0082-c,1476478538997,1,listener,in the instructions it states 'the objects will be in different placing',human,0,0
 0082-c,1476478551108,1,speaker,I know,human,0,0
 0082-c,1476478566715,2,speaker,Try the right square,human,0,0
 0082-c,1476478578888,2,listener,what color,human,0,0
@@ -16519,7 +16519,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 7875-f,1476485348590,46,speaker,pink!,human,0,0
 7875-f,1476485361025,47,speaker,greenish blue,human,0,0
 7875-f,1476485383215,48,speaker,greenish blue again not the blue-blue,human,0,0
-7875-f,1476485431186,49,speaker,"dark purple, it's the one that is most purple"" not blue-purple or red-purple""",human,1,0
+7875-f,1476485431186,49,speaker,"dark purple, it's the one that is most 'purple' not blue-purple or red-purple",human,1,0
 7875-f,1476485470017,50,speaker,brightest green ,human,1,0
 3280-4,1476482605097,1,speaker,brown,human,0,0
 3280-4,1476482621282,2,speaker,grey,human,0,0
@@ -17660,7 +17660,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 5491-0,1476487854381,36,speaker,olive,human,0,0
 5491-0,1476487874013,37,speaker,gray,human,0,0
 5491-0,1476487887925,38,speaker,orange/rouge,human,0,0
-5491-0,1476487918463,39,speaker,"more intesne green ... lighter""""",human,0,2
+5491-0,1476487918463,39,speaker,more intesne green ... 'lighter',human,0,2
 5491-0,1476487931717,40,speaker,tan,human,0,0
 5491-0,1476487982548,41,speaker,more intense blue ... middle of the range in blueness?  not the lightest or the darkest,human,2,1
 5491-0,1476487992781,41,speaker,or is that green?,human,0,0
@@ -18593,23 +18593,23 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 9131-a,1476488255669,15,listener,lol,human,0,0
 9131-a,1476488269910,16,speaker,the most like a kings robe,human,1,0
 9131-a,1476488277085,16,speaker,royal if you will ;),human,0,0
-9131-a,1476488290022,17,speaker,"here comes the sun""""",human,0,0
+9131-a,1476488290022,17,speaker,'here comes the sun',human,0,0
 9131-a,1476488299910,18,speaker,concrete,human,0,0
-9131-a,1476488314671,19,speaker,".... rain"" prince song""",human,0,0
+9131-a,1476488314671,19,speaker,'.... rain' prince song,human,0,0
 9131-a,1476488323163,20,speaker,concrete,human,0,0
 9131-a,1476488325461,20,listener,You're good at this!,human,0,0
 9131-a,1476488341594,21,speaker,Sky (aw thanks!) It's tricky,human,0,0
 9131-a,1476488354152,22,listener,"Yes, it is.",human,0,0
 9131-a,1476488361848,22,speaker,the more tan of the concrete?,human,0,1
 9131-a,1476488375733,23,speaker,salmon...sick salmon,human,0,0
-9131-a,1476488418188,24,speaker,"concrete meets...the other ....rain"" color""",human,0,0
+9131-a,1476488418188,24,speaker,concrete meets...the other '....rain' color,human,0,0
 9131-a,1476488429733,25,listener,good one!,human,0,0
-9131-a,1476488437835,25,speaker,"concrete meets ...rain""""",human,0,0
+9131-a,1476488437835,25,speaker,concrete meets '...rain',human,0,0
 9131-a,1476488450632,26,listener,yikes!,human,0,0
 9131-a,1476488460088,26,speaker,(my bad) um...this one is not salmon or sky,human,0,0
 9131-a,1476488474691,27,speaker,Royal,human,0,0
 9131-a,1476488496083,28,speaker,not grass or sun,human,0,0
-9131-a,1476488513419,29,speaker,".... rain ..... rain""""",human,0,0
+9131-a,1476488513419,29,speaker,'.... rain ..... rain',human,0,0
 9131-a,1476488521237,30,listener,:-),human,0,0
 9131-a,1476488538386,30,speaker,grass thats been spray painted brighter,human,0,1
 9131-a,1476488560807,31,speaker,concrete mixed with royal,human,0,0
@@ -18618,7 +18618,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 9131-a,1476488631984,33,speaker,ooops.... Um. the more bright of the grass?,human,0,1
 9131-a,1476488646703,34,speaker,concrete with rain,human,0,0
 9131-a,1476488669505,35,speaker,the most different of all of them,human,1,0
-9131-a,1476488691159,36,speaker,"... rain"" meets concrete""",human,0,0
+9131-a,1476488691159,36,speaker,'... rain' meets concrete,human,0,0
 9131-a,1476488699976,37,listener,dang it!,human,0,0
 9131-a,1476488708863,37,listener,I missed that one.,human,0,0
 9131-a,1476488727676,37,speaker,the brightest color (no worries! pennies pennies my friend.),human,1,0
@@ -18628,7 +18628,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 9131-a,1476488781812,39,speaker,not like concrete...or grout!,human,0,0
 9131-a,1476488801051,39,listener,"dull grass, bright grass or blush",human,0,0
 9131-a,1476488807009,39,speaker,blush,human,0,0
-9131-a,1476488826179,40,speaker,"(nice way) non ...rain "" or vomit""",human,0,0
+9131-a,1476488826179,40,speaker,(nice way) non '...rain' or vomit,human,0,0
 9131-a,1476488868454,41,speaker,oh...lovely... um. ,human,0,0
 9131-a,1476488884854,41,speaker,"not the brightest one, not the dullest one?",human,2,0
 9131-a,1476488911353,42,speaker,(that one's on me) um the most like grass?,human,1,0
@@ -18641,7 +18641,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 9131-a,1476489010690,48,speaker,concrete,human,0,0
 9131-a,1476489060822,49,speaker,"(if I don't get a chance, its been fun!) umm...okay the one least like sky and/or the slightly darker of the non-sky color",human,1,1
 9131-a,1476489088328,49,listener,"I agree, it's been a lot of fun!",human,0,0
-9131-a,1476489109339,50,speaker,"sky and .... rain"" mixed""",human,0,0
+9131-a,1476489109339,50,speaker,sky and '.... rain' mixed,human,0,0
 9689-6,1476487818552,1,speaker,the drab one,human,0,0
 9689-6,1476487829286,2,speaker,the brightest,human,1,0
 9689-6,1476487842141,3,speaker,eggplant color,human,0,0
@@ -20596,17 +20596,17 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 2641-2,1476490203060,48,speaker,the brighter lavender,human,0,0
 2641-2,1476490221500,49,speaker,the pinker pink,human,0,0
 2641-2,1476490233188,50,speaker,the bluer grey,human,0,1
-4235-3,1476489554614,1,speaker,"the non grass...non ....rain"" (prince song) color (aka non-green vomit).""",human,0,0
+4235-3,1476489554614,1,speaker,the non grass...non '....rain' (prince song) color (aka non-green vomit).,human,0,0
 4235-3,1476489584237,2,speaker,the sky,human,0,0
 4235-3,1476489595552,3,speaker,concrete,human,0,0
 4235-3,1476489610393,4,speaker,the concrete mixed with sky,human,0,0
 4235-3,1476489622917,5,speaker,the most sky of the colors,human,1,0
-4235-3,1476489641821,6,speaker,".... rain ... rain "" (prince song)""",human,0,0
-4235-3,1476489662007,7,speaker,"Concrete ... not with any sky or ....rain""""",human,0,0
+4235-3,1476489641821,6,speaker,'.... rain ... rain ' (prince song),human,0,0
+4235-3,1476489662007,7,speaker,Concrete ... not with any sky or '....rain',human,0,0
 4235-3,1476489675446,8,speaker,Royal of the two,human,0,0
 4235-3,1476489688974,8,speaker,non the confederate uniform,human,0,0
 4235-3,1476489690908,8,listener,is that brighter or darker ,human,0,1
-4235-3,1476489702628,8,speaker,"oh darker! more like rain""""",human,0,2
+4235-3,1476489702628,8,speaker,oh darker! more like 'rain',human,0,2
 4235-3,1476489711269,9,speaker,sun,human,0,0
 4235-3,1476489723453,10,speaker,brightest color,human,1,0
 4235-3,1476489735171,11,speaker,fresh salmon,human,0,0
@@ -20622,21 +20622,21 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 4235-3,1476489902098,18,speaker,Royal,human,0,0
 4235-3,1476489915098,19,speaker,dull salmon,human,0,0
 4235-3,1476489936746,20,speaker,(crap) um..the one that is the most different from the other two,human,1,0
-4235-3,1476489981410,21,speaker,"the most normal sky? (royal sort of but not rain""""",human,1,0
+4235-3,1476489981410,21,speaker,the most normal sky? (royal sort of but not 'rain',human,1,0
 4235-3,1476489996152,22,speaker,salmon,human,0,0
 4235-3,1476490008998,23,speaker,dull olive,human,0,0
 4235-3,1476490039014,24,speaker,dull olive? ,human,0,0
 4235-3,1476490052703,25,speaker,concrete,human,0,0
 4235-3,1476490067112,26,speaker,grass,human,0,0
 4235-3,1476490088142,27,speaker,the dullest color,human,1,0
-4235-3,1476490101804,28,speaker,"...rain""""",human,0,0
+4235-3,1476490101804,28,speaker,'...rain',human,0,0
 4235-3,1476490115210,29,listener,oops didn't get what you meant on that ,human,0,0
 4235-3,1476490133263,29,speaker,"No worries! Dull, least like salmon (these are HARD)",human,1,0
 4235-3,1476490172926,30,speaker,umm...the brightest grass?,human,1,0
 4235-3,1476490185696,31,speaker,hunting apparel,human,0,0
-4235-3,1476490209979,32,speaker,"...rain""""",human,0,0
+4235-3,1476490209979,32,speaker,'...rain',human,0,0
 4235-3,1476490250015,33,speaker,concrete,human,0,0
-4235-3,1476490277970,34,speaker,"the dullest not 'rain or salmon""",human,1,0
+4235-3,1476490277970,34,speaker,the dullest not 'rain' or salmon,human,1,0
 4235-3,1476490296982,35,speaker,(sorry I'm kind of having a hard time describing some of these) olive,human,0,0
 4235-3,1476490308043,35,listener,no problem! ,human,0,0
 4235-3,1476490330871,36,speaker,the dullest color not sky or rotten salmon,human,1,0
@@ -20646,8 +20646,8 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 4235-3,1476490400410,39,speaker,think,human,0,0
 4235-3,1476490416439,40,speaker,most like the desert ground,human,1,0
 4235-3,1476490425617,41,speaker,olive,human,0,0
-4235-3,1476490442713,42,speaker,"dullest color ...rain"" with concrete""",human,1,0
-4235-3,1476490454694,43,speaker,"..rain""""",human,0,0
+4235-3,1476490442713,42,speaker,dullest color '...rain' with concrete,human,1,0
+4235-3,1476490454694,43,speaker,'..rain',human,0,0
 4235-3,1476490469544,44,speaker,grass,human,0,0
 4235-3,1476490478872,45,speaker,concrete,human,0,0
 4235-3,1476490495565,46,speaker,bad salmon,human,0,0
@@ -21740,7 +21740,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 7311-f,1476491621878,35,speaker,Orange,human,0,0
 7311-f,1476491629478,36,speaker,Blue,human,0,0
 7311-f,1476491644882,37,speaker,The one that's the most green,human,1,0
-7311-f,1476491669803,38,speaker,"The purple with more Purple"" in it.""",human,0,1
+7311-f,1476491669803,38,speaker,The purple with more 'Purple' in it.,human,0,1
 7311-f,1476491681479,39,speaker,Aqua,human,0,0
 7311-f,1476491692319,40,speaker,Sea-green,human,0,0
 7311-f,1476491709765,41,speaker,Fuschia,human,0,0
@@ -22265,7 +22265,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 6334-2,1476492213587,50,speaker,blue gray ,human,0,0
 3596-8,1476491930763,1,speaker,the muted green not the neon,human,0,0
 3596-8,1476491947005,2,listener,This one's hard!,human,0,0
-3596-8,1476491973564,2,listener,"Please don't say Purple"" lol""",human,0,0
+3596-8,1476491973564,2,listener,Please don't say 'Purple' lol,human,0,0
 3596-8,1476491984025,2,speaker,yea the muted one not the bright one yep ,human,0,0
 3596-8,1476492012474,3,speaker,the greyer looking one,human,0,1
 3596-8,1476492027724,3,listener,Blue grey or regular grey,human,0,0
@@ -22758,8 +22758,8 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 0070-1,1476492250729,5,speaker,the mix of the other two,human,0,0
 0070-1,1476492262753,6,speaker,the most brown concrete,human,1,0
 0070-1,1476492276615,7,listener,"im so not having a good run this time, im sorry",human,0,0
-0070-1,1476492299617,7,speaker,"the more salmon not .... rain"" (Hey no worries!)""",human,0,1
-0070-1,1476492316815,7,speaker,"... rain"" would be from the prince song)""",human,0,0
+0070-1,1476492299617,7,speaker,the more salmon not '.... rain' (Hey no worries!),human,0,1
+0070-1,1476492316815,7,speaker,'... rain' would be from the prince song),human,0,0
 0070-1,1476492324527,7,listener,oh you can say the colors,human,0,0
 0070-1,1476492346072,8,speaker,(I don't know if I'm allowed to say them or not?) Sky,human,0,0
 0070-1,1476492354143,8,listener,"yeah you can, first page says you can :)",human,0,0
@@ -22770,10 +22770,10 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 0070-1,1476492413275,12,speaker,olive,human,0,0
 0070-1,1476492425356,13,speaker,sky,human,0,0
 0070-1,1476492439829,14,speaker,the blue concrete,human,0,0
-0070-1,1476492460698,15,speaker,"""here comes the sun!"" ",human,0,0
+0070-1,1476492460698,15,speaker,'here comes the sun!' ,human,0,0
 0070-1,1476492468844,16,listener,lol i like you,human,0,0
 0070-1,1476492481592,16,speaker,Lol Thanks! dull grass?,human,0,0
-0070-1,1476492503092,17,speaker,"""purple rain, purple rain."" :D",human,0,0
+0070-1,1476492503092,17,speaker,"'purple rain, purple rain.' :D",human,0,0
 0070-1,1476492513099,17,speaker,"Not sick salmon, or dull",human,0,0
 0070-1,1476492533378,18,speaker,bright....vomit lol,human,0,0
 0070-1,1476492548648,19,speaker,slate/concrete?,human,0,0
@@ -22876,8 +22876,8 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 3546-9,1476492513965,5,speaker,greyish green,human,0,0
 3546-9,1476492528720,6,speaker,tan green,human,0,0
 3546-9,1476492555570,7,speaker,not the bright orange,human,0,0
-3546-9,1476492557891,7,speaker,"not blue""
-3546-9,1476492565171,8,speaker,blue""",human,0,0
+3546-9,1476492557891,7,speaker,not blue\,human,0,0
+3546-9,1476492565171,8,speaker,blue,human,0,0
 3546-9,1476492577733,9,speaker,purpleish grey,human,0,0
 3546-9,1476492585717,10,speaker,blue,human,0,0
 3546-9,1476492597334,11,speaker,pink/red,human,0,0
@@ -22996,8 +22996,8 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 4449-1,1476493038044,22,speaker,grey,human,0,0
 4449-1,1476493048919,23,speaker,dark purple,human,0,0
 4449-1,1476493062625,24,speaker,greenish,human,0,0
-4449-1,1476493075596,25,speaker,"dull green""
-4449-1,1476493088390,26,speaker,greenish""",human,0,0
+4449-1,1476493075596,25,speaker,dull green\,human,0,0
+4449-1,1476493088390,26,speaker,greenish,human,0,0
 4449-1,1476493104124,27,speaker,bluish,human,0,0
 4449-1,1476493162140,27,speaker,bluish grey,human,0,0
 4449-1,1476493175140,28,speaker,greenish,human,0,0
@@ -23219,7 +23219,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 5266-c,1476493485573,18,speaker,"not green, and not blue.  more of a pure elephant gray",human,0,1
 5266-c,1476493507368,19,speaker,not neon green.  the most muted colour,human,1,0
 5266-c,1476493522280,20,speaker,mauve?,human,0,0
-5266-c,1476493547161,21,speaker,"the green/yellow one that's not yellow"" or ""green"" lols""",human,0,0
+5266-c,1476493547161,21,speaker,the green/yellow one that's not 'yellow' or 'green' lols,human,0,0
 5266-c,1476493551710,21,speaker,not neon,human,0,0
 5266-c,1476493563083,22,listener,lol,human,0,0
 5266-c,1476493571237,22,speaker,"brightest pink, not blue or orangey",human,1,0
@@ -24641,7 +24641,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 6353-0,1476493552962,6,listener,the lighter tint green?,human,0,1
 6353-0,1476493564334,6,speaker,one is almost neon - not that one. yes it's lighter,human,0,1
 6353-0,1476493618401,7,speaker,okay this one is the reddest of the purples. it's the darkest one and also almost pinkish,human,2,0
-6353-0,1476493661025,7,listener,"I see two pinks, one is less hot"" and redder.""",human,0,2
+6353-0,1476493661025,7,listener,"I see two pinks, one is less 'hot' and redder.",human,0,2
 6353-0,1476493690519,7,speaker,for me it's the one more towards a darker pink and less purple,human,0,3
 6353-0,1476493709533,8,speaker,the one closest to army green,human,1,0
 6353-0,1476493729531,9,speaker,the darkest of the yellow kind of brown or taupe almost,human,1,0
@@ -25245,7 +25245,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 0856-3,1476495893183,43,speaker,dark purple,human,0,0
 0856-3,1476495908642,44,speaker,the darkest shade of blue,human,1,0
 0856-3,1476495925368,45,speaker,brownish/grey,human,0,0
-0856-3,1476495959719,46,speaker,"non neon green and not the ""normal green"", the other one",human,0,0
+0856-3,1476495959719,46,speaker,"non neon green and not the 'normal green', the other one",human,0,0
 0856-3,1476495966508,46,speaker,*not neon green*,human,0,0
 0856-3,1476495975116,46,listener,great clues!,human,0,0
 0856-3,1476495987505,47,speaker,green,human,0,0
@@ -25700,7 +25700,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 3788-d,1476495964211,16,speaker,"Sorry, I don't think I explained it well.  ",human,0,0
 3788-d,1476495970201,16,speaker,This is purple,human,0,0
 3788-d,1476495988269,17,speaker,brighter blue,human,0,1
-3788-d,1476495995157,17,listener,"It's way easier to use the colors. I did two whole rounds calling it ... rain"" for purple""",human,0,1
+3788-d,1476495995157,17,listener,It's way easier to use the colors. I did two whole rounds calling it '... rain' for purple,human,0,1
 3788-d,1476496037518,18,speaker,Again with that greenish color,human,0,0
 3788-d,1476496054596,19,speaker,yellow,human,0,0
 3788-d,1476496063699,20,speaker,pink,human,0,0
@@ -25742,7 +25742,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 3788-d,1476496687067,44,speaker,pink,human,0,0
 3788-d,1476496699777,45,listener,hehe,human,0,0
 3788-d,1476496706122,45,speaker,barney purple,human,0,0
-3788-d,1476496719931,46,listener,"I love you...you love me..."" sorry""",human,0,0
+3788-d,1476496719931,46,listener,'I love you...you love me...' sorry,human,0,0
 3788-d,1476496729365,46,speaker,"Oh, my brain hurts...",human,0,0
 3788-d,1476496741009,46,speaker,this one is hard,human,0,0
 3788-d,1476496753833,46,listener,"dark purple, vomit, and light purple?",human,0,0
@@ -26089,15 +26089,15 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 3130-4,1476496346670,29,speaker,Pick the orange,human,0,0
 3130-4,1476496363628,30,speaker,Pick the straight green,human,0,0
 3130-4,1476496376782,31,speaker,Pick the blue,human,0,0
-3130-4,1476496406627,32,speaker,"Pick the true"" purple and NOT the purple-grey color""",human,0,0
+3130-4,1476496406627,32,speaker,Pick the 'true' purple and NOT the purple-grey color,human,0,0
 3130-4,1476496424838,33,speaker,Pick the straight green and NOT the bright green,human,0,0
-3130-4,1476496483380,34,speaker,"NOT the bright purple and NOT the raisin-purple;  Pick the true"" purple""",human,0,0
+3130-4,1476496483380,34,speaker,NOT the bright purple and NOT the raisin-purple;  Pick the 'true' purple,human,0,0
 3130-4,1476496509614,35,speaker,Pick the lightest green - that has some yellow in it,human,1,0
 3130-4,1476496527312,36,speaker,the aqua blue,human,0,0
 3130-4,1476496544107,37,speaker,Pick the yellow gold,human,0,0
 3130-4,1476496561040,38,speaker,Pick the BRIGHT purple,human,0,0
 3130-4,1476496573548,39,speaker,Pick the BRIGHT green,human,0,0
-3130-4,1476496612056,40,speaker,"Pick the deep"" and ""rich"" blue but NOT the bright blue and not the blue-grey""",human,0,0
+3130-4,1476496612056,40,speaker,Pick the 'deep' and 'rich' blue but NOT the bright blue and not the blue-grey,human,0,0
 3130-4,1476496626740,41,speaker,Pick the purple-grey color,human,0,0
 3130-4,1476496660085,42,listener,My hit is going to expire in 5 minutes,human,0,0
 3130-4,1476496664973,42,speaker,NOT the blue-grey color and NOT the brighter aqua BLUE,human,0,1
@@ -27093,7 +27093,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 0069-8,1476498349022,39,speaker,yellow not orange,human,0,0
 0069-8,1476498357947,40,speaker,olive?,human,0,0
 0069-8,1476498366742,41,speaker,slate/grey,human,0,0
-0069-8,1476498378619,42,speaker,"... rain"" ;)""",human,0,0
+0069-8,1476498378619,42,speaker,'... rain' ;),human,0,0
 0069-8,1476498383754,42,speaker,(prince song),human,0,0
 0069-8,1476498399696,42,speaker,purple... lol I feel old now,human,0,0
 0069-8,1476498414399,43,listener,Where u from?,human,0,0
@@ -27690,7 +27690,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 1020-a,1476498695668,18,speaker,purple,human,0,0
 1020-a,1476498711206,19,speaker,bright green,human,0,0
 1020-a,1476498727639,20,speaker,"blue, no purple",human,0,0
-1020-a,1476498763963,20,listener,"Do you mean, ""blue, not purple""?",human,0,0
+1020-a,1476498763963,20,listener,"Do you mean, 'blue, not purple'?",human,0,0
 1020-a,1476498771290,20,speaker,yes blue,human,0,0
 1020-a,1476498787909,21,speaker,bright teal,human,0,0
 1020-a,1476498805704,22,speaker,blue no green tint,human,0,0
@@ -30860,7 +30860,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 0022-7,1476503501055,24,speaker,not the pinkish or bluish purple. the closest to true purple,human,1,0
 0022-7,1476503514481,25,speaker,green,human,0,0
 0022-7,1476503526741,26,speaker,light blue,human,0,0
-0022-7,1476503549536,27,listener,"oooooh half way there...""""",human,0,0
+0022-7,1476503549536,27,listener,'oooooh half way there...',human,0,0
 0022-7,1476503555828,27,speaker,yippee,human,0,0
 0022-7,1476503572575,27,speaker,has a yellowish tone,human,0,0
 0022-7,1476503586060,28,speaker,royal blue,human,0,0
@@ -31044,7 +31044,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 2651-e,1476503632021,10,speaker,:),human,0,0
 2651-e,1476503636901,10,speaker,olive green ,human,0,0
 2651-e,1476503645695,11,speaker,green ,human,0,0
-2651-e,1476503672776,11,listener,"the last guy said ""not magenta, but more fuscia than mauve"" and I was like, what language are you speaking?",human,0,1
+2651-e,1476503672776,11,listener,"the last guy said 'not magenta, but more fuscia than mauve' and I was like, what language are you speaking?",human,0,1
 2651-e,1476503693970,12,speaker,HAhahha I had one too,human,0,0
 2651-e,1476503696282,12,speaker,bluest ,human,1,0
 2651-e,1476503712792,13,speaker,not blue or reddish ,human,0,0
@@ -31175,8 +31175,8 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 1406-5,1476503624018,12,speaker,many,human,0,0
 1406-5,1476503625334,12,speaker,haha,human,0,0
 1406-5,1476503626840,12,speaker,you?,human,0,0
-1406-5,1476503633867,12,listener,"this is 39""
-1406-5,1476503638360,12,speaker,holy crap!""",human,0,0
+1406-5,1476503633867,12,listener,this is 39\,human,0,0
+1406-5,1476503638360,12,speaker,holy crap!,human,0,0
 1406-5,1476503643291,12,speaker,i'm on like 6,human,0,0
 1406-5,1476503653823,12,speaker,hopefully i'll get you again in one of these cuz we are goinf fast,human,0,0
 1406-5,1476503661958,12,speaker,bright blue,human,0,0
@@ -31753,7 +31753,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 4926-1,1476507230876,25,speaker,or blue,human,0,0
 4926-1,1476507240543,26,speaker,ya that one ,human,0,0
 4926-1,1476507243503,26,speaker,green,human,0,0
-4926-1,1476507255025,27,speaker,"gray, not blue ",human,0,0
+4926-1,1476507255025,27,speaker,"\gray, not blue ",human,0,0
 4926-1,1476507268567,28,speaker,more green ,human,0,1
 4926-1,1476507279963,29,speaker,grassy green ,human,0,0
 4926-1,1476507292024,29,listener,darker color,human,0,1
@@ -32333,7 +32333,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 3322-8,1476988339073,16,listener,lol,human,0,0
 3322-8,1476988339993,16,speaker,purple,human,0,0
 3322-8,1476988357336,17,speaker,ummmm the most purple one? with the least pink,human,2,0
-3322-8,1476988392327,18,speaker,"not super bright. not minty. the most calm"" one""",human,1,0
+3322-8,1476988392327,18,speaker,not super bright. not minty. the most 'calm' one,human,1,0
 3322-8,1476988411687,19,speaker,bright purplish/pink,human,0,0
 3322-8,1476988425734,20,speaker,robin's egg blue,human,0,0
 3322-8,1476988443819,21,speaker,brightest blue/purple,human,1,0
@@ -32454,7 +32454,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 8719-a,1476988494666,23,speaker,Yellow,human,0,0
 8719-a,1476988509307,24,speaker,Not slate grey or pink,human,0,0
 8719-a,1476988511965,24,speaker,the Duller grey,human,0,0
-8719-a,1476988546934,24,listener,"i'm not familiar with slate. i see one that is closer to grey"" and one that has some almost brown or green""",human,0,1
+8719-a,1476988546934,24,listener,i'm not familiar with slate. i see one that is closer to 'grey' and one that has some almost brown or green,human,0,1
 8719-a,1476988556383,24,speaker,The one with brown or green in it,human,0,0
 8719-a,1476988564538,25,speaker,Grey,human,0,0
 8719-a,1476988575608,26,speaker,Blue with green ,human,0,0
@@ -32471,7 +32471,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 8719-a,1476988689474,31,speaker,Richer purple,human,0,1
 8719-a,1476988704366,32,speaker,Brighter green,human,0,1
 8719-a,1476988752781,33,speaker,It is a green but it is a rich not yellow green,human,0,0
-8719-a,1476988776952,33,listener,"i see: grey green, yellow green, and more greener"" green""",human,0,2
+8719-a,1476988776952,33,listener,"i see: grey green, yellow green, and more 'greener' green",human,0,2
 8719-a,1476988786839,33,speaker,greener green,human,0,1
 8719-a,1476988806408,34,speaker,Olive green,human,0,0
 8719-a,1476988830962,35,speaker,Yellowish green,human,0,0
@@ -34349,8 +34349,8 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 6631-5,1476989675838,39,speaker,bright red,human,0,0
 6631-5,1476989688037,40,speaker,royal blue bright,human,0,0
 6631-5,1476989705812,41,speaker,lighter purple,human,0,1
-6631-5,1476989713918,41,speaker,"grey light purple""
-6631-5,1476989730945,42,speaker,pretty bright light green""",human,0,0
+6631-5,1476989713918,41,speaker,grey light purple\,human,0,0
+6631-5,1476989730945,42,speaker,pretty bright light green,human,0,0
 6631-5,1476989742101,43,speaker,grey,human,0,0
 6631-5,1476989748586,44,speaker,pink,human,0,0
 6631-5,1476989757384,45,speaker,dull grey,human,0,0
@@ -35509,11 +35509,11 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 1930-7,1476989814282,50,speaker,darker green,human,0,1
 5759-a,1476989276185,1,speaker,The different color square is the target,human,0,0
 5759-a,1476989299803,2,speaker,Bright Yellow is the target,human,0,0
-5759-a,1476989338247,3,speaker,"One of the grey's is the target. on my screen it is the brighter"" of the two. Less dingy""",human,0,1
+5759-a,1476989338247,3,speaker,One of the grey's is the target. on my screen it is the 'brighter' of the two. Less dingy,human,0,1
 5759-a,1476989363274,4,speaker,The pinkish/purple is the target,human,0,0
 5759-a,1476989388060,5,speaker,The purple one is the target.. No hue of pink in it,human,0,0
 5759-a,1476989403855,6,speaker,grey one is the target,human,0,0
-5759-a,1476989427763,7,speaker,"One of the grey ones is the target. on my screen it has a hue of purple"" in it""",human,0,0
+5759-a,1476989427763,7,speaker,One of the grey ones is the target. on my screen it has a hue of 'purple' in it,human,0,0
 5759-a,1476989464519,8,speaker,It is the blue that has like a grey hint in it. Looks dirty grey,human,0,0
 5759-a,1476989510548,9,speaker,The grey one..no hint of blue,human,0,0
 5759-a,1476989537514,10,speaker,The very bright pink. Kinda looks neon,human,0,0
@@ -38799,7 +38799,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 7328-c,1476989977326,1,speaker,It is the green closer to yellow-green and the color of grass,human,0,1
 7328-c,1476990017658,2,speaker,It is the color that is between purple and blue. ,human,0,0
 7328-c,1476990039220,3,speaker,The pinkest one. ,human,1,0
-7328-c,1476990088733,4,speaker,"The darkest shade of gray. The ""gray-est"". Sorry, this one is hard. ",human,1,0
+7328-c,1476990088733,4,speaker,"The darkest shade of gray. The 'gray-est'. Sorry, this one is hard. ",human,1,0
 7328-c,1476990114704,5,speaker,The brightest purple. ,human,1,0
 7328-c,1476990149538,6,speaker,"Not the bright blue, and not the gray blue. ",human,0,0
 7328-c,1476990206062,7,speaker,The clearly purple one. Could not be considered blue. ,human,0,0
@@ -39923,7 +39923,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 2914-3,1476991040118,12,speaker,yikes,human,0,0
 2914-3,1476991045486,12,listener,Hah.,human,0,0
 2914-3,1476991048896,12,speaker,not the brightest pink,human,1,0
-2914-3,1476991051471,12,listener,"I was praying you'd say gray""""",human,0,0
+2914-3,1476991051471,12,listener,I was praying you'd say 'gray',human,0,0
 2914-3,1476991061478,13,speaker,hahaha,human,0,0
 2914-3,1476991062743,13,speaker,green,human,0,0
 2914-3,1476991069241,14,speaker,purple,human,0,0
@@ -40194,7 +40194,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 3319-d,1476991576222,21,listener,sorry,human,0,0
 3319-d,1476991588478,22,speaker,"no worrries, some of these are tough",human,0,0
 3319-d,1476991596806,22,speaker,ok...it's not the grayish blue or the bright blue,human,0,0
-3319-d,1476991610520,22,speaker,"it's the most normal"" blue I'd say""",human,1,0
+3319-d,1476991610520,22,speaker,it's the most 'normal' blue I'd say,human,1,0
 3319-d,1476991626372,23,speaker,gray,human,0,0
 3319-d,1476991644626,24,speaker,grayish brown (not blue),human,0,0
 3319-d,1476991655529,25,speaker,yellow-gold,human,0,0
@@ -42413,8 +42413,8 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 6377-0,1476991904288,7,speaker,brighter of pinks,human,0,0
 6377-0,1476991916049,8,speaker,orangey,human,0,0
 6377-0,1476991941280,9,speaker,of the two purple closer to pink,human,0,1
-6377-0,1476991945825,9,listener,"ok, got it""
-6377-0,1476991954757,10,speaker,good job""",human,0,0
+6377-0,1476991945825,9,listener,"ok, got it\",human,0,0
+6377-0,1476991954757,10,speaker,good job,human,0,0
 6377-0,1476991959301,10,speaker,brighter of the blues,human,0,0
 6377-0,1476991975460,11,speaker,closest to army khaki,human,1,0
 6377-0,1476991988938,12,speaker,closest to hot pink,human,1,0
@@ -43174,8 +43174,8 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 7286-3,1476992726490,28,speaker,blue,human,0,0
 7286-3,1476992742457,29,speaker,grey blue,human,0,0
 7286-3,1476992753712,30,speaker,redish,human,0,0
-7286-3,1476992765537,31,speaker,"grey""
-7286-3,1476992791506,32,speaker,blue""",human,0,0
+7286-3,1476992765537,31,speaker,grey\,human,0,0
+7286-3,1476992791506,32,speaker,blue,human,0,0
 7286-3,1476992811307,33,speaker,"its green. the olive one, not as bright",human,0,0
 7286-3,1476992822450,34,speaker,blue,human,0,0
 7286-3,1476992845431,35,speaker,blue,human,0,0
@@ -43805,7 +43805,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 8456-e,1476992205777,10,speaker,Straight gray again,human,0,0
 8456-e,1476992228476,11,speaker,The lighter blue,human,0,1
 8456-e,1476992263682,12,speaker,The purple/gray ine (not the brown/gray),human,0,0
-8456-e,1476992298667,13,speaker,"The true"" green color""",human,0,0
+8456-e,1476992298667,13,speaker,The 'true' green color,human,0,0
 8456-e,1476992343171,14,speaker,The brightest one....not the purple/gray or the darker brown/purple,human,1,1
 8456-e,1476992356868,15,speaker,Blue,human,0,0
 8456-e,1476992390863,16,speaker,Brighter green...greenish/yellow sort of,human,0,1
@@ -43828,7 +43828,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 8456-e,1476992754536,33,speaker,The navy blue not the brighter blue,human,0,1
 8456-e,1476992767483,34,speaker,Blue,human,0,0
 8456-e,1476992800767,35,speaker,The brightest one. ..the most blue,human,2,0
-8456-e,1476992860988,36,speaker,"Not the bright green, not the forest green (grrenblue), the other darker green",human,0,1
+8456-e,1476992860988,36,speaker,"Not the bright green, not the forest green (grren\blue), the other darker green",human,0,1
 8456-e,1476992883628,37,speaker,The darkest shade,human,1,0
 8456-e,1476992893742,38,speaker,Red,human,0,0
 8456-e,1476992904996,39,speaker,Darker purple,human,0,1
@@ -43858,7 +43858,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 2066-9,1476992080123,5,speaker,wow,human,0,0
 2066-9,1476992082710,5,listener,indeed,human,0,0
 2066-9,1476992088406,5,listener,"no matter, let's continue",human,0,0
-2066-9,1476992107084,5,speaker,"brightest"" green""",human,1,0
+2066-9,1476992107084,5,speaker,'brightest' green,human,1,0
 2066-9,1476992117456,6,speaker,grey,human,0,0
 2066-9,1476992136303,7,speaker,closest to sky blue (light blue),human,1,0
 2066-9,1476992152562,8,speaker,closest to sky blue (light blue),human,1,0
@@ -44545,7 +44545,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 2617-5,1476992389171,18,speaker,gray,human,0,0
 2617-5,1476992398390,19,speaker,green,human,0,0
 2617-5,1476992411400,20,speaker,neon yellow,human,0,0
-2617-5,1476992438180,21,speaker,washed out green ,human,0,0
+2617-5,1476992438180,21,speaker,washed out \green ,human,0,0
 2617-5,1476992451073,22,speaker,purple,human,0,0
 2617-5,1476992461806,23,speaker,mauve,human,0,0
 2617-5,1476992471309,24,speaker,light green,human,0,0
@@ -45762,7 +45762,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 3734-3,1476992812840,27,speaker,neon,human,0,0
 3734-3,1476992823783,28,speaker,neon pink,human,0,0
 3734-3,1476992855048,29,speaker,if you took the gray and pale pink ones and mixed them.... thats the one to choose,human,0,0
-3734-3,1476992869331,29,speaker,its like a pale rose color i guess,human,0,0
+3734-3,1476992869331,29,speaker,\its like a pale rose color i guess,human,0,0
 3734-3,1476992894107,30,speaker,the one witrh the least pink in it,human,1,0
 3734-3,1476992919000,31,speaker,greenest one,human,1,0
 3734-3,1476992938351,32,speaker,deeper purple,human,0,1
@@ -48416,8 +48416,8 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 3162-4,1476993141688,5,speaker,blue not greyish,human,0,0
 3162-4,1476993160552,6,speaker,oh this one is hard,human,0,0
 3162-4,1476993201783,6,listener,"of the two greys, is it the bluish one or the purplish one?",human,0,0
-3162-4,1476993209183,6,speaker,"brighter color of the greys, not purpley""
-3162-4,1476993213649,6,speaker,bluish i guess""",human,0,1
+3162-4,1476993209183,6,speaker,"brighter color of the greys, not purpley\",human,0,1
+3162-4,1476993213649,6,speaker,bluish i guess,human,0,0
 3162-4,1476993226645,7,speaker,grey,human,0,0
 3162-4,1476993234411,8,speaker,green,human,0,0
 3162-4,1476993263928,9,speaker,closer to grey,human,0,1
@@ -50381,7 +50381,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 0936-f,1476990880412,12,speaker,the color of an elephant,human,0,0
 0936-f,1476990912415,12,listener,this one is tricky. i have a greenish gray (grey) and a purpleish gray,human,0,0
 0936-f,1476990928742,12,speaker,purplish gray,human,0,0
-0936-f,1476991004539,13,speaker,"this is the color of the ocean it starts with the letter a""""",human,0,0
+0936-f,1476991004539,13,speaker,this is the color of the ocean it starts with the letter 'a',human,0,0
 0936-f,1476991051974,14,speaker,the darkest color with purple hues,human,1,0
 0936-f,1476991089465,15,speaker,the color of the ocean (the lighter one),human,0,1
 0936-f,1476991117299,16,speaker,color of strawberry ice cream,human,0,0
@@ -52079,8 +52079,8 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 3336-1,1476994885909,10,speaker,darker blue,human,0,1
 3336-1,1476994892421,11,speaker,blue,human,0,0
 3336-1,1476994906639,12,speaker,red,human,0,0
-3336-1,1476994915735,13,speaker,"green""
-3336-1,1476994931526,14,speaker,dull pink""",human,0,0
+3336-1,1476994915735,13,speaker,green\,human,0,0
+3336-1,1476994931526,14,speaker,dull pink,human,0,0
 3336-1,1476994941214,15,speaker,brownish,human,0,0
 3336-1,1476994956758,16,speaker,dull purple,human,0,0
 3336-1,1476994965822,17,speaker,magenta,human,0,0
@@ -54007,7 +54007,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 4229-d,1476995719926,1,speaker,not red nor purple,human,0,0
 4229-d,1476995729612,2,speaker,purple,human,0,0
 4229-d,1476995739991,3,listener,what's the code word?,human,0,0
-4229-d,1476995762782,3,speaker,"Code word? ""Mittens."" Anyway, not gray and not yellow. ",human,0,0
+4229-d,1476995762782,3,speaker,"Code word? 'Mittens.' Anyway, not gray and not yellow. ",human,0,0
 4229-d,1476995776752,4,speaker,blue,human,0,0
 4229-d,1476995779701,4,listener,my bad,human,0,0
 4229-d,1476995793692,5,listener,my last partner and i made a code word to see if we found each other again lol,human,0,0
@@ -55009,7 +55009,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 4080-f,1476996411396,19,speaker,lol,human,0,0
 4080-f,1476996421545,19,listener,we'll find out   :),human,0,0
 4080-f,1476996427818,20,speaker,nice,human,0,0
-4080-f,1476996434924,20,speaker,"I was about to say the color of the ocean "" :D""",human,0,0
+4080-f,1476996434924,20,speaker,I was about to say 'the color of the ocean ' :D,human,0,0
 4080-f,1476996437347,20,speaker,tan,human,0,0
 4080-f,1476996452344,21,speaker,neon teal ,human,0,0
 4080-f,1476996453023,21,listener,in the rain or in the sun?  ;),human,0,0
@@ -55711,8 +55711,8 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 6547-745,1476997155337,35,speaker,red,human,0,0
 6547-745,1476997188624,36,speaker,blue,human,0,0
 6547-745,1476997200931,37,speaker,red orange,human,0,0
-6547-745,1476997220440,38,speaker,"dark green""
-6547-745,1476997234914,39,speaker,dark green""",human,0,0
+6547-745,1476997220440,38,speaker,dark green\,human,0,0
+6547-745,1476997234914,39,speaker,dark green,human,0,0
 6547-745,1476997251457,40,speaker,pink,human,0,0
 6547-745,1476997262807,41,speaker,green brown,human,0,0
 6547-745,1476997288087,42,speaker,bright purple pink,human,0,0
@@ -56387,8 +56387,8 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 2794-c,1476997371012,44,speaker,blue,human,0,0
 2794-c,1476997379293,45,speaker,blue,human,0,0
 2794-c,1476997390637,46,speaker,duller green,human,0,1
-2794-c,1476997399353,47,speaker,"pirple""
-2794-c,1476997400829,47,speaker,blue""",human,0,0
+2794-c,1476997399353,47,speaker,pirple\,human,0,0
+2794-c,1476997400829,47,speaker,blue,human,0,0
 2794-c,1476997411886,48,speaker,dull purple,human,0,0
 2794-c,1476997420845,49,speaker,green,human,0,0
 2794-c,1476997427757,50,speaker,purple,human,0,0
@@ -56566,7 +56566,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 0426-b,1476997487237,25,speaker,more neon like,human,0,1
 0426-b,1476997502143,26,speaker,"aqua blue , deeper blue",human,0,1
 0426-b,1476997509443,26,speaker,are you freaked out or something? ,human,0,0
-0426-b,1476997522124,27,listener,"no, but i don't believe you""""",human,0,0
+0426-b,1476997522124,27,listener,"no, but i don't believe 'you'",human,0,0
 0426-b,1476997537705,27,speaker,"keep looking for this task , you will also get to play the speaker",human,0,0
 0426-b,1476997549516,27,speaker,I did this task a couple of times now,human,0,0
 0426-b,1476997562674,27,listener,it's not hard to say where your laptop is ie. which city,human,0,0
@@ -60211,7 +60211,7 @@ gameid,time,roundNum,sender,contents,source,numSuper,numComp
 3603-b,1476998272010,34,speaker,purple blue,human,0,0
 3603-b,1476998278674,35,speaker,green,human,0,0
 3603-b,1476998279988,35,listener,lime green,human,0,0
-3603-b,1476998287211,36,listener,auqua,human,0,0
+3603-b,1476998287211,36,listener,\auqua,human,0,0
 3603-b,1476998293915,36,listener,light lime,human,0,0
 3603-b,1476998303770,36,listener,light aqua?,human,0,0
 3603-b,1476998325229,36,speaker,"not the yellowy one, not the brightest one",human,1,0
