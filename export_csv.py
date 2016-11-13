@@ -46,19 +46,26 @@ def csv_output(output, template_file, listener):
     rows = [r for r in csv.reader(template_file)]
     row_table = build_row_table(rows)
 
+    missing = 0
+    written = 0
     writer.writerow(rows[0])
     for inst_dict, pred in zip(output.data, output.predictions):
-        lookup_id = tuple(inst_dict['source'])
+        lookup_id = tuple(inst_dict['source'])[:len(ID_COLUMNS)]
         try:
             orig_row = row_table[lookup_id]
         except KeyError:
-            warnings.warn('Missing row: %s#%s' % lookup_id)
+            warnings.warn('Missing row: %s' % (lookup_id,))
+            missing += 1
             continue
         if listener:
             replaced_row = replace_row_listener(orig_row, pred)
         else:
             replaced_row = replace_row_speaker(orig_row, pred)
         writer.writerow(replaced_row)
+        written += 1
+
+    print('%s written rows' % written)
+    print('%s missing rows' % missing)
 
     return buff.getvalue()
 
