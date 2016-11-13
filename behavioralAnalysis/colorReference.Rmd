@@ -15,6 +15,7 @@ library(qdap)
 library(stringr)
 library(knitr)
 library(xtable)
+library(readr)
 setwd("~/Repos/coop-nets/behavioralAnalysis/")
 ```
 
@@ -25,16 +26,18 @@ First, we want to clean the data: join data frames together, remove games where 
 Note: there's a bunch of additional pre-processing that it's still be nice to do. For instance, it would be nice to strip all the meta-commentary (e.g. "oops" after missing, complaining about task, etc.)
 
 ```{r}
-msgs = read.csv("./humanOutput/colorReferenceMessage.csv") %>%
+msgs = read_csv("./humanOutput/colorReferenceMessage2.csv") %>%
   rename(msgTime = time, 
          role = sender)
 
-clks = read.csv("./humanOutput/colorReferenceClicks.csv") %>%
+clks = read.csv("./humanOutput/colorReferenceClicks2.csv") %>%
   mutate(condition = factor(condition, levels = c("closer", "further", "equal"), 
                             labels = c("far", "split", "close"))) %>%
   rename(clkTime = time)
 
-subjInfo = read.csv("./humanOutput/colorReference-subject_information.csv") %>%
+subjInfo = read.csv("./humanOutput/colorReference-subject_information_batch2.csv") %>%
+  select(-score) %>%
+  rbind(read.csv("./humanOutput/colorReference-subject_information_batch1.csv")) %>%
   rename(gameid = gameID) %>%
   select(-workerid)
 
@@ -65,7 +68,7 @@ combined_human <- clks %>%
 # Preprocessing model data
 
 ```{r}
-robo_msgs = read.csv("./modelOutput/speaker_reccontext_tuned_message.csv") %>%
+robo_msgs = read.csv("./modelOutput/speaker_reccontext_tuned_sampled_message.csv") %>%
   rename(msgTime = time, role = sender) %>%
   mutate(role = "speaker")
 
@@ -143,13 +146,16 @@ Note that taggedColorMsgs.csv is created in tagPOS.ipynb.
 We're going to run both human and model output through a pipeline to get a table with the different conditions as columns and different metrics as rows... 
 
 ```{r}
-# TODO: include model metrics in table as well (need to run model through ipynb)
-taggedDF = read.csv("taggedColorMsgs.csv")
+taggedDF = read_csv("taggedColorMsgs.csv") %>% 
+  rename(role = sender) %>% 
+  mutate(contents = trimws(as.character(contents)))
+
+(taggedDF %>% filter(gameid == "4927-d"))$contents
 
 # TODO: present se in table (e.g. in parens after mean)
 resultTable = combined %>% 
-  left_join(taggedDF, by = c("gameid", "roundNum", "contents", "source")) %>%
-   filter(role == "speaker") %>%
+  left_join(taggedDF) %>%
+  filter(numCleanChars > 0) %>% # Get rid of NAs from empty strings
    group_by(gameid, condition, source) %>%
    summarise(numWordsPerMessage = sum(numCleanWords)/length(numCleanWords),
              numCharsPerMessage = sum(numCleanChars)/length(numCleanChars),
