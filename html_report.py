@@ -20,6 +20,9 @@ parser.add_argument('--per_token_prob', type=config.boolean, default=False,
                     help='If True, normalize probabilities by dividing scores by the number '
                          'of tokens in the reference. This makes high-perplexity examples '
                          'sort to the top, as opposed to simply long examples.')
+parser.add_argument('--only_differing_preds', type=config.boolean, default=False,
+                    help='If True, only include examples that changed prediction in the '
+                         '"biggest improvement/decline" tables.')
 
 Output = namedtuple('Output', 'config,results,data,scores,predictions')
 
@@ -31,7 +34,7 @@ class NotPresent(object):
         return ''
 
 
-def html_report(output, compare=None, per_token=False):
+def html_report(output, compare=None, per_token=False, only_differing=False):
     '''
     >>> config_dict = {'run_dir': 'runs/test', 'listener': True}
     >>> results_dict = {'dev.perplexity.gmean': 14.0}
@@ -105,7 +108,8 @@ def html_report(output, compare=None, per_token=False):
         compare_header='<th>Comparison</th>' if compare else '',
         config_opts=format_config_dict(output.config, compare.config if compare else None),
         results=format_results(output.results, compare.results if compare else None),
-        error_analysis=format_error_analysis(output, compare, per_token=per_token)
+        error_analysis=format_error_analysis(output, compare, per_token=per_token,
+                                             only_differing=only_differing)
     )
 
 
@@ -191,7 +195,7 @@ def format_number(value):
         return '{:,.3f}'.format(value)
 
 
-def format_error_analysis(output, compare=None, per_token=False):
+def format_error_analysis(output, compare=None, per_token=False, only_differing=False):
     examples_table_template = '''    <h3>{cond}</h3>
     <table>
         <tr><th>input</th>{alt_inputs_header}{alt_outputs_header}<th>gold</th><th>prediction</th><th>{prob_header}</th>{compare_header}</tr>
@@ -205,6 +209,13 @@ def format_error_analysis(output, compare=None, per_token=False):
     show_alt_outputs = max_len(output.data, 'alt_outputs')
 
     if compare and 'input' not in compare.data[0]:
+        # Results when there's an error loading the comparison file;
+        # no need to print a second warning.
+        compare = None
+    if compare and len(compare.data) != len(output.data):
+        warnings.warn("Skipping comparison--mismatch between number of output examples (%s) "
+                      "and number of comparison examples (%s)" %
+                      (len(output.data), len(compare.data)))
         compare = None
 
     collated = []
@@ -226,23 +237,21 @@ def format_error_analysis(output, compare=None, per_token=False):
         example['pprob'] = score_template.format(format_number(pprob))
         example['pprob_val'] = pprob if isinstance(pprob, Number) else 0
         if compare:
-            if compare.data[i]['input'] == inst['input']:
-                example['comparison'] = format_value(compare.predictions[i])
-                cscore = compare.scores[i]
-                if isinstance(cscore, Number):
-                    cprob = np.exp(cscore / num_tokens)
-                else:
-                    cprob = cscore
-                example['cprob'] = score_template.format(format_number(cprob))
-                example['cprob_val'] = cprob if isinstance(cprob, Number) else 0
-            else:
+            if compare.data[i]['input'] != inst['input']:
                 warnings.warn("Comparison input doesn't match this input: %s != %s" %
                               (compare.data[i]['input'], inst['input']))
-                example['comparison'] = ''
-                example['cprob'] = ''
+            example['comparison'] = format_value(compare.predictions[i])
+            cscore = compare.scores[i]
+            if isinstance(cscore, Number):
+                cprob = np.exp(cscore / num_tokens)
+            else:
+                cprob = cscore
+            example['cprob'] = score_template.format(format_number(cprob))
+            example['cprob_val'] = cprob if isinstance(cprob, Number) else 0
         else:
             example['comparison'] = ''
             example['cprob'] = ''
+            example['cprob_val'] = 0.0
         collated.append(example)
 
     score_order = sorted(collated, key=lambda e: e['pprob_val'])
@@ -252,7 +261,11 @@ def format_error_analysis(output, compare=None, per_token=False):
         ('Head', collated[:100]),
     ]
     if compare:
-        diff_order = sorted(collated, key=lambda e: e['pprob_val'] - e['cprob_val'])
+        if only_differing:
+            differing = [e for e in collated if e['prediction'] != e['comparison']]
+        else:
+            differing = collated
+        diff_order = sorted(differing, key=lambda e: e['pprob_val'] - e['cprob_val'])
         tables.extend([
             ('Biggest decline', diff_order[:100]),
             ('Biggest improvement', reversed(diff_order[-100:])),
@@ -320,7 +333,8 @@ def generate_html_reports(run_dir=None, compare_dir=None):
 
     for output, compare, out_path in get_all_outputs(run_dir, options.compare_dir):
         with open(out_path, 'w') as outfile:
-            outfile.write(html_report(output, compare, per_token=options.per_token_prob))
+            outfile.write(html_report(output, compare, per_token=options.per_token_prob,
+                                      only_differing=options.only_differing_preds))
 
 
 def get_all_outputs(run_dir, compare_dir):
