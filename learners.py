@@ -380,3 +380,8 @@ LEARNERS.update({
     'DirectRefGame': ref_game.DirectRefGameLearner,
     'LRContextListener': ref_game.LRContextListenerLearner,
 })
+
+import sampled_ams
+LEARNERS.update({
+    'ACGaussian': sampled_ams.ACGaussianLearner,
+})

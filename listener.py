@@ -18,7 +18,7 @@ from stanza.research import config, instance, iterators, rng
 import color_instances
 import speaker
 import data_aug
-from helpers import ForgetSizeLayer, GaussianScoreLayer
+from helpers import ForgetSizeLayer, GaussianScoreLayer, logit_softmax_nd
 from neural import NeuralLearner, SimpleLasagneModel
 from neural import NONLINEARITIES, OPTIMIZERS, CELLS, sample
 from vectorizers import SequenceVectorizer, BucketsVectorizer, SymbolVectorizer
@@ -436,14 +436,15 @@ class ContextListenerLearner(ListenerLearner):
     def on_iter_end(self, step, writer):
         pass
 
-    def _build_model(self, model_class=SimpleLasagneModel):
+    def _build_model(self, model_class=SimpleLasagneModel, multi_utt=None):
         id_tag = (self.id + '/') if self.id else ''
 
-        input_var = T.imatrix(id_tag + 'inputs')
+        input_var = (T.imatrix if multi_utt is None else T.itensor3)(id_tag + 'inputs')
         context_vars = self.color_vec.get_input_vars(self.id, recurrent=self.recurrent_context)
         target_var = T.ivector(id_tag + 'targets')
 
-        self.l_out, self.input_layers = self._get_l_out([input_var] + context_vars)
+        self.l_out, self.input_layers = self._get_l_out([input_var] + context_vars,
+                                                        multi_utt=multi_utt)
         self.loss = categorical_crossentropy
 
         self.model = model_class(
@@ -519,7 +520,7 @@ class ContextListenerLearner(ListenerLearner):
             print('y: %s' % (repr(y),))
         return [x, c], [y]
 
-    def _get_l_out(self, input_vars):
+    def _get_l_out(self, input_vars, multi_utt='ignored'):
         check_options(self.options)
         id_tag = (self.id + '/') if self.id else ''
 
@@ -595,7 +596,7 @@ class TwoStreamListenerLearner(ContextListenerLearner):
     def recurrent_context(self):
         return False
 
-    def _get_l_out(self, input_vars):
+    def _get_l_out(self, input_vars, multi_utt='ignored'):
         check_options(self.options)
         id_tag = (self.id + '/') if self.id else ''
 
@@ -667,16 +668,23 @@ class GaussianContextListenerLearner(ContextListenerLearner):
     def recurrent_context(self):
         return False
 
-    def _get_l_out(self, input_vars):
+    def _get_l_out(self, input_vars, multi_utt=None):
         check_options(self.options)
         id_tag = (self.id + '/') if self.id else ''
 
         input_var = input_vars[0]
         context_vars = input_vars[1:]
 
-        l_in = InputLayer(shape=(None, self.seq_vec.max_len), input_var=input_var,
-                          name=id_tag + 'desc_input')
-        l_in_embed = EmbeddingLayer(l_in, input_size=len(self.seq_vec.tokens),
+        if multi_utt is None:
+            l_in = InputLayer(shape=(None, self.seq_vec.max_len), input_var=input_var,
+                              name=id_tag + 'desc_input')
+            l_in_flattened = l_in
+        else:
+            l_in = InputLayer(shape=(None, multi_utt, self.seq_vec.max_len), input_var=input_var,
+                              name=id_tag + 'desc_input')
+            l_in_flattened = reshape(l_in, (-1, self.seq_vec.max_len),
+                                     name=id_tag + 'input_flattened')
+        l_in_embed = EmbeddingLayer(l_in_flattened, input_size=len(self.seq_vec.tokens),
                                     output_size=self.options.listener_cell_size,
                                     name=id_tag + 'desc_embed')
 
@@ -702,19 +710,25 @@ class GaussianContextListenerLearner(ContextListenerLearner):
         else:
             l_rec1_drop = l_rec1
 
-        # (batch_size, repr_size)
+        # (batch_size [ * multi_utt], repr_size)
         l_pred_mean = DenseLayer(l_rec1_drop, num_units=self.color_vec.output_size,
                                  nonlinearity=None, name=id_tag + 'pred_mean')
-        # (batch_size, repr_size * repr_size)
+        # (batch_size [ * multi_utt], repr_size * repr_size)
         l_pred_covar_vec = DenseLayer(l_rec1_drop, num_units=self.color_vec.output_size ** 2,
                                       # initially produce identity matrix
                                       b=np.eye(self.color_vec.output_size,
                                                dtype=theano.config.floatX).ravel(),
                                       nonlinearity=None, name=id_tag + 'pred_covar_vec')
-        # (batch_size, repr_size, repr_size)
+        # (batch_size [ * multi_utt], repr_size, repr_size)
         l_pred_covar = reshape(l_pred_covar_vec, ([0], self.color_vec.output_size,
                                                   self.color_vec.output_size),
                                name=id_tag + 'pred_covar')
+        if multi_utt is not None:
+            l_pred_mean = reshape(l_pred_mean, (-1, multi_utt, self.color_vec.output_size),
+                                  name=id_tag + 'pred_mean_reshape')
+            l_pred_covar = reshape(l_pred_covar, (-1, multi_utt, self.color_vec.output_size,
+                                                  self.color_vec.output_size),
+                                   name=id_tag + 'pred_covar_reshape')
 
         # Context repr has shape (batch_size, context_len * repr_size)
         l_context_repr, context_inputs = self.color_vec.get_input_layer(
@@ -726,11 +740,23 @@ class GaussianContextListenerLearner(ContextListenerLearner):
         l_context_points = reshape(l_context_repr, ([0], self.context_len,
                                                     self.color_vec.output_size))
 
+        # (batch_size, [multi_utt,] context_len)
         l_unnorm_scores = GaussianScoreLayer(l_context_points, l_pred_mean, l_pred_covar,
                                              name=id_tag + 'gaussian_score')
 
-        l_scores = NonlinearityLayer(l_unnorm_scores, nonlinearity=softmax,
+        if multi_utt is not None:
+            l_unnorm_scores = reshape(l_unnorm_scores, (-1, self.context_len),
+                                      name=id_tag + 'gaussian_score_reshape')
+        # (batch_size [ * multi_utt], context_len)
+        # XXX: returning probs for normal models, log probs for AC model!
+        # This is really surprising and definitely not the best solution.
+        # We should be using log probs everywhere for stability...
+        final_softmax = (softmax if multi_utt is None else logit_softmax_nd(axis=2))
+        l_scores = NonlinearityLayer(l_unnorm_scores, nonlinearity=final_softmax,
                                      name=id_tag + 'scores')
+        if multi_utt is not None:
+            l_scores = reshape(l_unnorm_scores, (-1, multi_utt, self.context_len),
+                               name=id_tag + 'scores_reshape')
 
         return l_scores, [l_in] + context_inputs
 
@@ -739,7 +765,7 @@ class ContextVecListenerLearner(ContextListenerLearner):
     def __init__(self, *args, **kwargs):
         super(ContextVecListenerLearner, self).__init__(*args, **kwargs)
 
-    def _get_l_out(self, input_vars):
+    def _get_l_out(self, input_vars, multi_utt='ignored'):
         check_options(self.options)
         id_tag = (self.id + '/') if self.id else ''
 

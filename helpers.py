@@ -49,47 +49,55 @@ class GaussianScoreLayer(MergeLayer):
                              'got shape {}'.format(self.points.output_shape))
         batch_size, points_size, repr_size = self.points.output_shape
 
-        # pred_mean = (batch_size, repr_size)
-        if len(self.pred_mean.output_shape) != 2:
-            raise ValueError('Mean layer for GaussianScoreLayer should be a rank-2 tensor, instead '
-                             'got shape {}'.format(self.pred_mean.output_shape))
+        # pred_mean = (batch_size, [num_curves,] repr_size)
+        if len(self.pred_mean.output_shape) not in (2, 3):
+            raise ValueError('Mean layer for GaussianScoreLayer should be a rank-2 or rank-3 '
+                             'tensor, instead got shape {}'.format(self.pred_mean.output_shape))
         if (batch_size is not None and
                 self.pred_mean.output_shape[0] is not None and
                 self.pred_mean.output_shape[0] != batch_size):
             raise ValueError("Batch size for GaussianScoreLayer mean doesn't match input: "
                              'mean={} vs. input={}'.format(self.pred_mean.output_shape,
                                                            self.points.output_shape))
+        if len(self.pred_mean.output_shape) == 3:
+            num_curves = self.pred_mean.output_shape[1]
+            repr_dim = 2
+        else:
+            num_curves = None
+            repr_dim = 1
         if (repr_size is not None and
-                self.pred_mean.output_shape[1] is not None and
-                self.pred_mean.output_shape[1] != repr_size):
-            raise ValueError("Representation size for GaussianScoreLayer mean doesn't match input: "
-                             'mean={} vs. input={}'.format(self.pred_mean.output_shape,
-                                                           self.points.output_shape))
+                self.pred_mean.output_shape[repr_dim] is not None and
+                self.pred_mean.output_shape[repr_dim] != repr_size):
+            raise ValueError("Representation size for GaussianScoreLayer mean doesn't match "
+                             "input: mean={} vs. input={}".format(self.pred_mean.output_shape,
+                                                                  self.points.output_shape))
 
-        # pred_covar = (batch_size, repr_size, repr_size)
-        if len(self.pred_covar.output_shape) != 3:
-            raise ValueError('Covariance layer for GaussianScoreLayer should be a rank-3 tensor, '
-                             'instead got shape {}'.format(self.pred_covar.output_shape))
+        # pred_covar = (batch_size, [num_curves,] repr_size, repr_size)
+        if len(self.pred_covar.output_shape) != len(self.pred_mean.output_shape) + 1:
+            raise ValueError('Covariance layer for GaussianScoreLayer should be a rank-{} tensor, '
+                             'instead got shape {}'.format(len(self.pred_mean.output_shape) + 1,
+                                                           self.pred_covar.output_shape))
         if (batch_size is not None and
                 self.pred_covar.output_shape[0] is not None and
                 self.pred_covar.output_shape[0] != batch_size):
             raise ValueError("Batch size for GaussianScoreLayer covar doesn't match input: "
                              'covar={} vs. input={}'.format(self.pred_covar.output_shape,
                                                             self.points.output_shape))
-        if (self.pred_covar.output_shape[1] is not None and
-                self.pred_covar.output_shape[2] is not None and
-                self.pred_covar.output_shape[1] != self.pred_covar.output_shape[2]):
-            raise ValueError("GaussianScoreLayer covar should be square in 2nd and 3rd dimensions: "
+        if (num_curves is not None and
+                self.pred_covar.output_shape[1] is not None and
+                self.pred_covar.output_shape[1] != num_curves):
+            raise ValueError("Number of curves for GaussianScoreLayer covar doesn't match input: "
+                             'covar={} vs. input={}'.format(self.pred_covar.output_shape,
+                                                            self.points.output_shape))
+        if (self.pred_covar.output_shape[repr_dim] is not None and
+                self.pred_covar.output_shape[repr_dim + 1] is not None and
+                self.pred_covar.output_shape[repr_dim] !=
+                self.pred_covar.output_shape[repr_dim + 1]):
+            raise ValueError("GaussianScoreLayer covar should be square in last two dimensions: "
                              '{}'.format(self.pred_covar.output_shape))
         if (repr_size is not None and
-                self.pred_covar.output_shape[1] is not None and
-                self.pred_covar.output_shape[1] != repr_size):
-            raise ValueError("Representation size for GaussianScoreLayer covar doesn't match "
-                             'input: covar={} vs. input={}'.format(self.pred_covar.output_shape,
-                                                                   self.points.output_shape))
-        if (repr_size is not None and
-                self.pred_covar.output_shape[2] is not None and
-                self.pred_covar.output_shape[2] != repr_size):
+                self.pred_covar.output_shape[repr_dim] is not None and
+                self.pred_covar.output_shape[repr_dim] != repr_size):
             raise ValueError("Representation size for GaussianScoreLayer covar doesn't match "
                              'input: covar={} vs. input={}'.format(self.pred_covar.output_shape,
                                                                    self.points.output_shape))
@@ -100,28 +108,39 @@ class GaussianScoreLayer(MergeLayer):
             raise ValueError('In get_output_shape_for: Input to GaussianScoreLayer should be a '
                              'rank-3 tensor, instead got shape {}'.format(self.points.output_shape))
         batch_size, points_size, repr_size = points_shape
-        return (batch_size, points_size)
+        if len(mean_shape) == 2:
+            return (batch_size, points_size)
+        elif len(mean_shape) == 3:
+            num_curves = mean_shape[1]
+            return (batch_size, num_curves, points_size)
+        else:
+            raise ValueError('In get_output_shape_for: Mean to GaussianScoreLayer should be a '
+                             'rank-2 or rank-3 tensor, instead got shape '
+                             '{}'.format(self.points.output_shape))
 
     def get_output_for(self, inputs, **kwargs):
         points, mean, covar = inputs
         # points: (batch_size, context_len, repr_size)
         assert points.ndim == 3, '{}.ndim == {}'.format(points, points.ndim)
-        # mean: (batch_size, repr_size)
-        assert mean.ndim == 2, '{}.ndim == {}'.format(mean, mean.ndim)
-        # mean: (batch_size, repr_size, repr_size)
-        assert covar.ndim == 3, '{}.ndim == {}'.format(covar, covar.ndim)
+        # mean: (batch_size, [num_curves,] repr_size)
+        assert mean.ndim in (2, 3), '{}.ndim == {}'.format(mean, mean.ndim)
+        multi_curve = (mean.ndim == 3)
+        # covar: (batch_size, [num_curves,] repr_size, repr_size)
+        assert covar.ndim == mean.ndim + 1, '{}.ndim == {}'.format(covar, covar.ndim)
 
         # log of gaussian is a quadratic form: -(x - m).T * Sigma * (x - m)
-        centered = points - mean.dimshuffle(0, 'x', 1)
-        # centered: (batch_size, context_len, repr_size)
-        assert centered.ndim == 3, '{}.ndim == {}'.format(centered, centered.ndim)
+        centered = (points.dimshuffle(0, 'x', 1, 2) - mean.dimshuffle(0, 1, 'x', 2)
+                    if multi_curve else
+                    points - mean.dimshuffle(0, 'x', 1))
+        # centered: (batch_size, [num_curves,] context_len, repr_size)
+        assert centered.ndim == covar.ndim, '{}.ndim == {}'.format(centered, centered.ndim)
 
         left = batched_dot(centered, covar)
-        # left: (batch_size, context_len, repr_size)
-        assert left.ndim == 3, '{}.ndim == {}'.format(left, left.ndim)
-        output = T.sum(left * centered, axis=2)
-        # left: (batch_size, context_len)
-        assert output.ndim == 2, '{}.ndim == {}'.format(output, output.ndim)
+        # left: (batch_size, [num_curves,] context_len, repr_size)
+        assert left.ndim == covar.ndim, '{}.ndim == {}'.format(left, left.ndim)
+        output = T.sum(left * centered, axis=(3 if multi_curve else 2))
+        # left: (batch_size, [num_curves,] context_len)
+        assert output.ndim == mean.ndim, '{}.ndim == {}'.format(output, output.ndim)
         return output
 
 
@@ -154,7 +173,10 @@ def batched_dot(x, y):
         scan_seqs = [seq[:actual_n_steps] for seq in scan_seqs]
       IndexError: failed to coerce slice entry of type TensorVariable to integer
     '''
-    return T.sum(x.dimshuffle(0, 1, 2, 'x') * y.dimshuffle(0, 'x', 1, 2), axis=2)
+    dims = range(x.ndim)
+    assert x.ndim == y.ndim
+    return T.sum(x.dimshuffle(*(dims + ['x'])) * y.dimshuffle(*(dims[:-2] + ['x'] + dims[-2:])),
+                 axis=x.ndim - 1)
 
 
 def apply_nan_suppression(updates, print_mode='all'):
@@ -231,3 +253,25 @@ def apply_nan_suppression(updates, print_mode='all'):
                                                                 new_expression - shared_variable)
 
     return new_updates
+
+
+def logit_softmax_nd(axis=1):
+    '''
+    A n-dimensional generalization of `theano.tensor.nnet.softmax`, in log space.
+
+    Call this once to fill in the axis (optional) and return a nonlinearity function,
+    which is then called again with its input to construct a computation graph:
+
+        logit_softmax_nd(axis=2)(log_probs_3d)
+
+    :param axis: the axis over which to compute the softmax.
+    '''
+    def logit_softmax_fn(logits):
+        axis_last = logits.dimshuffle(range(axis) + range(axis + 1, logits.ndim) + [axis])
+        logits_flattened = T.reshape(axis_last, (-1, T.shape(axis_last)[-1]))
+        logits_shifted = logits_flattened - logits_flattened.max(axis=1, keepdims=True)
+        logits_normalized = (logits_shifted -
+                             T.log(T.sum(T.exp(logits_shifted), axis=1, keepdims=True)))
+        return T.reshape(logits_normalized, logits.shape)
+
+    return logit_softmax_fn
