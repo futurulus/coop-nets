@@ -32,7 +32,7 @@ msgs = read_csv("./humanOutput/colorReferenceMessage2.csv") %>%
 
 clks = read.csv("./humanOutput/colorReferenceClicks2.csv") %>%
   mutate(condition = factor(condition, levels = c("closer", "further", "equal"), 
-                            labels = c("far", "split", "close"))) %>%
+                            labels = c("close", "split", "far"))) %>%
   rename(clkTime = time)
 
 subjInfo = read.csv("./humanOutput/colorReference-subject_information_batch2.csv") %>%
@@ -74,7 +74,7 @@ robo_msgs = read.csv("./modelOutput/speaker_reccontext_tuned_sampled_message.csv
 
 robo_clks = read.csv("./modelOutput/listener_gaussian_tuned_clickedObj.csv") %>%
   mutate(condition = factor(condition, levels = c("closer", "further", "equal"), 
-                            labels = c("far", "split", "close"))) %>%
+                            labels = c("close", "split", "far"))) %>%
   rename(clkTime = time)
 
 robo_rawAggregated <- robo_clks %>% 
@@ -94,6 +94,9 @@ combined_model <- robo_rawAggregated %>%
 
 ```{r}
 combined = rbind(combined_human, combined_model) 
+paste(c(length(unique(combined$gameid)), 
+        "complete games w/ native english speakers out of a total of",
+        length(unique(subjInfo$gameid))), collapse = " ")
 ```
 
 # Listener analysis: Do people make more mistakes on harder trials?
@@ -186,7 +189,7 @@ topRow <- paste0(paste0('& \\multicolumn{3}{c}{',
                         unique(combined$source), 
                         '}', collapse=''), '\\\\')
 secondRow <- paste0('& ', 
-                    paste0(rep(unique(combined$condition), 2), collapse='& '),
+                    paste0(rep(c("far", "split", "close"), 2), collapse='& '),
                     '\\\\')
 
 addtorow <- list(
@@ -194,5 +197,6 @@ addtorow <- list(
   command = c(topRow,secondRow)
 )
 print(xtable(resultTable, label = "table:metrics", align = "llrrr|rrr"), 
-      add.to.row= addtorow, include.rownames = FALSE, include.colnames = F)
+      add.to.row= addtorow, include.rownames = FALSE, include.colnames = F,
+      floating.environment = "table*")
 ```
