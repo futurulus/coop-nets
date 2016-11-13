@@ -104,8 +104,8 @@ to the correct referent.
 % todo (wm): explain reference games here? or can we wait for section 2?
 
 This paper presents a new corpus of reference games in which the referents
-are patches of color. The corpus includes \todocheck{\#?}\ games with
-\todocheck{\#?}\ utterances produced by humans playing these games with real-time
+are patches of color. The corpus includes 942 complete games with
+47,100 utterances produced by humans playing these games with real-time
 feedback.
 
 Experiments on this data show that our pragmatic model \todocheck{improves} accuracy
@@ -197,24 +197,24 @@ by blending the pragmatic listener with the base listener:
 \label{fig:taskScreenshot}
 \end{figure}
 
-To collect a corpus of natural color reference data across varying contexts, we recruited 210 participants from Amazon Mechanical Turk to play a real-time, multi-player communication game \cite{Hawkins15_RealTimeWebExperiments}. Participants were sorted into dyads, assigned the role of speaker or listener, and placed in a game environment containing a chat box and an array of three color patches (\figref{fig:taskScreenshot}).
+To collect a corpus of natural color reference data across varying contexts, we recruited \todocheck{\#} unique participants from Amazon Mechanical Turk to play 1,117 real-time, multi-player communication games of 50 rounds each \cite{Hawkins15_RealTimeWebExperiments}. \todocheck{After non-native english speakers and incomplete games were excluded, we were left with a corpus of 47,100 utterances across 942 games [report modal number of games per turker?]}. Participants were sorted into dyads, assigned the role of speaker or listener, and placed in a game environment containing a chat box and an array of three color patches (\figref{fig:taskScreenshot}).
 
 On each round, one of the three colors was chosen to be the ``target'' and highlighted for the speaker. They were instructed to communicate this information to the listener, who could then click on one of the colors to advance to the next trial. Both participants were free to use the chat box at any point during the trial. 
 
 To ensure a range of difficulty, we randomly interspersed an equal number of trials from three different conditions: (1) \emph{close}, where colors were all within a distance of $\theta$ from one another but still perceptible\footnote{We used the most recent CIEDE standard to measure color differences, which is calibrated to human vision \cite{SharmaWuDalal05_DeltaE}. All distances were constrained to be larger than a lower bound of $\epsilon = 5$ to ensure perceptible differences, and we used a threshold value of $\theta = 20$ to create conditions}, (2) \emph{split}, where one distractor was within a distance of $\theta$ of the target, but the other distractor was further than $\theta$, and (3) \emph{far}, where all colors were farther than $\theta$ from one another. Colors were rejection sampled uniformly from RGB space to meet these constraints. 
 
 % latex table generated in R 3.3.0 by xtable 1.8-2 package
-% Wed Oct  5 12:20:44 2016
-\begin{table*}[t]
+% Sat Nov 12 18:10:59 2016
+\begin{table*}[ht]
 \centering
 \begin{tabular}{lrrr|rrr}
   & \multicolumn{3}{c}{human}& \multicolumn{3}{c}{model}\\ \hline
-  & far& close& split& far& close& split\\ \hline
-\# Chars & 13.12 & 11.87 & 8.17 & 7.14 & 6.00 & 5.21 \\ 
-  \# Comparatives & 0.13 & 0.15 & 0.01 & 0.00 & 0.00 & 0.00 \\ 
-  \# Negatives & 0.11 & 0.09 & 0.05 & 0.00 & 0.00 & 0.00 \\ 
-  \# Superlatives & 0.20 & 0.08 & 0.04 & 0.00 & 0.00 & 0.00 \\ 
-  \# Words & 2.27 & 2.11 & 1.54 & 1.37 & 1.19 & 1.07 \\ 
+  & far& split& close& far& split& close\\ \hline
+\# Chars & 7.53 & 11.30 & 12.93 & 9.93 & 11.42 & 12.16 \\ 
+  \# Comparatives & 0.02 & 0.16 & 0.14 & 0.08 & 0.08 & 0.09 \\ 
+  \# Negatives & 0.04 & 0.11 & 0.15 & 0.06 & 0.07 & 0.07 \\ 
+  \# Superlatives & 0.02 & 0.06 & 0.17 & 0.08 & 0.11 & 0.14 \\ 
+  \# Words & 1.46 & 2.04 & 2.27 & 1.86 & 2.11 & 2.22 \\ 
    \hline
 \end{tabular}
 \todo[inline]{rh: could also make plots, but a table seemed more economical. a couple notes: (1) need to put errors in, (2) `\% messages containing...' might be a more natural measure for negatives/superlatives/comparatives than counts, (3) not sure we need both chars \& words, and (4) could add additional measures about level of specificity, use of analogy constructions}
@@ -232,7 +232,7 @@ To ensure a range of difficulty, we randomly interspersed an equal number of tri
 
 \subsection{Listener behavior}
 
-Since color reference is a difficult task even for humans, we compared listener accuracy across conditions to calibrate our expectations about model performance. While participant accuracy was close to ceiling (95\%) on the `far' condition, they made many more errors on the `split' (86\%) and `close' (81\%) conditions (see \figref{fig:listenerAccuracy}).
+Since color reference is a difficult task even for humans, we compared listener accuracy across conditions to calibrate our expectations about model performance. While participant accuracy was close to ceiling (97\%) on the `far' condition, they made significantly more errors on the `split' (90\%) and `close' (83\%) conditions (see \figref{fig:listenerAccuracy}).
 
 \subsection{Speaker behavior}
 
