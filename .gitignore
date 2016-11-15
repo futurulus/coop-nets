@@ -37,3 +37,7 @@ activate
 /tensorflow
 
 nosetests.json
+
+.RData
+.Rhistory
+*-converted-to.pdf
