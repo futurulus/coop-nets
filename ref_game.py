@@ -209,7 +209,7 @@ class ExhaustiveL2Learner(Learner):
                                           context_len, num_alt_utts), s1_log_probs.shape
             if options.exhaustive_output_speaker_samples or \
                     options.exhaustive_output_speaker_predictions:
-                speaker_dist = s1_log_probs[np.arange(len(batch)), :, true_indices, :]
+                speaker_dist = s1_log_probs[np.arange(len(batch)), :, true_indices, 1:]
                 if options.exhaustive_output_speaker_samples:
                     speaker_sample_indices = sample(np.exp(speaker_dist))
                     self.write_speaker_utterances('s1_samples.%s.jsons', output_grid,
