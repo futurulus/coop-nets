@@ -28,6 +28,12 @@ class ACGaussianLearner(listener.GaussianContextListenerLearner):
         return super(ACGaussianLearner, self)._build_model(model_class=model_class,
                                                            multi_utt=multi_utt)
 
+    def train_priors(self, training_instances, listener_data=False):
+        # TODO: rewrite this so it doesn't require going through data_to_arrays a
+        # second time
+        self.prior_emp = None
+        self.prior_smooth = None
+
     def _get_l_out(self, input_vars, multi_utt=None):
         id_tag = (self.id + '/') if self.id else ''
         l_l0, input_layers = super(ACGaussianLearner, self)._get_l_out(input_vars,
