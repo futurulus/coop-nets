@@ -38,7 +38,10 @@ class ACGaussianLearner(listener.GaussianContextListenerLearner):
         id_tag = (self.id + '/') if self.id else ''
         l_l0, input_layers = super(ACGaussianLearner, self)._get_l_out(input_vars,
                                                                        multi_utt=multi_utt)
-        l_s1 = NonlinearityLayer(l_l0, nonlinearity=logit_softmax_nd(axis=1),
+        alpha = self.options.ac_inv_temperature
+        l_l0_alpha = NonlinearityLayer(l_l0, nonlinearity=lambda x: x * alpha,
+                                       name=id_tag + 'log_l0_alpha')
+        l_s1 = NonlinearityLayer(l_l0_alpha, nonlinearity=logit_softmax_nd(axis=1),
                                  name=id_tag + 'log_s1')
         l_s1_true = SliceLayer(l_s1, 0, axis=1, name=id_tag + 'log_s1_true')
         l_l2 = NonlinearityLayer(l_s1_true, nonlinearity=softmax,
@@ -79,12 +82,16 @@ class ACGaussianLearner(listener.GaussianContextListenerLearner):
             (len(sampler_inputs), len(batch),
              context_len, options.ac_num_samples)
         outputs = self.sampler.sample(sampler_inputs)
+        if self.options.verbosity >= 8:
+            print('S0 samples:')
+            for inst, output in zip(sampler_inputs, outputs):
+                print("%s -> %s" % (inst.alt_inputs[inst.input], repr(output)))
         outputs = (np.array(outputs)
                      .reshape(len(batch),
                               context_len * options.ac_num_samples)
                      .tolist())
 
-        return [instance.Instance(utt, 0, alt_outputs=[(0, 0, 0)] * 3)
+        return [instance.Instance(utt, 0, alt_outputs=[(0, 0, 0)] * context_len)
                 for inst, samples in zip(batch, outputs)
                 for utt in [inst.input] + samples]
 
@@ -103,3 +110,6 @@ parser.add_argument('--ac_sampler_model', default=None,
 parser.add_argument('--ac_num_samples', default=1, type=int,
                     help='The number of samples to take per context color for use as alternative '
                          'utterances.')
+parser.add_argument('--ac_inv_temperature', default=1.0, type=float,
+                    help="RSA inverse temperature parameter (lambda/alpha) for "
+                         "ACGaussianLearner.")
