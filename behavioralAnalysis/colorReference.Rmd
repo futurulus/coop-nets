@@ -68,11 +68,12 @@ combined_human <- clks %>%
 # Preprocessing model data
 
 ```{r}
-robo_msgs = read.csv("./modelOutput/speaker_reccontext_tuned_sampled_message.csv") %>%
+robo_msgs = read.csv("./modelOutput/speaker_big_sl_sampled_message.csv") %>%
   rename(msgTime = time, role = sender) %>%
-  mutate(role = "speaker")
+  mutate(role = "speaker") %>%
+  mutate(contents = trimws(as.character(contents)))
 
-robo_clks = read.csv("./modelOutput/listener_gaussian_tuned_clickedObj.csv") %>%
+robo_clks = read.csv("./modelOutput/listener_big_l2_untuned_clickedObj.csv") %>%
   mutate(condition = factor(condition, levels = c("closer", "further", "equal"), 
                             labels = c("close", "split", "far"))) %>%
   rename(clkTime = time)
@@ -89,7 +90,7 @@ combined_model <- robo_rawAggregated %>%
   mutate(numCleanChars = nchar(as.character(cleanMsg))) %>%
   mutate(numCleanWords = 1 + str_count(cleanMsg, fixed(" "))) %>%
   filter(numCleanWords < mean(numCleanWords) + 3*sd(numCleanWords)) %>%
-  mutate(source = "model") 
+  mutate(source = "good_model") 
 ```
 
 ```{r}
@@ -149,32 +150,37 @@ Note that taggedColorMsgs.csv is created in tagPOS.ipynb.
 We're going to run both human and model output through a pipeline to get a table with the different conditions as columns and different metrics as rows... 
 
 ```{r}
-taggedDF = read_csv("taggedColorMsgs.csv") %>% 
+taggedDF = read_csv("taggedColorMsgs2.csv") %>% 
   rename(role = sender) %>% 
+  mutate(source = ifelse(source == "model", "good_model", source)) %>%
   mutate(contents = trimws(as.character(contents)))
 
-(taggedDF %>% filter(gameid == "4927-d"))$contents
+(taggedDF %>% filter(gameid == "4261-9"))$contents
+(combined %>% filter(gameid == "4261-9"))$contents
 
 # TODO: present se in table (e.g. in parens after mean)
 resultTable = combined %>% 
   left_join(taggedDF) %>%
+  #filter(!is.na(numComp)) %>% # TODO: figure out what's going wrong with joining
   filter(numCleanChars > 0) %>% # Get rid of NAs from empty strings
+  mutate(comparativesIndicator = numComp > 0) %>%
+  mutate(superlativesIndicator = numSuper > 0) %>%
+  mutate(negativesIndicator = str_count(contents, fixed("not")) > 0) %>%
    group_by(gameid, condition, source) %>%
    summarise(numWordsPerMessage = sum(numCleanWords)/length(numCleanWords),
              numCharsPerMessage = sum(numCleanChars)/length(numCleanChars),
-             numComparatives = sum(numComp)/length(numComp),
-             numSuperlatives = sum(numSuper)/length(numSuper),
-             numNegatives = str_count(paste(contents, collapse=" "),
-                                      fixed("not"))/length(numCleanWords),
+             comparativesRate = sum(comparativesIndicator)/length(comparativesIndicator),
+             superlativesRate = sum(superlativesIndicator)/length(superlativesIndicator),
+             negativesRate = sum(negativesIndicator)/length(negativesIndicator),
              levelOfRef = NA) %>%
    group_by(condition, source) %>% 
    summarize("# WordsM" = mean(numWordsPerMessage), 
              "# CharsM" = mean(numCharsPerMessage),
              numWordsPerMessageSE = sd(numWordsPerMessage)/sqrt(length(numWordsPerMessage)),
-             "# NegativesM" = mean(numNegatives),
-             numNegativesSE = sd(numNegatives)/sqrt(length(numNegatives)),
-             "# ComparativesM" = mean(numComparatives),
-             "# SuperlativesM" = mean(numSuperlatives)) %>%
+             "# NegativesM" = mean(negativesRate),
+             numNegativesSE = sd(negativesRate)/sqrt(length(negativesRate)),
+             "# ComparativesM" = mean(comparativesRate),
+             "# SuperlativesM" = mean(superlativesRate)) %>%
   gather(metric, mu, ends_with("M")) %>%
   #gather(garbage, se, ends_with("SE")) %>%
   mutate("metric (per message)" = gsub(".$", "", metric)) %>%
@@ -182,7 +188,7 @@ resultTable = combined %>%
   unite(comb, source,condition) %>%
   mutate(comb = ordered(comb, 
                         levels = c('human_far', 'human_split', 'human_close',
-                                  'model_far', 'model_split', 'model_close'))) %>%
+                                  'good_model_far', 'good_model_split', 'good_model_close'))) %>%
   spread(comb, mu)
 
 topRow <- paste0(paste0('& \\multicolumn{3}{c}{', 
