@@ -98,7 +98,7 @@ def replace_row_listener(orig_row, pred):
 
 
 def replace_row_speaker(orig_row, pred):
-    return orig_row[:-2] + ['speaker', pred.replace('"', '""')]
+    return orig_row[:SPEAKER_REPLACE_COLUMN - 1] + ['speaker', pred.replace('"', '""')]
 
 
 if __name__ == '__main__':
