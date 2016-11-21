@@ -1,3 +1,4 @@
+import gzip
 import json
 import numpy as np
 import sys
@@ -180,6 +181,8 @@ class ExhaustiveL2Learner(Learner):
             self.truncate_utterances_files('s1_samples.%s.jsons', num_sample_sets)
         if options.exhaustive_output_speaker_predictions:
             self.truncate_utterances_files('s1_predictions.%s.jsons', num_sample_sets)
+        if options.exhaustive_output_all_grids:
+            self.truncate_utterances_files('grids.%s.jsons.gz', 1)
 
         if options.verbosity + verbosity >= 2:
             print('Testing')
@@ -236,6 +239,9 @@ class ExhaustiveL2Learner(Learner):
             log_probs -= logsumexp(log_probs, axis=2)[:, :, np.newaxis]
             # Average (in probability space) over sample sets
             log_probs = logsumexp(log_probs, axis=1) - np.log(log_probs.shape[1])
+            if options.exhaustive_output_all_grids:
+                self.write_grids(output_grid,
+                                 l0_log_probs, s1_log_probs, l2_log_probs, log_probs)
             if random:
                 pred_indices = sample(np.exp(log_probs))
             else:
@@ -275,6 +281,23 @@ class ExhaustiveL2Learner(Learner):
                 # We'll come to another error soon enough, no need for more
                 # diagnostic output
                 pass
+
+    def write_grids(self, grid, l0, s1, l2, final):
+        batch_size, num_sample_sets, context_len, num_alt_utts = l0.shape
+        stride = [len(grid) / batch_size, len(grid) / (batch_size * num_sample_sets)]
+        with gzip.open(config.get_file_path('grids.0.jsons.gz'), 'a') as outfile:
+            for i in range(batch_size):
+                final_dist = final[i, :].tolist()
+                sample_sets = []
+                for ss in range(num_sample_sets):
+                    loc = i * stride[0] + ss * stride[1]
+                    utts = [inst.input for inst in grid[loc:loc + num_alt_utts]]
+                    l0_grid = l0[i, ss, :, :].tolist()
+                    s1_grid = s1[i, ss, :, :].tolist()
+                    l2_grid = l2[i, ss, :, :].tolist()
+                    sample_sets.append({'utts': utts, 'L0': l0_grid, 'S1': s1_grid, 'L2': l2_grid})
+                json.dump({'final': final_dist, 'sets': sample_sets}, outfile)
+                outfile.write('\n')
 
     def get_output_grid_index(self, tensor_shape, indices):
         stride = 1
@@ -567,6 +590,10 @@ parser.add_argument('--exhaustive_output_speaker_predictions', default=False, ty
                     help='If True, write a file to the run directory containing the top-1 '
                          'utterance from S(L0) [only for ExhaustiveL2Learner] for each test '
                          'instance.')
+parser.add_argument('--exhaustive_output_all_grids', default=False, type=config.boolean,
+                    help='If True, write a file to the run directory containing sampled utterances '
+                         'and log probabilities for all three agents '
+                         '[only for ExhaustiveL2Learner] for each test instance.')
 parser.add_argument('--direct_base_learner', default='Listener',
                     choices=learners.LEARNERS.keys(),
                     help='The name of the model to use as the level-0 agent for direct score-based '
