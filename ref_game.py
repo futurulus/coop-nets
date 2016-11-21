@@ -1,5 +1,7 @@
 import json
 import numpy as np
+import sys
+import traceback
 from scipy.misc import logsumexp
 from sklearn.linear_model import LogisticRegression
 
@@ -267,7 +269,7 @@ class ExhaustiveL2Learner(Learner):
         for i in range(num_sample_sets):
             filename = file_pattern % (i,)
             try:
-                with config.open(filename, 'w') as outfile:
+                with config.open(filename, 'w'):
                     pass
             except IOError:
                 # We'll come to another error soon enough, no need for more
