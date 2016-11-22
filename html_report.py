@@ -31,7 +31,7 @@ MAX_ALTS = 10
 
 class NotPresent(object):
     def __repr__(self):
-        return ''
+        return '&nbsp;'
 
 
 def html_report(output, compare=None, per_token=False, only_differing=False):
@@ -288,10 +288,13 @@ def format_error_analysis(output, compare=None, per_token=False, only_differing=
     ) for cond, examples in tables)
 
 
-def format_value(value):
+def format_value(value, suppress_colors=False):
     if isinstance(value, (list, tuple)) and len(value) == 3 and isinstance(value[0], Number):
         color = web_color(value)
-        value = [int(c) for c in value]
+        if suppress_colors:
+            value = NotPresent()
+        else:
+            value = [int(c) for c in value]
     else:
         color = '#fff'
     return '<td bgcolor="{color}">{value!r}</td>'.format(color=color, value=value)
