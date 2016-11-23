@@ -35,9 +35,7 @@ clks = read.csv("./humanOutput/colorReferenceClicks2.csv") %>%
                             labels = c("close", "split", "far"))) %>%
   rename(clkTime = time)
 
-subjInfo = read.csv("./humanOutput/colorReference-subject_information_batch2.csv") %>%
-  select(-score) %>%
-  rbind(read.csv("./humanOutput/colorReference-subject_information_batch1.csv")) %>%
+subjInfo = read.csv("./humanOutput/colorReferenceSubjectInfo2.csv") %>%
   rename(gameid = gameID) %>%
   select(-workerid)
 
@@ -61,7 +59,7 @@ combined_human <- clks %>%
                                        separate = F))) %>%
   mutate(numCleanChars = nchar(as.character(cleanMsg))) %>%
   mutate(numCleanWords = 1 + str_count(cleanMsg, fixed(" "))) %>%
-  filter(numCleanWords < mean(numCleanWords) + 3*sd(numCleanWords)) %>%
+  filter(numCleanWords < mean(numRawWords) + 4*sd(numRawWords)) %>%
   mutate(source = 'human')
 ```
 
@@ -89,7 +87,7 @@ combined_model <- robo_rawAggregated %>%
                                        separate = F))) %>%
   mutate(numCleanChars = nchar(as.character(cleanMsg))) %>%
   mutate(numCleanWords = 1 + str_count(cleanMsg, fixed(" "))) %>%
-  filter(numCleanWords < mean(numCleanWords) + 3*sd(numCleanWords)) %>%
+  filter(numCleanWords < mean(numCleanWords) + 4*sd(numCleanWords)) %>%
   mutate(source = "good_model") 
 ```
 
@@ -155,17 +153,13 @@ taggedDF = read_csv("taggedColorMsgs2.csv") %>%
   mutate(source = ifelse(source == "model", "good_model", source)) %>%
   mutate(contents = trimws(as.character(contents)))
 
-(taggedDF %>% filter(gameid == "4261-9"))$contents
-(combined %>% filter(gameid == "4261-9"))$contents
-
 # TODO: present se in table (e.g. in parens after mean)
 resultTable = combined %>% 
   left_join(taggedDF) %>%
-  #filter(!is.na(numComp)) %>% # TODO: figure out what's going wrong with joining
   filter(numCleanChars > 0) %>% # Get rid of NAs from empty strings
   mutate(comparativesIndicator = numComp > 0) %>%
   mutate(superlativesIndicator = numSuper > 0) %>%
-  mutate(negativesIndicator = str_count(contents, fixed("not")) > 0) %>%
+  mutate(negativesIndicator = str_count(contents, fixed("not ")) > 0) %>%
    group_by(gameid, condition, source) %>%
    summarise(numWordsPerMessage = sum(numCleanWords)/length(numCleanWords),
              numCharsPerMessage = sum(numCleanChars)/length(numCleanChars),
