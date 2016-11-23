@@ -65,34 +65,55 @@ combined_human <- clks %>%
 
 # Preprocessing model data
 
+Template for pulling in listener & speaker
+
 ```{r}
-robo_msgs = read.csv("./modelOutput/speaker_big_sl_sampled_message.csv") %>%
-  rename(msgTime = time, role = sender) %>%
-  mutate(role = "speaker") %>%
-  mutate(contents = trimws(as.character(contents)))
+makeModelDF <- function(listenerOutput, speakerOutput, sourceLabel) {
+  robo_msgs = read.csv(speakerOutput) %>%
+    rename(msgTime = time, role = sender) %>%
+    mutate(role = "speaker") %>%
+    mutate(contents = trimws(as.character(contents)))
 
-robo_clks = read.csv("./modelOutput/listener_big_l2_untuned_clickedObj.csv") %>%
-  mutate(condition = factor(condition, levels = c("closer", "further", "equal"), 
-                            labels = c("close", "split", "far"))) %>%
-  rename(clkTime = time)
+  robo_clks = read.csv(listenerOutput) %>%
+    mutate(condition = factor(condition, levels = c("closer", "further", "equal"), 
+                              labels = c("close", "split", "far"))) %>%
+    rename(clkTime = time)
 
-robo_rawAggregated <- robo_clks %>% 
-  left_join(robo_msgs, by = c("gameid", "roundNum")) 
+  robo_rawAggregated <- robo_clks %>% 
+    left_join(robo_msgs, by = c("gameid", "roundNum")) 
 
-combined_model <- robo_rawAggregated %>%
-  mutate(numOutcome = ifelse(outcome == "true", 1, 0)) %>%
-  mutate(numRawWords = 1 + str_count(contents, fixed(" "))) %>%
-  mutate(strippedContents = str_replace_all(contents, "[^[:alnum:][:space:]']",' ')) %>%
-  do(mutate(., cleanMsg = rm_stopwords(.$strippedContents, tm::stopwords("english"), 
-                                       separate = F))) %>%
-  mutate(numCleanChars = nchar(as.character(cleanMsg))) %>%
-  mutate(numCleanWords = 1 + str_count(cleanMsg, fixed(" "))) %>%
-  filter(numCleanWords < mean(numCleanWords) + 4*sd(numCleanWords)) %>%
-  mutate(source = "good_model") 
+  combined_model <- robo_rawAggregated %>%
+    mutate(numOutcome = ifelse(outcome == "true", 1, 0)) %>%
+    mutate(numRawWords = 1 + str_count(contents, fixed(" "))) %>%
+    mutate(strippedContents = str_replace_all(contents, "[^[:alnum:][:space:]']",' ')) %>%
+    do(mutate(., cleanMsg = rm_stopwords(.$strippedContents, tm::stopwords("english"), 
+                                         separate = F))) %>%
+    mutate(numCleanChars = nchar(as.character(cleanMsg))) %>%
+    mutate(numCleanWords = 1 + str_count(cleanMsg, fixed(" "))) %>%
+    filter(numCleanWords < mean(numCleanWords) + 4*sd(numCleanWords)) %>%
+    mutate(source = sourceLabel) 
+}
 ```
 
+Next, pull in S2/L2 model output
+
 ```{r}
-combined = rbind(combined_human, combined_model) 
+literalModel <- makeModelDF(
+  "./modelOutput/listener_big_l0_untuned_clickedObj.csv",
+  "./modelOutput/speaker_big_s0_untuned_sampled_message.csv",
+  "literal"
+)
+     
+pragmaticModel <- makeModelDF(
+  "./modelOutput/listener_big_l2_untuned_clickedObj.csv",
+  "./modelOutput/speaker_big_sl_sampled_message.csv",
+  "pragmatic"
+)
+```
+
+
+```{r}
+combined = rbind(combined_human, literalModel, pragmaticModel) 
 paste(c(length(unique(combined$gameid)), 
         "complete games w/ native english speakers out of a total of",
         length(unique(subjInfo$gameid))), collapse = " ")
