@@ -171,31 +171,40 @@ We're going to run both human and model output through a pipeline to get a table
 ```{r}
 taggedDF = read_csv("taggedColorMsgs2.csv") %>% 
   rename(role = sender) %>% 
-  mutate(source = ifelse(source == "model", "good_model", source)) %>%
+  mutate(source = ifelse(source == "model", "pragmatic", source)) %>%
+  mutate(contents = trimws(as.character(contents)))
+
+informativityDF = read_csv("informativities.csv") %>%
+  rename(role = sender) %>% 
+  mutate(source = ifelse(source == "model", "pragmatic", source)) %>%
   mutate(contents = trimws(as.character(contents)))
 
 # TODO: present se in table (e.g. in parens after mean)
 resultTable = combined %>% 
+  filter(source %in% c("human", "pragmatic")) %>%
   left_join(taggedDF) %>%
+  left_join(informativityDF) %>%
   filter(numCleanChars > 0) %>% # Get rid of NAs from empty strings
   mutate(comparativesIndicator = numComp > 0) %>%
   mutate(superlativesIndicator = numSuper > 0) %>%
   mutate(negativesIndicator = str_count(contents, fixed("not ")) > 0) %>%
+  mutate(specificityIndicator = specificity > 7) %>%
    group_by(gameid, condition, source) %>%
-   summarise(numWordsPerMessage = sum(numCleanWords)/length(numCleanWords),
-             numCharsPerMessage = sum(numCleanChars)/length(numCleanChars),
-             comparativesRate = sum(comparativesIndicator)/length(comparativesIndicator),
-             superlativesRate = sum(superlativesIndicator)/length(superlativesIndicator),
-             negativesRate = sum(negativesIndicator)/length(negativesIndicator),
-             levelOfRef = NA) %>%
+   summarise(numWordsPerMessage = mean(numCleanWords),
+             numCharsPerMessage = mean(numCleanChars),
+             comparativesRate = mean(comparativesIndicator),
+             superlativesRate = mean(superlativesIndicator),
+             negativesRate = mean(negativesIndicator),
+             specificityRate = sum(specificityIndicator, na.rm = T)) %>%
    group_by(condition, source) %>% 
    summarize("# WordsM" = mean(numWordsPerMessage), 
              "# CharsM" = mean(numCharsPerMessage),
              numWordsPerMessageSE = sd(numWordsPerMessage)/sqrt(length(numWordsPerMessage)),
-             "# NegativesM" = mean(negativesRate),
+             "% NegativesM" = mean(negativesRate),
              numNegativesSE = sd(negativesRate)/sqrt(length(negativesRate)),
-             "# ComparativesM" = mean(comparativesRate),
-             "# SuperlativesM" = mean(superlativesRate)) %>%
+             "% ComparativesM" = mean(comparativesRate),
+             "% SuperlativesM" = mean(superlativesRate),
+             "% High SpecificityM" = mean(specificityRate)) %>%
   gather(metric, mu, ends_with("M")) %>%
   #gather(garbage, se, ends_with("SE")) %>%
   mutate("metric (per message)" = gsub(".$", "", metric)) %>%
@@ -203,7 +212,7 @@ resultTable = combined %>%
   unite(comb, source,condition) %>%
   mutate(comb = ordered(comb, 
                         levels = c('human_far', 'human_split', 'human_close',
-                                  'good_model_far', 'good_model_split', 'good_model_close'))) %>%
+                                  'pragmatic_far', 'pragmatic_split', 'pragmatic_close'))) %>%
   spread(comb, mu)
 
 topRow <- paste0(paste0('& \\multicolumn{3}{c}{', 
@@ -220,4 +229,18 @@ addtorow <- list(
 print(xtable(resultTable, label = "table:metrics", align = "llrrr|rrr"), 
       add.to.row= addtorow, include.rownames = FALSE, include.colnames = F,
       floating.environment = "table*")
+```
+
+Statistically more or less of different things?
+
+```{r}
+specificityDF = combined %>% 
+  filter(source %in% c("human")) %>%
+  left_join(informativityDF) %>%
+  mutate(specificityIndicator = specificity > 7)
+
+summary(glmer(specificityIndicator ~ condition + (1 | gameid), 
+             data = specificityDF,
+             family = 'binomial',
+             contrasts = list(condition =  contr.treatment(3, base=which(levels(specificityDF$condition) == 'far')))))
 ```
