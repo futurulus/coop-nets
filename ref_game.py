@@ -233,7 +233,10 @@ class ExhaustiveL2Learner(Learner):
             # Blend L0 and L2 (if enabled) to produce final score.
             if options.exhaustive_base_weight:
                 w = options.exhaustive_base_weight
-                log_probs = w * orig_log_probs[:, np.newaxis, :] + (1.0 - w) * log_probs
+                # Bump zero probabilities up to epsilon ~= 3e-23, because previously we would
+                # only have -inf log probs, but now if w < 0 we could get NaNs.
+                log_probs = (w * np.maximum(orig_log_probs[:, np.newaxis, :], -52.0) +
+                             (1.0 - w) * np.maximum(log_probs, -52.0))
             # Normalize across context one more time to prevent cheating when
             # blending.
             log_probs -= logsumexp(log_probs, axis=2)[:, :, np.newaxis]
