@@ -4,6 +4,7 @@ import gzip
 import json
 from numbers import Number
 import os
+from xml.sax.saxutils import escape
 
 from stanza.research import config
 from html_report import get_output, format_value
@@ -83,7 +84,7 @@ def grid_output(example, only_differing_preds):
         ),
         '<table>',
         '<tr><td></td>{}</tr>'.format(colors_row(inst)),
-        '<tr><td><b>{}</b></td>{}</tr>'.format(grids['sets'][0]['utts'][0],
+        '<tr><td><b>{}</b></td>{}</tr>'.format(escape(grids['sets'][0]['utts'][0]),
                                                probs_row(grids['final'], bold=True))
     ]
     for i, ss in enumerate(grids['sets']):
@@ -99,7 +100,7 @@ def grid_output(example, only_differing_preds):
                 probs_row([ss[model][k][j] for k in range(len(ss[model]))],
                           bold=model.startswith('L'))
                 for model in ['L2', 'S1', 'L0']
-            ], utt=utt))
+            ], utt=escape(utt)))
     lines.append('</table>')
     return '\n'.join(lines)
 
