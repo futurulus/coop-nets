@@ -1,10 +1,10 @@
-from numpy import argmax
+from numpy import argmax, isfinite
 from math import exp
 import gzip
 import json
 from numbers import Number
 import os
-from xml.sax.saxutils import escape
+from xml.sax.saxutils import escape as html_escape
 
 from stanza.research import config
 from html_report import get_output, format_value
@@ -130,6 +130,10 @@ def correct_status(inst, grids):
         return '(-)'
 
 
+def escape(s):
+    return html_escape(s).encode('utf-8')
+
+
 def star_true(formatted, is_true):
     formatted = formatted.replace('td', 'th')
     if is_true:
@@ -147,9 +151,14 @@ def probs_row(probs, bold=True):
 
 
 def format_prob(prob, bold=False):
-    r = int(255.0 * (1.0 - prob))
-    g = int(255.0 * (1.0 - 0.5 * prob))
-    b = int(255.0 * (1.0 - prob))
+    if isfinite(prob):
+        r = int(255.0 * (1.0 - prob))
+        g = int(255.0 * (1.0 - 0.5 * prob))
+        b = int(255.0 * (1.0 - prob))
+    else:
+        r = 255
+        g = 128
+        b = 0
     return '<td bgcolor="#{r:02x}{g:02x}{b:02x}">{prob_str}</td>'.format(
         r=r, g=g, b=b,
         prob_str=('<b>{}</b>' if bold else '{}').format(format_number(prob))
