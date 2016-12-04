@@ -38,7 +38,8 @@ parser.add_argument('--verbosity', type=int, default=4,
                     help='Amount of diagnostic output to produce. 0-1: only progress updates; '
                          '2-3: plus major experiment steps; '
                          '4-5: plus compilation and graph assembly steps; '
-                         '6-7: plus parameter names for each function compilation; '
+                         '6: plus parameter names for each function compilation; '
+                         '7: plus verbose warnings; '
                          '8: plus shapes and types for each compiled function call; '
                          '9-10: plus vectorization of all datasets')
 parser.add_argument('--no_graphviz', type=config.boolean, default=False,

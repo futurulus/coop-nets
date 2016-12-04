@@ -329,6 +329,23 @@ class ExhaustiveL2Learner(Learner):
                 (len(sampler_inputs), len(batch), options.exhaustive_num_sample_sets,
                  context_len, options.exhaustive_num_samples)
             outputs = self.sampler.sample(sampler_inputs)
+            if options.exhaustive_reject_duplicates > 0:
+                dupes = None
+                for _ in range(options.exhaustive_reject_duplicates):
+                    dupes = self.get_duplicate_indices(outputs, batch,
+                                                       options.exhaustive_num_sample_sets, dupes)
+                    if len(dupes) == 0:
+                        break
+                    resample_inputs = np.array(sampler_inputs)[dupes].tolist()
+                    new_outputs = self.sampler.sample(resample_inputs)
+                    for i, output in zip(dupes, new_outputs):
+                        outputs[i] = output
+                if len(dupes) != 0 and options.verbosity >= 7:
+                    print >>sys.stderr, "Unable to suppress duplicates for instances:"
+                    for i in dupes:
+                        print >>sys.stderr, "{}[{}] -> '{}'".format(sampler_inputs[i].alt_inputs,
+                                                                    sampler_inputs[i].input,
+                                                                    outputs[i])
             outputs = (np.array(outputs)
                          .reshape(len(batch), options.exhaustive_num_sample_sets,
                                   context_len * options.exhaustive_num_samples)
@@ -344,6 +361,39 @@ class ExhaustiveL2Learner(Learner):
                     for inst in batch
                     for j in range(len(inst.alt_outputs))
                     for utt in [inst.input] + all_utts]
+
+    def get_duplicate_indices(self, outputs, insts, num_sample_sets, prev_indices):
+        if prev_indices is not None:
+            prev_indices = set(prev_indices)
+        samples_per_inst = len(outputs) / len(insts)
+        samples_per_set = samples_per_inst / num_sample_sets
+        assert len(insts) * num_sample_sets * samples_per_set == len(outputs), \
+            'Uneven number of samples: {} * {} * {} != {}'.format(len(insts),
+                                                                  num_sample_sets,
+                                                                  samples_per_set,
+                                                                  len(outputs))
+
+        new_dupes = []
+
+        for i, inst in enumerate(insts):
+            for s in range(num_sample_sets):
+                start = i * samples_per_inst + s * samples_per_set
+                end = start + samples_per_set
+                if prev_indices is None:
+                    seen_indices = []
+                    check_indices = range(start, end)
+                else:
+                    seen_indices = [j for j in range(start, end) if j not in prev_indices]
+                    check_indices = [j for j in range(start, end) if j in prev_indices]
+                seen = {outputs[j] for j in seen_indices}
+                seen.add(inst.input)
+                for j in check_indices:
+                    if outputs[j] in seen:
+                        new_dupes.append(j)
+                    else:
+                        seen.add(outputs[j])
+
+        return np.array(new_dupes)
 
     def get_dataset(self, model):
         if hasattr(model, 'options'):
@@ -594,6 +644,10 @@ parser.add_argument('--exhaustive_output_all_grids', default=False, type=config.
                     help='If True, write a file to the run directory containing sampled utterances '
                          'and log probabilities for all three agents '
                          '[only for ExhaustiveL2Learner] for each test instance.')
+parser.add_argument('--exhaustive_reject_duplicates', default=0, type=int,
+                    help='The number of times to resample alternative utterances that duplicate '
+                         'the input or each other. If 0 or negative, allow duplicates (sample '
+                         'alternatives with replacement).')
 parser.add_argument('--direct_base_learner', default='Listener',
                     choices=learners.LEARNERS.keys(),
                     help='The name of the model to use as the level-0 agent for direct score-based '
