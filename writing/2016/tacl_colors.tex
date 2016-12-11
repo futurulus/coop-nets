@@ -258,6 +258,11 @@ by blending the pragmatic listener with the base listener:
 &\phantom{{} \propto {}} \Listener_2(\target \| \utt, \context; \theta)^{1-\beta}  \label{eq:beta}
 \end{align}
 
+This allows the model to adjust the extent to which it overrides the learned model
+with the pragmatic reasoning. A base weight $\beta = 0$ makes the blended model
+equivalent to the pragmatic model, and $\beta = 1$ ignores the pragmatic reasoning
+and uses the base model's outputs.
+
 \subsection{Training} \label{sec:training}
 
 Our listener and speaker models are trained using Adadelta \todocheck{(cite)} and
@@ -365,7 +370,15 @@ for one example in the dev set.}
 \end{figure}
 
 Examining the full probability tables for various dev set examples on which
-$\Listener^*$ makes a difference reveals a general pattern. \Figref{fig:rsaExample}
+$\Listener^*$ makes a difference reveals a general pattern. In most of these
+examples, the alternative utterances sampled from $\Speaker_0$ for one of the
+referents $i$ fail to identify
+their intended referent to $\Listener_0$. The pragmatic listener interprets
+this to mean that referent $i$ is inherently difficult to refer to,
+and it compensates by increasing referent $i$'s probability. This is beneficial
+when $i$ is the true target but harmful when $i$ is a distractor.
+
+\Figref{fig:rsaExample}
 shows one such example: \todocheck{(talk about specific example)}
 
 \subsection{Speaker effectiveness} \label{sec:speaker_eff}
