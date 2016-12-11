@@ -17,14 +17,14 @@
   (4,0) node[colorvec,fill=oursteelblue](cz){$c_{T}$};
 
   \path
-  (1, 1) node[hiddencolorvec](hx){}
-  (2.5, 1) node[hiddencolorvec](hy){}
-  (4, 1) node[hiddencolorvec](hz){$h$};
+  (1, 1) node[LSTM](hx){}
+  (2.5, 1) node[LSTM](hy){}
+  (4, 1) node[LSTM](hz){$h$};
 
   \path
   (5.5, 1) node[token](tx){$h;\langle s\rangle$}
-  (7, 1) node[token](ty){$h; x_{1}$}
-  (8.5,1) node[token](tz){$h; x_{2}$};
+  (7, 1) node[token](ty){$h; u_{1}$}
+  (8.5,1) node[token](tz){$h; u_{2}$};
 
   \path
   (5.5, 2) node[LSTM](lx){}
@@ -42,28 +42,28 @@
   (8.5,4) node[softmax](sz){};
 
   \path
-  (5.5, 5) node[output](yx){$x_{1}$}
-  (7, 5) node[output](yy){$x_{2}$}
+  (5.5, 5) node[output](yx){$u_{1}$}
+  (7, 5) node[output](yy){$u_{2}$}
   (8.5,5) node[output](yz){$\langle/s\rangle$};
 
   \draw (4.75,2) node[label]{LSTM};
   \draw (4.75,3) node[label]{Fully connected};
-  \draw (4.75,4) node[label]{softmax};
+  \draw (4.75,4) node[label]{Softmax};
 
   \draw (cx)--(hx);
   \draw (cy)--(hy);
   \draw (cz)--(hz);
 
-  \draw (hx)--(hy)--(hz)--(tx)--(ty)--(tz);
+  \draw (hx)--(hy)--(hz);
   \draw (lx)--(ly)--(lz);
 
   \draw (tx)--(lx)--(fx)--(sx)--(yx);
   \draw (ty)--(ly)--(fy)--(sy)--(yy);
   \draw (tz)--(lz)--(fz)--(sz)--(yz);
 
-  \draw[->,draw=ourgreen] (hz) to[bend right] (tx);
-  \draw[->,draw=ourgreen] (hz) to[bend right] (ty);
-  \draw[->,draw=ourgreen] (hz) to[bend right] (tz);
+  \draw[->,draw=ourgreen] (hz) to[out=-45,in=225] (tx);
+  \draw[->,draw=ourgreen] (hz) to[out=-45,in=225] (ty);
+  \draw[->,draw=ourgreen] (hz) to[out=-45,in=225] (tz);
 
   \draw[->,draw=ourorange] (yx) to[out=10,in=140] (ty);
   \draw[->,draw=ourorange] (yy) to[out=10,in=140] (tz);
