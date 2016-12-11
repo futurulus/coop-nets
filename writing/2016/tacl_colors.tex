@@ -39,6 +39,7 @@
 \newcommand{\numsamples}{m}
 \renewcommand{\|}{\mid}
 \newcommand{\best}[1]{\textbf{#1}}
+\newcommand{\oracle}[1]{\textit{#1}}
 
 \newcommand{\Secref}[1]{Section~\ref{#1}}
 \newcommand{\secref}[1]{Section~\ref{#1}}
@@ -54,7 +55,8 @@
 
 \setlength\titlebox{6.5cm}    % Expanding the titlebox
 
-\title{Colors in Context: Pragmatic Models of Color Description Understanding}
+\title{Colors in Context: A Pragmatic Neural Model for \\
+Grounded Language Understanding}
 
 \author{First Author \\
   Affiliation / Address line 1 \\
@@ -73,14 +75,16 @@
 \maketitle
 \begin{abstract}
 
-We present a two-layer model of pragmatic interpretation: a listener
-modeling a speaker modeling a listener, where the base listener is a
-recurrent neural network classifier. Our model \todocheck{outperforms} the
+
+We present a two-layer pragmatic model of referring expression interpretation:
+a listener modeling a speaker modeling a listener, where the base listener is a
+recurrent neural network classifier. Our model outperforms the
 base listener at a task of color reference understanding, evaluated on a
 newly-collected corpus of human utterances in color reference games.
-We find the model primarily benefits from pragmatic reasoning in the hardest
-cases: when it must distinguish colors that are very similar, or when
-it must interpret \todocheck{less informative} utterances.
+Our experiments show that the primary benefits from pragmatic reasoning come
+in the hardest cases: when the model must distinguish colors that are very
+similar, or when there are few utterances available that adequately express
+the target color.
 
 \end{abstract}
 
@@ -88,39 +92,68 @@ it must interpret \todocheck{less informative} utterances.
 
 Grounded language use requires adapting language to the context at hand: trying
 to identify an object by describing it as ``blue'' will be unhelpful if all
-accessible objects are some shade of blue. We assume our interlocutors know
-this and adapt our interpretation of grounded language accordingly.
+accessible objects are some shade of blue. People assume their interlocutors know
+this and adapt their interpretation of grounded language accordingly. This intuition
+is captured in game-theoretic and probabilistic models of pragmatic
+language understanding \cite{Jaeger2012,Frank2012}.
 
-In this paper, we present a model of pragmatic interpretation that uses a
-recurrent neural network model of color description understanding and a
-Bayesian formalization of pragmatic reasoning through embedded agent modeling.
+In this paper, we present a model of pragmatic interpretation that combines a
+recurrent neural network model of color description understanding
+\cite{MonroeGoodmanPotts16_Color} with a
+Bayesian formalization of pragmatic reasoning through embedded agent modeling
+\cite{Goodman2013}.
 
 We evaluate our model in a \term{reference game} task: given a context consisting
 of a set of potential \term{referents}, one referent is selected as the \term{target}
 and its identity indicated secretly to the \term{speaker}. The speaker then must
 convey the identity of the target to a \term{listener}. Our model plays the
 role of the listener in this game, attempting to resolve a human utterance
-to the correct referent.
-% todo (wm): explain reference games here? or can we wait for section 2?
+to the correct referent. The reference game setting tests the ability of our model
+to do two distinct forms of pragmatic reasoning: the model must consider
+not only world context in the form of the set of available referents,
+but also linguistic context in the form of the speaker's goals and constraints in 
+describing the target.
 
 This paper presents a new corpus of reference games in which the referents
 are patches of color. The corpus includes 942 complete games with
 47,100 utterances produced by humans playing these games with real-time
-feedback.
+feedback. We focus on color because color perception exhibits many
+cognitively-interesting properties, and understanding of color descriptions
+requires understanding many of the intricacies of language in
+general---compositionality, vagueness, etc.---despite the fact that
+color is a fundamentally low-dimensional space.
+While many datasets exist featuring descriptions of individual colors 
+\cite{Cook2005,Munroe2010,Kawakami2016}, situating colors in context
+elicits much greater variety in language use, including negations,
+comparatives and superlatives, and increased use of
+metaphor and shared associations.
 
-Experiments on this data show that our pragmatic model \todocheck{improves} accuracy
+Experiments on this data show that our pragmatic model improves accuracy
 in interpreting human-produced descriptions over the RNN-based classifier
 alone. Moreover, the improvements from pragmatic reasoning come primarily
 in the hardest cases. By this we mean \begin{enumerate*}[label=(\arabic*)]
 \item contexts featuring colors that are very similar, thus
 requiring the interpretation of descriptions that convey fine distinctions; and
-\item descriptions that are shorter and less informative, thus
-requiring more "reading between the lines".
+\item target colors that most referring expressions fail to identify, whether
+due to a lack of adequate descriptive terms or a consistent bias against the
+color in the RNN listener.
 \end{enumerate*}
 
-\section{Task}
+\section{Task and data collection}
 
 We compare agents on a task of language understanding in a reference game. An agent $\Listener$ is presented with a list of colors $\context = \{\referent_i, i=1..\contextlen\}$ and an utterance $\utt$ that describes the target color $\referent_\target \in \context$ in natural language. The agent does not know the index $\target$ of the target color and must guess it from $\utt$.
+
+To collect a corpus of natural color reference data across varying contexts, we recruited \todocheck{\#} unique participants from Amazon Mechanical Turk to play 1,117 real-time, multi-player communication games of 50 rounds each \cite{Hawkins15_RealTimeWebExperiments}. \todocheck{After non-native english speakers and incomplete games were excluded, we were left with a corpus of 47,100 utterances across 942 games [report modal number of games per turker?]}. Participants were sorted into dyads, assigned the role of speaker or listener, and placed in a game environment containing a chat box and an array of three color patches (\figref{fig:taskScreenshot}).
+
+\begin{figure}
+\includegraphics[scale = .2]{figures/speakerView.png}
+\caption{Example trial in corpus collection task, from speaker's perspective}
+\label{fig:taskScreenshot}
+\end{figure}
+
+On each round, one of the three colors was chosen to be the ``target'' and highlighted for the speaker. They were instructed to communicate this information to the listener, who could then click on one of the colors to advance to the next trial. Both participants were free to use the chat box at any point during the trial. 
+
+To ensure a range of difficulty, we randomly interspersed an equal number of trials from three different conditions: (1) \emph{close}, where colors were all within a distance of $\theta$ from one another but still perceptible\footnote{We used the most recent CIEDE standard to measure color differences, which is calibrated to human vision \cite{SharmaWuDalal05_DeltaE}. All distances were constrained to be larger than a lower bound of $\epsilon = 5$ to ensure perceptible differences, and we used a threshold value of $\theta = 20$ to create conditions}, (2) \emph{split}, where one distractor was within a distance of $\theta$ of the target, but the other distractor was further than $\theta$, and (3) \emph{far}, where all colors were farther than $\theta$ from one another. Colors were rejection sampled uniformly from RGB space to meet these constraints. 
 
 \section{Models}
 
@@ -167,7 +200,7 @@ produce a probability distribution predicting the following token of the descrip
 
 From the base classifier listener, we build a listener agent that performs
 pragmatic inference using an embedded speaker model. This agent is based on the
-pragmatic listener of \newcite{BergenLevyGoodman15_Reasoning}, denoted
+pragmatic listener of \newcite{Goodman2013}, denoted
 $\Listener(\Speaker(\Listener_0))$: a listener modeling a speaker modeling the
 base listener.
 
@@ -190,18 +223,6 @@ by blending the pragmatic listener with the base listener:
 \[\Listener^{*}(\target \| \utt, \context; \theta) \propto {\Listener_0}(\target \| \utt, \context; \theta)^{\beta} \cdot \Listener_2(\target \| \utt, \context; \theta)^{1-\beta}\]
 
 \section{Corpus collection}
-
-\begin{figure}
-\includegraphics[scale = .2]{figures/speakerView.png}
-\caption{Example trial in corpus collection task, from speaker's perspective}
-\label{fig:taskScreenshot}
-\end{figure}
-
-To collect a corpus of natural color reference data across varying contexts, we recruited \todocheck{\#} unique participants from Amazon Mechanical Turk to play 1,117 real-time, multi-player communication games of 50 rounds each \cite{Hawkins15_RealTimeWebExperiments}. \todocheck{After non-native english speakers and incomplete games were excluded, we were left with a corpus of 47,100 utterances across 942 games [report modal number of games per turker?]}. Participants were sorted into dyads, assigned the role of speaker or listener, and placed in a game environment containing a chat box and an array of three color patches (\figref{fig:taskScreenshot}).
-
-On each round, one of the three colors was chosen to be the ``target'' and highlighted for the speaker. They were instructed to communicate this information to the listener, who could then click on one of the colors to advance to the next trial. Both participants were free to use the chat box at any point during the trial. 
-
-To ensure a range of difficulty, we randomly interspersed an equal number of trials from three different conditions: (1) \emph{close}, where colors were all within a distance of $\theta$ from one another but still perceptible\footnote{We used the most recent CIEDE standard to measure color differences, which is calibrated to human vision \cite{SharmaWuDalal05_DeltaE}. All distances were constrained to be larger than a lower bound of $\epsilon = 5$ to ensure perceptible differences, and we used a threshold value of $\theta = 20$ to create conditions}, (2) \emph{split}, where one distractor was within a distance of $\theta$ of the target, but the other distractor was further than $\theta$, and (3) \emph{far}, where all colors were farther than $\theta$ from one another. Colors were rejection sampled uniformly from RGB space to meet these constraints. 
 
 % latex table generated in R 3.3.0 by xtable 1.8-2 package
 % Thu Nov 17 15:41:24 2016
@@ -246,18 +267,21 @@ For ease of comparison to computational results, we focus on five metrics captur
 
 \begin{table}[t]
 \centering
-\begin{tabular}{lrr}
+\begin{tabular}{lrrrrrr}
   \hline
-  model & accuracy & perplexity \\
+   & \multicolumn{3}{c}{accuracy} & \multicolumn{3}{c}{perplexity} \\
+   & $\Speaker_h$ & $\Speaker_0$ & $\Speaker_1$ & $\Speaker_h$ & $\Speaker_0$ & $\Speaker_1$ \\
   \hline
-  $\Listener_0$ & 69.0 & 3.04 \\
-  $\Listener_2$ & \best{69.4} & \best{2.25} \\
+  $\Listener_0$ & 83.39 & 83.66 & \oracle{99.75} & 1.69 & 1.71 & \oracle{1.03} \\
+  $\Listener_2$ & \best{84.11} & \best{84.82} & \todocheck{...} & \best{1.49} & \best{1.45} & \todocheck{...} \\
   \hline
-  human & 87.5 & -- \\
+  $\Listener_h$ & \todocheck{87.5} \\
    \hline
 \end{tabular}
-\caption{Overall accuracy of the base listener, pragmatic listener, and human participants, plus model perplexity.}
-\label{table:overallAccuracy}
+\caption{Overall accuracy and perplexity of the base and pragmatic listeners
+on inputs from various speakers, plus human accuracy. $\Speaker_h$ and $\Listener_h$
+represent human agents. \oracle{Italics}: ``oracle'' results (see \secref{sec:speaker_eff}).}
+\label{table:speakerVsListener}
 \end{table}
 
 \section{Model results}
@@ -265,7 +289,7 @@ For ease of comparison to computational results, we focus on five metrics captur
 \subsection{Listener accuracy}
 
 We find that the pragmatic model is \todocheck{slightly} more accurate at interpreting the
-utterances of human speakers (\tabref{table:overallAccuracy}).
+utterances of human speakers (\tabref{table:speakerVsListener}, $\Speaker_h$ columns).
 
 Breaking out the accuracy by condition (\figref{fig:listenerAccuracy}) reveals that
 the primary gain from the pragmatic model is in the $close$ condition, when the
@@ -283,24 +307,7 @@ We also see that the pragmatic model is \todocheck{more effective} on shorter ut
 (\figref{fig:byLength}). This suggests that pragmatic considerations are more
 important when the speaker is \todocheck{less informative}.
 
-\begin{table}[t]
-\centering
-\begin{tabular}{lrr}
-  \hline
-   & $\Listener_0$ & $\Listener_2$  \\
-  \hline
-  human        & 69.0 &       69.4  \\
-  \hline
-  $\Speaker_0$ & 73.3 &       73.1  \\
-  $\Speaker_1$ & 80.0 & \best{80.2} \\
-  \hline
-\end{tabular}
-\caption{Effectiveness of the speaker models communicating with the listener models,
-measured by listener accuracy.}
-\label{table:speakerVsListener}
-\end{table}
-
-\subsection{Speaker effectiveness}
+\subsection{Speaker effectiveness} \label{sec:speaker_eff}
 
 \Tabref{table:speakerVsListener} shows the effectiveness of the two speaker models
 (base speaker $\Speaker_0$ and pragmatic speaker $\Speaker_1$) at describing the
@@ -318,10 +325,25 @@ only indirectly, as a source of alternative utterances to consider.
 
 \section{Related work}
 
-\newcite{AndreasKlein16_NeuralPragmatics} also combine neural speaker and listener
-models to model pragmatics. They implement and evaluate a pragmatic speaker
-$\Speaker(\Listener_0)$, with sampling from a neural $\Speaker_0$ model to limit
-the search space and regularize the model toward human-like utterances.
+Prior work combining machine learning with probabilistic pragmatic reasoning
+models has largely focused on the speaker side, i.e., generation.
+\newcite{Golland2010} develop a pragmatic speaker model,
+$\Speaker(\Listener)$, that reasons about log-linear listeners trained on human
+utterances containing spatial references in virtual-world environments.
+\newcite{Tellex2014a} apply a similar technique, under the name
+\term{inverse semantics}, to create a robot that can informatively ask
+humans for assistance in accomplishing tasks. \newcite{Monroe2015} implement
+an end-to-end trained $\Speaker(\Listener(\Speaker))$ model for referring
+expression generation in a reference game task; their model requires enumerating
+the set of possible utterances for each context, which is infeasible when
+utterances are as varied as those in our dataset.
+
+The closest work to ours that we are aware of is that of
+\newcite{AndreasKlein16_NeuralPragmatics}, who also combine neural speaker
+and listener models to model pragmatics. They implement and evaluate a
+pragmatic speaker $\Speaker(\Listener_0)$, with sampling from a neural
+$\Speaker_0$ model to limit the search space and regularize the model toward
+human-like utterances.
 
 Our approach goes one step beyond theirs, in that we build a two-level derived
 pragmatic model $\Listener(\Speaker(\Listener_0))$; i.e., we use a similar sampling
