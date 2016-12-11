@@ -19,6 +19,10 @@
 \usepackage{url}
 \usepackage{color}
 \usepackage[inline]{enumitem}
+\usepackage[]{caption}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric}
 \makeatletter
 \newcommand{\@BIBLABEL}{\@emptybiblabel}
 \newcommand{\@emptybiblabel}[1]{}
@@ -51,6 +55,16 @@
 \newcommand{\Tabref}[1]{Table~\ref{#1}}
 \newcommand{\tabref}[1]{Table~\ref{#1}}
 \newcommand{\pararef}[1]{\textbf{#1}}
+
+\definecolor{ourlightblue}{HTML}{03A9F4}
+\definecolor{ourgreen}{HTML}{4D8951}
+\definecolor{oursteelblue}{HTML}{9BB8D7}
+\definecolor{ourorange}{HTML}{FDBA58}
+
+\newcommand{\ourlightblue}[1]{{\color{ourlightblue}#1}}
+\newcommand{\ourgreen}[1]{{\color{ourgreen}#1}}
+\newcommand{\oursteelblue}[1]{{\color{oursteelblue}#1}}
+\newcommand{\ourorange}[1]{{\color{ourorange}#1}}
 
 \newcommand{\todocheck}[1]{\textcolor{red}{#1}}
 
@@ -160,6 +174,29 @@ To ensure a range of difficulty, we randomly interspersed an equal number of tri
 
 Our model consists of a recurrent neural network (RNN)--based speaker and listener 
 embedded within a higher-order reasoning listener. \todocheck{(intro to RSA here)}
+
+\begin{figure*}[t]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \input{input-neural-speaker}
+    \caption{The $\Speaker_{0}$ agent processes the target color
+      $c_{T}$ in context and produces a color description
+      sequentially. Each step in production is conditioned by the
+      final contextual representation $h$ and the previous word
+      produced.}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \input{input-neural-listener}
+    \caption{The $\Listener_{0}$ agent processes a color description
+      sequentially. The final represententation is transformed into a
+      Gaussian distribution in color space, which is used to score the
+      context colors.}
+  \end{subfigure}
+  \caption{The neural base speaker and listener agents.
+    \todocheck{RNN initial states not shown. Seem okay?}}
+  \label{fig:model}
+\end{figure*}
 
 \subsection{Representing colors}
 

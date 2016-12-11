@@ -1,0 +1,76 @@
+\footnotesize
+\centering
+\begin{tikzpicture}[scale=0.90]
+
+  \tikzstyle{wordvec}=[draw, minimum width=6mm, minimum height=4mm]
+  \tikzstyle{embedding}=[draw, minimum width=6mm, minimum height=4mm]
+  \tikzstyle{LSTM}=[draw,circle, minimum width=6mm, minimum height=4mm]
+  \tikzstyle{linear}=[draw, minimum width=1.5cm, minimum height=4mm]
+  \tikzstyle{dist}=[draw, minimum width=1.5cm, minimum height=4mm]
+  \tikzstyle{score}=[inner sep=0pt]
+  \tikzstyle{softmax}=[draw,
+                       isosceles triangle,
+                       rotate=90,
+                       top color=oursteelblue,
+                       bottom color=ourgreen,
+                       minimum size=8mm]
+  \tikzstyle{colorvec}=[draw, minimum width=6mm, minimum height=4mm]
+  \tikzstyle{output}=[draw]
+
+  \tikzstyle{label}=[align=left,text width=2cm]
+
+  \path
+  (1,  0) node[wordvec](xx){$x_{1}$}
+  (2.5,0) node[wordvec](xy){$x_{2}$}
+  (4,  0) node[wordvec](xz){$x_{3}$};
+
+  \path
+  (1,  1) node[embedding](hx){}
+  (2.5,1) node[embedding](hy){}
+  (4,  1) node[embedding](hz){};
+
+  \path
+  (1,  2) node[LSTM](lx){}
+  (2.5,2) node[LSTM](ly){}
+  (4,  2) node[LSTM](lz){};
+
+  \path
+  (4, 3) node[linear](linx){$(\mu, \Sigma)$};
+
+  \path
+  (6,3) node[colorvec,fill=ourlightblue](cx){$c_{1}$}
+  (7,3) node[colorvec,fill=ourgreen](cy){$c_{2}$}
+  (8,3) node[colorvec,fill=oursteelblue](cz){$c_{3}$};
+
+  \path
+  (4, 4) node[dist](scores){}
+  (3.5, 4) node[score](scorex){$\bullet$}
+  (4, 4) node[score](scorey){$\bullet$}
+  (4.5, 4) node[score](scorez){$\bullet$};
+
+  \path
+  (4, 5) node[softmax](sx){};
+
+  \path
+  (4, 6) node[output,fill=oursteelblue](yx){$c_{3}$};
+
+  \draw (6, 1) node[label]{Embedding};
+  \draw (6, 2) node[label]{LSTM};
+  %\draw (6, 3) node[label]{Linear transform};
+  \draw (6, 5) node[label]{Softmax};
+
+  \draw (lx)--(ly)--(lz);
+  \draw (xx)--(hx)--(lx);
+  \draw (xy)--(hy)--(ly);
+  \draw (xz)--(hz)--(lz)--(linx)--(scores)--(sx)--(yx);
+
+
+  \draw[draw=ourgreen] (cx) to[out=120,in=300] (scorex);
+  \draw[draw=ourgreen] (cy) to[out=120,in=320] (scorey);
+  \draw[draw=ourgreen] (cz)  to[out=120,in=340] (scorez);
+
+  \draw (linx)--(scorex);
+  \draw (linx)--(scorey);
+  \draw (linx)--(scorez);
+
+\end{tikzpicture}
