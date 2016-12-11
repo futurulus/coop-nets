@@ -171,7 +171,7 @@ the description \word{pink} for the middle color.
 
 In this paper, we present a unified model of pragmatic language use.
 At its core, the model is a version of the Rational Speech Acts (RSA)
-model \cite{Goodman2013}, in which agents reason recursively about
+model \cite{Frank2012}, in which agents reason recursively about
 each other's expectations and intentions to communicate more
 effectively than literal semantic agents could. In our formulation,
 the literal semantic agents are recurrent neural networks (RNNs) that
@@ -179,7 +179,7 @@ produce and interpret color descriptions in context. These RNNs
 replace the fixed message sets and stipulated grammars of most RSA
 work with language models that are learned from data and scale easily
 to large data sets. The RSA recursion is then defined in terms of
-these base agents: the \emph{pragmatic speaker} then produces
+these base agents: the \emph{pragmatic speaker} produces
 utterances based on a literal listener
 \cite{AndreasKlein16_NeuralPragmatics}, and the \emph{pragmatic
   listener} intereprets utterances based on the pragmatic speaker's
@@ -197,18 +197,18 @@ behavior.
 % describing the target.
 
 We evaluate this model with a new corpus of reference games in which
-the referents are patches of color. The corpus includes 942 complete
+the referents are patches of color, focusing on the effectiveness of
+our listener agents for simplicity. The corpus includes 942 complete
 games with 47,100 utterances produced by humans playing these games
-with real-time feedback. \Secref{sec:corpus} presents this corpus in
-more detail, showing that it captures many of the intricacies of
-language in general, including not just the context dependence and
-cognitive complexity discussed above, but also compositionality,
-vagueness, and ambiguity. While many datasets exist featuring
-descriptions of individual colors
+with real-time feedback. The linguistic behavior of the players
+exhibits many of the intricacies of language in general, including not
+just the context dependence and cognitive complexity discussed above,
+but also compositionality, vagueness, and ambiguity. While many
+datasets exist featuring descriptions of individual colors
 \cite{Cook2005,Munroe2010,Kawakami2016}, situating colors in context
 elicits much greater variety in language use, including negations,
-comparatives and superlatives, and increased use of
-metaphor and shared associations.
+comparatives and superlatives, and increased use of metaphor and
+shared associations.
 
 Experiments on this data show that our pragmatic model improves accuracy
 in interpreting human-produced descriptions over the RNN-based classifier
