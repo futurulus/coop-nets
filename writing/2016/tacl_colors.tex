@@ -19,8 +19,10 @@
 \usepackage{url}
 \usepackage{color}
 \usepackage[inline]{enumitem}
+\usepackage{booktabs}
 \usepackage[]{caption}
 \usepackage{subcaption}
+\usepackage{colortbl}
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric}
 \makeatletter
@@ -31,6 +33,9 @@
 \DeclareMathOperator*{\argmax}{arg\,max}
 
 \newcommand{\term}{\textit}
+
+\newcommand{\word}{\textit}
+
 
 \newcommand{\Listener}{L}
 \newcommand{\Speaker}{S}
@@ -66,6 +71,17 @@
 \newcommand{\oursteelblue}[1]{{\color{oursteelblue}#1}}
 \newcommand{\ourorange}[1]{{\color{ourorange}#1}}
 
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\newcommand{\colorPatch}[1]{
+  \colorbox[HTML]{#1}{{\color[HTML]{#1}xxxx}}}
+
+\newcommand{\colorSolo}[2]{
+  \negthickspace\colorPatch{#1} & #2}
+
+\newcommand{\colorContext}[4]{
+  \framebox{\negthickspace\colorPatch{#1}} & \colorPatch{#2} & \colorPatch{#3} & #4}
+
 \newcommand{\todocheck}[1]{\textcolor{red}{#1}}
 
 \setlength\titlebox{6.5cm}    % Expanding the titlebox
@@ -73,7 +89,8 @@
 \title{Colors in Context: A Pragmatic Neural Model for \\
 Grounded Language Understanding}
 
-% \author{First Author \\
+\author{}
+% First Author \\
 %   Affiliation / Address line 1 \\
 %   Affiliation / Address line 2 \\
 %   Affiliation / Address line 3 \\
@@ -105,39 +122,89 @@ the target color.
 
 \section{Introduction}
 
-Grounded language use requires adapting language to the context at hand: trying
-to identify an object by describing it as ``blue'' will be unhelpful if all
-accessible objects are some shade of blue. People assume their interlocutors know
-this and adapt their interpretation of grounded language accordingly. This intuition
-is captured in game-theoretic and probabilistic models of pragmatic
-language understanding \cite{Jaeger2012,Frank2012}.
+% Grounded language use requires adapting language to the context at hand: trying
+% to identify an object by describing it as ``blue'' will be unhelpful if all
+% accessible objects are some shade of blue. People assume their interlocutors know
+% this and adapt their interpretation of grounded language accordingly. This intuition
+% is captured in game-theoretic and probabilistic models of pragmatic
+% language understanding \cite{Jaeger2012,Frank2012}.
 
-In this paper, we present a model of pragmatic interpretation that combines a
-recurrent neural network model of color description understanding
-\cite{MonroeGoodmanPotts16_Color} with a
-Bayesian formalization of pragmatic reasoning through embedded agent modeling
-\cite{Goodman2013}.
+Human communication is \emph{situated}. As speakers, we choose our
+utterances based on what the context is like and who we are talking
+to; as listeners, we draw on the context and our model of the speaker
+when interpreting the utterances we hear. Dialogues involving color
+reference highlight this complex grounding in the environment and in
+our mental models of each other, and thus provide a test-bed for
+computational models of production and comprehension.
 
-We evaluate our model in a \term{reference game} task: given a context consisting
-of a set of potential \term{referents}, one referent is selected as the \term{target}
-and its identity indicated secretly to the \term{speaker}. The speaker then must
-convey the identity of the target to a \term{listener}. Our model plays the
-role of the listener in this game, attempting to resolve a human utterance
-to the correct referent. The reference game setting tests the ability of our model
-to do two distinct forms of pragmatic reasoning: the model must consider
-not only world context in the form of the set of available referents,
-but also linguistic context in the form of the speaker's goals and constraints in 
-describing the target.
+\Tabref{table:examples} illustrates the situated nature of color
+reference with utterances from a task-oriented dialogue corpus we
+introduce with this paper. In these dialogues, the speaker is trying
+to identify her (privately assigned) target color for the listener. In
+context~1, the comparative \word{darker} implicitly references both
+the target (boxed) and one of the other colors. In contexts 2 and 3,
+the target color is the same, but the distractors led the speaker to
+choose different basic color terms. Finally, in context~4, \word{red}
+is a pragmatic choice even though two colors are shades of red,
+because the interloctors assume about each other that they favor
+the description \word{pink} for the middle color.
 
-This paper presents a new corpus of reference games in which the referents
-are patches of color. The corpus includes 942 complete games with
-47,100 utterances produced by humans playing these games with real-time
-feedback. We focus on color because color perception exhibits many
-cognitively-interesting properties, and understanding of color descriptions
-requires understanding many of the intricacies of language in
-general---compositionality, vagueness, etc.---despite the fact that
-color is a fundamentally low-dimensional space.
-While many datasets exist featuring descriptions of individual colors 
+\begin{table}
+  \centering
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}[c]{r@{. \ } ccc l}
+    \toprule
+    \multicolumn{4}{c}{Context} & Utterance \\
+    \midrule    
+    1&\colorContext{2421DE}{605DA2}{0144FE}{darker blue}\\
+    2&\colorContext{5866A7}{2DD2BC}{C23D5A}{Purple}\\
+    3&\colorContext{5866A7}{9953AC}{2DD2A6}{blue}\\
+    4&\colorContext{FF0000}{FFC0CB}{008000}{red}\\
+    \bottomrule
+  \end{tabular}
+  \caption{Examples of color reference in context. The target color
+    is boxed. The speaker's description is shaped not only
+    by this target, but also by the other context colors and their
+    relationships.}
+  \label{table:examples}
+\end{table}
+
+In this paper, we present a unified model of pragmatic language use.
+At its core, the model is a version of the Rational Speech Acts (RSA)
+model \cite{Goodman2013}, in which agents reason recursively about
+each other's expectations and intentions to communicate more
+effectively than literal semantic agents could. In our formulation,
+the literal semantic agents are recurrent neural networks (RNNs) that
+produce and interpret color descriptions in context. These RNNs
+replace the fixed message sets and stipulated grammars of most RSA
+work with language models that are learned from data and scale easily
+to large data sets. The RSA recursion is then defined in terms of
+these base agents: the \emph{pragmatic speaker} then produces
+utterances based on a literal listener
+\cite{AndreasKlein16_NeuralPragmatics}, and the \emph{pragmatic
+  listener} intereprets utterances based on the pragmatic speaker's
+behavior. 
+
+% We evaluate our model in a \term{reference game} task: given a context consisting
+% of a set of potential \term{referents}, one referent is selected as the \term{target}
+% and its identity indicated secretly to the \term{speaker}. The speaker then must
+% convey the identity of the target to a \term{listener}. Our model plays the
+% role of the listener in this game, attempting to resolve a human utterance
+% to the correct referent. The reference game setting tests the ability of our model
+% to do two distinct forms of pragmatic reasoning: the model must consider
+% not only world context in the form of the set of available referents,
+% but also linguistic context in the form of the speaker's goals and constraints in 
+% describing the target.
+
+We evaluate this model with a new corpus of reference games in which
+the referents are patches of color. The corpus includes 942 complete
+games with 47,100 utterances produced by humans playing these games
+with real-time feedback. \Secref{sec:corpus} presents this corpus in
+more detail, showing that it captures many of the intricacies of
+language in general, including not just the context dependence and
+cognitive complexity discussed above, but also compositionality,
+vagueness, and ambiguity. While many datasets exist featuring
+descriptions of individual colors
 \cite{Cook2005,Munroe2010,Kawakami2016}, situating colors in context
 elicits much greater variety in language use, including negations,
 comparatives and superlatives, and increased use of
@@ -154,7 +221,7 @@ due to a lack of adequate descriptive terms or a consistent bias against the
 color in the RNN listener.
 \end{enumerate*}
 
-\section{Task and data collection}
+\section{Task and data collection}\label{sec:corpus}
 
 We compare agents on a task of language understanding in a reference game. An agent $\Listener$ is presented with a list of colors $\context = \{\referent_i, i=1..\contextlen\}$ and an utterance $\utt$ that describes the target color $\referent_\target \in \context$ in natural language. The agent does not know the index $\target$ of the target color and must guess it from $\utt$.
 
