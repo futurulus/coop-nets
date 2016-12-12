@@ -467,9 +467,50 @@ Breaking out the number of examples changed by condition
 the primary gain from the pragmatic model is in the $close$ condition, when the
 model has to pick up on the most subtle distinctions.
 
-\begin{figure}
+\begin{figure}[t!]
 \centering
-\todocheck{(give an example of $\Listener^*$ in action here)}
+\begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r}
+    \toprule
+%     & \multicolumn{3}{c}{$\Listener_0$} \\
+    $\Listener_0$ & \colorPatch{3884C7} & \colorPatch{02F9FD} & \colorPatch{9E6461} \\
+    \midrule
+    \textbf{blue} &             9\% & \best{   91} & $<$1 \\
+    \midrule
+    true blue     & \framebox{  11} & \best{   89} & $<$1 \\
+    light blue    & \framebox{$<$1} & \best{$>$99} & $<$1 \\
+    brightest     & $<$1 & \framebox{\best{$>$99}} & $<$1 \\
+    bright blue   & $<$1 & \framebox{\best{$>$99}} & $<$1 \\
+    red           & $<$1 &     1 & \framebox{\best{  99}} \\
+    purple        & $<$1 &     2 & \framebox{\best{  98}} \\
+    \midrule
+%   & \multicolumn{3}{c}{$\Speaker_1$} \\
+    $\Speaker_1$ & \colorPatch{3884C7} & \colorPatch{02F9FD} & \colorPatch{9E6461}  \\
+    \midrule
+    \textbf{blue} &             41  &    19 & $<$1 \\
+    \midrule
+    true blue     & \framebox{\best{  47}} &    19 & $<$1 \\
+    light blue    & \framebox{   5} & \best{   20} & $<$1 \\
+    brightest     & $<$1 & \framebox{\best{   20}} & $<$1 \\
+    bright blue   &    2 & \framebox{\best{   20}} & $<$1 \\
+    red           &    1 &     2 & \framebox{\best{  50}} \\
+    purple        &    5 &     1 & \framebox{\best{  50}} \\
+    \midrule
+%    & \multicolumn{3}{c}{$\Listener_2$} \\
+    $\Listener_2$ & \colorPatch{3884C7} & \colorPatch{02F9FD} & \colorPatch{9E6461} \\
+    \midrule
+    \textbf{blue} & \best{            68}  &    32 & $<$1 \\
+    \midrule
+%    true blue     & \framebox{\best{  72}} &    29 & $<$1 \\
+%    light blue    & \framebox{  21} & \best{   79} & $<$1 \\
+%    brightest     & $<$1 & \framebox{\best{$>$99}} & $<$1 \\
+%    bright blue   &    7 & \framebox{\best{   93}} & $<$1 \\
+%    red           &    2 &     5 & \framebox{\best{  94}} \\
+%    purple        &    9 &     2 & \framebox{\best{  89}} \\
+    $\Listener^*$ & \colorPatch{3884C7} & \colorPatch{02F9FD} & \colorPatch{9E6461} \\
+    \midrule
+    \textbf{blue} & \best{            78}  &    22 & $<$1 \\
+    \bottomrule
+\end{tabular}
 \caption{Conditional probability tables used in the calculation of $\Listener^*$
 for one example in the dev set.}
 \label{fig:rsaExample}
