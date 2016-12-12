@@ -32,6 +32,32 @@
 \usepackage[hidelinks]{hyperref}
 \DeclareMathOperator*{\argmax}{arg\,max}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Code to use with NAACL/ACL style files to simulate natbib's 
+% \citealt, which prints citations with no parentheses. This should
+% work if pasted into the preamble. \cite, \newcite, and \shortcite
+% should continue to work as before.
+
+\makeatletter
+
+\def\citealt{\def\citename##1{{\frenchspacing##1} }\@internalcitec}
+
+\def\@citexc[#1]#2{\if@filesw\immediate\write\@auxout{\string\citation{#2}}\fi
+  \def\@citea{}\@citealt{\@for\@citeb:=#2\do
+    {\@citea\def\@citea{;\penalty\@m\ }\@ifundefined
+       {b@\@citeb}{{\bf ?}\@warning
+       {Citation `\@citeb' on page \thepage \space undefined}}%
+{\csname b@\@citeb\endcsname}}}{#1}}
+
+\def\@internalcitec{\@ifnextchar [{\@tempswatrue\@citexc}{\@tempswafalse\@citexc[]}}
+
+\def\@citealt#1#2{{#1\if@tempswa, #2\fi}}
+
+\makeatother
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 \newcommand{\term}{\textit}
 
 \newcommand{\word}{\textit}
@@ -140,14 +166,14 @@ computational models of production and comprehension.
 \Tabref{table:examples} illustrates the situated nature of color
 reference with utterances from a task-oriented dialogue corpus we
 introduce with this paper. In these dialogues, the speaker is trying
-to identify her (privately assigned) target color for the listener. In
-context~1, the comparative \word{darker} implicitly references both
-the target (boxed) and one of the other colors. In contexts 2 and 3,
-the target color is the same, but the distractors led the speaker to
-choose different basic color terms. Finally, in context~4, \word{red}
-is a pragmatic choice even though two colors are shades of red,
-because the interloctors assume about each other that they favor
-the description \word{pink} for the middle color.
+to identify their (privately assigned) target color for the
+listener. In context~1, the comparative \word{darker} implicitly
+references both the target (boxed) and one of the other colors. In
+contexts 2 and 3, the target color is the same, but the distractors
+led the speaker to choose different basic color terms. Finally, in
+context~4, \word{red} is a pragmatic choice even though two colors are
+shades of red, because the interloctors assume about each other that
+they favor the description \word{pink} for the middle color.
 
 \begin{table}
   \centering
@@ -198,49 +224,157 @@ behavior.
 
 We evaluate this model with a new corpus of reference games in which
 the referents are patches of color, focusing on the effectiveness of
-our listener agents for simplicity. The corpus includes 942 complete
-games with 47,100 utterances produced by humans playing these games
-with real-time feedback. The linguistic behavior of the players
-exhibits many of the intricacies of language in general, including not
-just the context dependence and cognitive complexity discussed above,
-but also compositionality, vagueness, and ambiguity. While many
-datasets exist featuring descriptions of individual colors
-\cite{Cook2005,Munroe2010,Kawakami2016}, situating colors in context
-elicits much greater variety in language use, including negations,
-comparatives and superlatives, and increased use of metaphor and
-shared associations.
+our listener agents for simplicity. (In our model, listeners depend on
+speakers, so this implicitly evaluates our speakers as well.) The
+corpus includes 942 complete games with 47,100 utterances produced by
+humans playing these games with real-time feedback. The linguistic
+behavior of the players exhibits many of the intricacies of language
+in general, including not just the context dependence and cognitive
+complexity discussed above, but also compositionality, vagueness, and
+ambiguity. While many datasets exist featuring descriptions of
+individual colors \cite{Cook2005,Munroe2010,Kawakami2016}, situating
+colors in context elicits much greater variety in language use,
+including negations, comparatives and superlatives, and increased use
+of metaphor and shared associations.
 
 Experiments on this data show that our pragmatic model improves accuracy
 in interpreting human-produced descriptions over the RNN-based classifier
 alone. Moreover, the improvements from pragmatic reasoning come primarily
-in the hardest cases. By this we mean \begin{enumerate*}[label=(\arabic*)]
-\item contexts featuring colors that are very similar, thus
-requiring the interpretation of descriptions that convey fine distinctions; and
-\item target colors that most referring expressions fail to identify, whether
-due to a lack of adequate descriptive terms or a consistent bias against the
-color in the RNN listener.
+in the hardest cases. By this we mean 
+%
+\begin{enumerate*}[label=(\arabic*)]
+\item contexts featuring colors that are very similar, thus requiring
+  the interpretation of descriptions that convey fine distinctions;
+  and
+\item target colors that most referring expressions fail to identify,
+  whether due to a lack of adequate descriptive terms or a consistent
+  bias against the color in the RNN listener.
 \end{enumerate*}
+
 
 \section{Task and data collection}\label{sec:corpus}
 
-We compare agents on a task of language understanding in a reference game. An agent $\Listener$ is presented with a list of colors $\context = \{\referent_i, i=1..\contextlen\}$ and an utterance $\utt$ that describes the target color $\referent_\target \in \context$ in natural language. The agent does not know the index $\target$ of the target color and must guess it from $\utt$.
+We compare agents on a task of language understanding in a reference
+game \cite{Rosenberg:Cohen:1964,Clark:Wilkes-Gibbs:1986,Paetzel-etal:2014}. 
+A listener agent $\Listener$ is presented with a context set of colors
+$\context = \{\referent_{i}, i=1..\contextlen\}$ and an English
+utterance $\utt$ that describes the target color
+$\referent_{\target} \in \context$. The agent does not know the index
+$\target$ of the target color and must guess it from $\utt$.
 
-To collect a corpus of natural color reference data across varying contexts, we recruited \todocheck{\#} unique participants from Amazon Mechanical Turk to play 1,117 real-time, multi-player communication games of 50 rounds each \cite{Hawkins15_RealTimeWebExperiments}. \todocheck{After non-native english speakers and incomplete games were excluded, we were left with a corpus of 47,100 utterances across 942 games [report modal number of games per turker?]}. Participants were sorted into dyads, assigned the role of speaker or listener, and placed in a game environment containing a chat box and an array of three color patches (\figref{fig:taskScreenshot}).
+To obtain a corpus of natural color reference data across varying
+contexts, we recruited \todocheck{\#} unique participants from Amazon
+Mechanical Turk to play 1,117 real-time, multi-player communication
+games of 50 rounds each, using the open-source framework of
+\cite{Hawkins15_RealTimeWebExperiments}.  \todocheck{After non-native
+  English speakers and incomplete games were excluded, we were left
+  with a corpus of 47,100 utterances across 942 games [report modal
+  number of games per turker?]}. Participants were sorted into dyads,
+assigned the role of speaker or listener, and placed in a game
+environment containing a chat box and an array of three color patches
+(\figref{fig:taskScreenshot}).
 
 \begin{figure}
 \includegraphics[scale = .2]{figures/speakerView.png}
-\caption{Example trial in corpus collection task, from speaker's perspective}
+\caption{Example trial in corpus collection task, from speaker's
+  perspective. \todocheck{The rationale for the black background could
+    be given (just) in the caption.}}
 \label{fig:taskScreenshot}
 \end{figure}
 
-On each round, one of the three colors was chosen to be the ``target'' and highlighted for the speaker. They were instructed to communicate this information to the listener, who could then click on one of the colors to advance to the next trial. Both participants were free to use the chat box at any point during the trial. 
+On each round, one of the three colors was chosen to be the target and
+highlighted for the speaker. They were instructed to communicate this
+information to the listener, who could then click on one of the colors
+to advance to the next trial. Both participants were free to use the
+chat box at any point.
 
-To ensure a range of difficulty, we randomly interspersed an equal number of trials from three different conditions: (1) \emph{close}, where colors were all within a distance of $\theta$ from one another but still perceptible\footnote{We used the most recent CIEDE standard to measure color differences, which is calibrated to human vision \cite{SharmaWuDalal05_DeltaE}. All distances were constrained to be larger than a lower bound of $\epsilon = 5$ to ensure perceptible differences, and we used a threshold value of $\theta = 20$ to create conditions}, (2) \emph{split}, where one distractor was within a distance of $\theta$ of the target, but the other distractor was further than $\theta$, and (3) \emph{far}, where all colors were farther than $\theta$ from one another. Colors were rejection sampled uniformly from RGB (red, green, blue) space to meet these constraints. 
+To ensure a range of difficulty, we randomly interspersed an equal
+number of trials from three different conditions: 
+%
+\begin{enumerate*}[label=(\arabic*)]%
+\item \emph{close}, where colors were all within a distance of
+  $\theta$ from one another but still perceptible\footnote{We used the
+    most recent CIEDE standard to measure color differences, which is
+    calibrated to human vision \cite{SharmaWuDalal05_DeltaE}. All
+    distances were constrained to be larger than a lower bound of
+    $\epsilon = 5$ to ensure perceptible differences, and we used a
+    threshold value of $\theta = 20$ to create conditions.},
+\item \emph{split}, where one distractor was within a distance of
+  $\theta$ of the target, but the other distractor was further than
+  $\theta$, and 
+\item \emph{far}, where all colors were farther than $\theta$ from one
+  another. Colors were rejection sampled uniformly from RGB (red,
+  green, blue) space to meet these constraints.
+\end{enumerate*}
+\todocheck{Let's include here the number of each type of trial in the 
+final corpus. Presumably, it's about 1/3 each, but it would be good
+to be explicit.}
+
 
 \section{Models}
 
-Our model consists of a recurrent neural network (RNN)--based speaker and listener 
-embedded within a higher-order reasoning listener. \todocheck{(intro to RSA here)}
+\newcommand{\msg}{u}
+\newcommand{\state}{t}
+\newcommand{\Lex}{\mathcal{L}}
+\newcommand{\Costs}{c}
+\newcommand{\Colors}{C}
+\newcommand{\Messages}{M}
+\newcommand{\StatePrior}{P}
+
+Our model is intended as a scalable version of RSA.  As applied to the
+color reference games introduced in \secref{sec:corpus}, the basic RSA
+model is defined as follows, where $\state$ is a color in the context
+set $\Colors$, $\msg$ is a message drawn from a set of messages
+$\Messages$, $\StatePrior$ is a prior over colors, $\Costs$ is a
+real-valued cost function on utterances, $\alpha \in [0,\infty)$ is an
+inverse temperature parameter, and $\Lex(\msg, \state) = 1$ if $\msg$
+is true of $\state$, else $0$:
+%
+\begin{align}
+  l_{0}(\state \| \msg, \Lex) 
+  &\propto 
+  \Lex(\msg, \state) \StatePrior(\state) 
+  \\
+  s_{1}(\msg \| \state, \Lex)
+  &\propto 
+  e^{\alpha\log(l_{0}(\state \| \msg, \Lex)) - \Costs(\msg)} 
+  \label{eq:rsa-s1}\\
+  l_{0}(\state \| \msg, \Lex) 
+  &\propto 
+  s_{1}(\msg \| \state, \Lex) \StatePrior(\state) 
+\end{align}
+
+The most important feature of this model is that the pragmatic
+listener $l_{1}$ reasons, not about the semantic interpretation
+function $\Lex$ directly, but rather about a speaker who reasons about
+a listener who reasons about $\Lex$ directly. This back-and-forth
+interpretive process mirrors the original definition of conversational
+implicature \cite{Grice75} and reflects more general ideas from
+Bayesian cognitive modeling \cite{Tenenbaum-etal:2011}. The model and
+its variants have been shown to capture a wide range of pragmatic
+phenomena in a cognitively realistic manner
+\cite{Goodman:Stuhlmuller:2013,Smith:Goodman:Frank:2013,Kao-etal:2014,Bergen:Levy:Goodman:2014},
+and the central Bayesian calculation has proven useful in a variety of
+communicative domains
+\cite{Tellex-etal:2014,Vogel:Potts:Jurafsky:2013}.
+
+The scalability problems of RSA stem from the set of messages
+$\Messages$ and the interpretation functon $\Lex$. In most versions of
+RSA, these are specified by hand (but see \citealt{Monroe2015}).  This
+presents a serious practical obstacle to applying RSA to large data
+sets containing realistic utterances. Relatedly, the truth-functional
+nature of $\Lex$ itself forces us to confront challenging issues of
+vagueness and semantic uncertainty at every turn. The set $\Messages$
+also raises a more fundamental issue: if this set is not finite (as
+one would expect from a compositional semantic system), then there is
+no exact way to normalize the $s_{1}$ scores, since the denominator
+must sum over all messages.
+
+Over the next few subsections, we overcome these obstacles by
+replacing $l_{0}$ with an RNN-based listener agent, and by defining an
+RNN-based speaker agent (a kind of $s_{0}$ agent) to provide sample
+utterances that let us approximate the challengeing normalization
+required for (\ref{eq:rsa-s1}).
 
 \begin{figure*}[t]
   \centering
