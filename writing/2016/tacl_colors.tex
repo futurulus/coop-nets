@@ -507,7 +507,8 @@ interpreting the true input description. In practice, we have found that $\numsa
 can be quite small; in our experiments, it is set to $8$.
 
 We find we can obtain an additional small improvement in listener accuracy
-by blending the pragmatic listener with the base listener:
+by blending the pragmatic listener with the base listener. This blended listener,
+denoted $\Listener^*$, is defined as:
 \begin{multline}
 \Listener^{*}(\target \| \utt, \context; \theta) \propto \\ {\Listener_0}(\target \| \utt, \context; \theta)^{\beta} \cdot {}
 \Listener_2(\target \| \utt, \context; \theta)^{1-\beta}  \label{eq:beta}
@@ -595,7 +596,7 @@ For ease of comparison to computational results, we focus on five metrics captur
    & $\Speaker_h$ & $\Speaker_0$ & $\Speaker_1$ & $\Speaker_h$ & $\Speaker_0$ & $\Speaker_1$ \\
   \midrule
   $\Listener_0$ & 83.39 & 83.66 & \oracle{99.75} & 1.69 & 1.71 & \oracle{1.03} \\
-  $\Listener_1$ & \best{84.11} & \best{84.82} & \oracle{\todocheck{$>$99}} & \best{1.49} & \best{1.45} & \oracle{\todocheck{$<$1.1}} 
+  $\Listener^*$ & \best{84.11} & \best{84.82} & \oracle{99.93} & \best{1.49} & \best{1.45} & \oracle{1.08}
   \\[0.5ex]
   $\Listener_h$ & \todocheck{87.5} \\
    \bottomrule
@@ -612,14 +613,14 @@ represent human agents. \oracle{Italics}: ``oracle'' results (see \secref{sec:sp
 
 The columns labeled $\Speaker_h$ in \tabref{table:speakerVsListener} show the accuracy
 and perplexity of the base listener $\Listener_0$ and the pragmatic listener
-$\Listener_1$ when interpreting the utterances of human speakers. We find that the
+$\Listener^*$ when interpreting the utterances of human speakers. We find that the
 pragmatic model improves significantly\footnote{$p <{}$0.001, approximate
 permutation test \cite{Pado2006}, 10,000 samples} over the base model on both metrics.
 
 \begin{figure}
 \centering
 \includegraphics[scale = .45]{figures/changedByCondition.pdf}
-\caption{Fraction of examples improved and declined, $\Listener_2$ over $\Listener_0$.}
+\caption{Fraction of examples improved and declined, $\Listener^*$ over $\Listener_0$.}
 \label{fig:changedByCondition}
 \end{figure}
 
@@ -628,9 +629,50 @@ Breaking out the number of examples changed by condition
 the primary gain from the pragmatic model is in the $close$ condition, when the
 model has to pick up on the most subtle distinctions.
 
-\begin{figure}
+\begin{figure}[t!]
 \centering
-\todocheck{(give an example of $\Listener^*$ in action here)}
+\begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r}
+    \toprule
+%     & \multicolumn{3}{c}{$\Listener_0$} \\
+    $\Listener_0$ & \colorPatch{3884C7} & \colorPatch{02F9FD} & \colorPatch{9E6461} \\
+    \midrule
+    \textbf{blue} &             9\% & \best{   91} & $<$1 \\
+    \midrule
+    true blue     & \framebox{  11} & \best{   89} & $<$1 \\
+    light blue    & \framebox{$<$1} & \best{$>$99} & $<$1 \\
+    brightest     & $<$1 & \framebox{\best{$>$99}} & $<$1 \\
+    bright blue   & $<$1 & \framebox{\best{$>$99}} & $<$1 \\
+    red           & $<$1 &     1 & \framebox{\best{  99}} \\
+    purple        & $<$1 &     2 & \framebox{\best{  98}} \\
+    \midrule
+%   & \multicolumn{3}{c}{$\Speaker_1$} \\
+    $\Speaker_1$ & \colorPatch{3884C7} & \colorPatch{02F9FD} & \colorPatch{9E6461}  \\
+    \midrule
+    \textbf{blue} &             41  &    19 & $<$1 \\
+    \midrule
+    true blue     & \framebox{\best{  47}} &    19 & $<$1 \\
+    light blue    & \framebox{   5} & \best{   20} & $<$1 \\
+    brightest     & $<$1 & \framebox{\best{   20}} & $<$1 \\
+    bright blue   &    2 & \framebox{\best{   20}} & $<$1 \\
+    red           &    1 &     2 & \framebox{\best{  50}} \\
+    purple        &    5 &     1 & \framebox{\best{  50}} \\
+    \midrule
+%    & \multicolumn{3}{c}{$\Listener_2$} \\
+    $\Listener_2$ & \colorPatch{3884C7} & \colorPatch{02F9FD} & \colorPatch{9E6461} \\
+    \midrule
+    \textbf{blue} & \best{            68}  &    32 & $<$1 \\
+    \midrule
+%    true blue     & \framebox{\best{  72}} &    29 & $<$1 \\
+%    light blue    & \framebox{  21} & \best{   79} & $<$1 \\
+%    brightest     & $<$1 & \framebox{\best{$>$99}} & $<$1 \\
+%    bright blue   &    7 & \framebox{\best{   93}} & $<$1 \\
+%    red           &    2 &     5 & \framebox{\best{  94}} \\
+%    purple        &    9 &     2 & \framebox{\best{  89}} \\
+    $\Listener^*$ & \colorPatch{3884C7} & \colorPatch{02F9FD} & \colorPatch{9E6461} \\
+    \midrule
+    \textbf{blue} & \best{            78}  &    22 & $<$1 \\
+    \bottomrule
+\end{tabular}
 \caption{Conditional probability tables used in the calculation of $\Listener^*$
 for one example in the dev set.}
 \label{fig:rsaExample}
@@ -657,11 +699,11 @@ target color to the listener models.
 The pragmatic speaker is better at communicating
 with the listener models, which is unsurprising, because in the case of
 $\Listener_0$, the speaker has access to the listener's thought process, and in
-the case of $\Listener_2$, the listener has access to the speaker's thought process.
+the case of $\Listener^*$, the listener has access to the speaker's thought process.
 
 Additionally, however, the listeners are able to understand even $\Speaker_0$'s
 utterances better than humans'. This is surprising, because $\Listener_0$ does not
-contain an embedded model of either speaker, and $\Listener_2$ uses $\Speaker_0$
+contain an embedded model of either speaker, and $\Listener^*$ uses $\Speaker_0$
 only indirectly, as a source of alternative utterances to consider.
 
 \subsection{Tuning the pragmatic parameters} \label{sec:alpha_beta}
@@ -670,7 +712,7 @@ As noted in \secref{sec:training}, we use an inverse temperature parameter of
 $\alpha = 0.544$ and a base weight of $\beta = -0.15$ for the pragmatic
 listener. Particularly surprising is the fact that the optimal value of $\beta$
 discovered in grid search is \emph{negative}. This has the effect of amplifying
-the difference between $\Listener_0$ and $\Listener_2$: the pragmatic model,
+the difference between $\Listener_0$ and $\Listener^*$: the pragmatic model,
 evidently, is not quite pragmatic enough.
 
 The $\alpha$ value of 0.544${}<{}$1 indicates that the pragmatic listener is
