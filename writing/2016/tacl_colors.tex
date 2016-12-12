@@ -62,6 +62,7 @@
 
 \newcommand{\word}{\textit}
 
+\newcommand{\eq}[1]{(\ref{#1})}
 
 \newcommand{\Listener}{L}
 \newcommand{\Speaker}{S}
@@ -313,46 +314,55 @@ to be explicit.}
 
 \section{Models}
 
-\newcommand{\msg}{u}
-\newcommand{\state}{t}
 \newcommand{\Lex}{\mathcal{L}}
-\newcommand{\Costs}{c}
-\newcommand{\Colors}{C}
-\newcommand{\Messages}{M}
-\newcommand{\StatePrior}{P}
+\newcommand{\Costs}{\kappa}
+\newcommand{\Messages}{U}
+\newcommand{\targetPrior}{P}
 
 Our model is intended as a scalable version of RSA.  As applied to the
 color reference games introduced in \secref{sec:corpus}, the basic RSA
-model is defined as follows, where $\state$ is a color in the context
-set $\Colors$, $\msg$ is a message drawn from a set of messages
-$\Messages$, $\StatePrior$ is a prior over colors, $\Costs$ is a
-real-valued cost function on utterances, $\alpha \in [0,\infty)$ is an
-inverse temperature parameter, and $\Lex(\msg, \state) = 1$ if $\msg$
-is true of $\state$, else $0$:
+model is defined as follows, where $\target$ is a color in the context
+set $\context$, $\utt$ is a message drawn from a set of possible
+utterances $\Messages$, $\targetPrior$ is a prior over colors,
+$\Costs$ is a real-valued cost function on utterances,
+$\alpha \in [0,\infty)$ is an inverse temperature parameter, and
+$\Lex(\utt, \target) = 1$ if $\utt$ is true of $\target$, else $0$:
 %
 \begin{align}
-  l_{0}(\state \| \msg, \Lex) 
+  l_{0}(\target \| \utt, \Lex) 
   &\propto 
-  \Lex(\msg, \state) \StatePrior(\state) 
+  \Lex(\utt, \target) \targetPrior(\target) 
   \\
-  s_{1}(\msg \| \state, \Lex)
+  s_{1}(\utt \| \target, \Lex)
   &\propto 
-  e^{\alpha\log(l_{0}(\state \| \msg, \Lex)) - \Costs(\msg)} 
+  e^{\alpha\log(l_{0}(\target \| \utt, \Lex)) - \Costs(\utt)} 
   \label{eq:rsa-s1}\\
-  l_{0}(\state \| \msg, \Lex) 
+  l_{1}(\target \| \utt, \Lex) 
   &\propto 
-  s_{1}(\msg \| \state, \Lex) \StatePrior(\state) 
+  s_{1}(\utt \| \target, \Lex) \targetPrior(\target) 
+  \label{eq:rsa-l1}
 \end{align}
 
 The most important feature of this model is that the pragmatic
 listener $l_{1}$ reasons, not about the semantic interpretation
 function $\Lex$ directly, but rather about a speaker who reasons about
-a listener who reasons about $\Lex$ directly. This back-and-forth
-interpretive process mirrors the original definition of conversational
-implicature \cite{Grice75} and reflects more general ideas from
-Bayesian cognitive modeling \cite{Tenenbaum-etal:2011}. The model and
-its variants have been shown to capture a wide range of pragmatic
-phenomena in a cognitively realistic manner
+a listener who reasons about $\Lex$ directly. The inverse temperature
+parameter $\alpha$ governs the ``rationality'' of the speaker modeled
+by the pragmatic listener; a large $\alpha$ means that the listener
+expects the speaker to choose the most informative utterance
+consistently, whereas a small $\alpha$ means the listener expects the
+speaker to choose suboptimal utterances frequently. This affects the
+listener's interpretations: the more reliable the speaker is in
+choosing the optimal utterance for a referent, the more the listener
+will take deviations from an optimal utterance as a signal to choose a
+different referent.
+
+The back-and-forth nature of this interpretive process mirrors the
+original definition of conversational implicature \cite{Grice75} and
+reflects more general ideas from Bayesian cognitive modeling
+\cite{Tenenbaum-etal:2011}. The model and its variants have been shown
+to capture a wide range of pragmatic phenomena in a cognitively
+realistic manner
 \cite{Goodman:Stuhlmuller:2013,Smith:Goodman:Frank:2013,Kao-etal:2014,Bergen:Levy:Goodman:2014},
 and the central Bayesian calculation has proven useful in a variety of
 communicative domains
@@ -373,11 +383,24 @@ must sum over all messages.
 Over the next few subsections, we overcome these obstacles by
 replacing $l_{0}$ with an RNN-based listener agent, and by defining an
 RNN-based speaker agent (a kind of $s_{0}$ agent) to provide sample
-utterances that let us approximate the challengeing normalization
-required for (\ref{eq:rsa-s1}).
+utterances that let us approximate the normalization required for
+\eq{eq:rsa-s1}.
 
 \begin{figure*}[t]
   \centering
+  %
+   \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \input{input-neural-listener}
+    \caption{The $\Listener_{0}$ agent processes a color description
+      sequentially. The final represententation is transformed into a
+      Gaussian distribution in color space, which is used to score the
+      context colors.}
+    \label{fig:model:listener}
+  \end{subfigure}
+  %
+  \hfill
+  %
   \begin{subfigure}[b]{0.48\textwidth}
     \centering
     \input{input-neural-speaker}
@@ -386,16 +409,9 @@ required for (\ref{eq:rsa-s1}).
       sequentially. Each step in production is conditioned by the
       final contextual representation $h$ and the previous word
       produced.}
+    \label{fig:model:speaker}
   \end{subfigure}
-  \hfill
-  \begin{subfigure}[b]{0.48\textwidth}
-    \centering
-    \input{input-neural-listener}
-    \caption{The $\Listener_{0}$ agent processes a color description
-      sequentially. The final represententation is transformed into a
-      Gaussian distribution in color space, which is used to score the
-      context colors.}
-  \end{subfigure}
+  %
   \caption{The neural base speaker and listener agents.
     \todocheck{RNN initial states not shown. Seem okay?}}
   \label{fig:model}
@@ -421,11 +437,10 @@ where $(h^*, s^*, v^*) = (h / 360, s / 200, v/200)$.
 The Fourier transformation is meant to help the models identify non-convex components
 of denotations of color language, particularly periodic components.
 
-\subsection{Classifier listener}
+\subsection{Base listener}
 
 Our base listener agent $\Listener_0$ is an LSTM encoder model that produces a Gaussian
-distribution over colors in a transformed representation space.
-
+distribution over colors in a transformed representation space (\figref{fig:model:listener}).
 The words in the input are embedded in a 100-dimensional vector space. Word embeddings
 are initialized randomly \todocheck{(how?)} and trained. The sequence of word vectors are
 used as input to an LSTM with 100-dimensional hidden state, and a linear
@@ -435,9 +450,8 @@ The Gaussian scores for each of the $\contextlen$ context colors are normalized 
 produce a probability distribution over the context colors. We denote this probability
 distribution by $\Listener_0(\target \| \utt, \context; \theta)$, where $\theta$ represents the
 vector of parameters that define the trained model.
-\todocheck{(reference listener figure)}
 
-\subsection{Classifier speaker}\label{sec:s0}
+\subsection{Base speaker}\label{sec:s0}
 
 In order to avoid enumerating an exponentially large space of possible utterances,
 we also employ a probabilistic speaker model
@@ -445,58 +459,59 @@ $\Speaker_0(\utt \| \target, \context; \phi)$ to generate sets of alternative
 utterances for each context.
 
 The speaker model consists of an LSTM context encoder
-and an LSTM description decoder. In this model, the colors of the context
+and an LSTM description decoder (\figref{fig:model:speaker}). In this model, the colors of the context
 $\referent_i \in \context$ are transformed into Fourier representation space,
 and the sequence of color representations is passed through an LSTM with
 100-dimensional hidden state.
-
 The output of this recurrent neural network is concatenated with a
 100-dimensional embedding for the previous token at each time step in decoding.
 The resulting vector is input along with the previous cell state to the LSTM cell,
 and an affine transformation and softmax function are applied to the output to
 produce a probability distribution predicting the following token of the description.
-\todocheck{(reference speaker figure)}
 
 \subsection{Pragmatic listener}
 
-From the base classifier listener, we build a listener agent that performs
-pragmatic inference using an embedded speaker model. This agent is based on the
-pragmatic listener of \newcite{Goodman2013}, denoted
-$\Listener(\Speaker(\Listener_0))$: a listener modeling a speaker modeling the
-base listener.
-
-Formally, our pragmatic listener $\Listener_2$ is defined in terms of the base
-listener as follows:
+Using the above base agents, we define our pragmatic listener
+$\Listener_{1}$:
+%
 \begin{align}
-\Speaker_1(\utt \| \target, \context; \theta) &= \frac{\Listener_0(\target \| \utt, \context; \theta)^\alpha}{\sum_{\utt'} \Listener_0(\target \| \utt', \context; \theta)^\alpha} \label{eq:s1} \\
-\Listener_2(\target \| \utt, \context; \theta) &= \frac{\Speaker_1(\utt \| \target, \context; \theta)}{\sum_{\target'} \Speaker_1(\utt \| \target', \context; \theta)} \nonumber
+\Speaker_1(\utt \| \target, \context; \theta) 
+  &= \frac{\Listener_0(\target \| \utt, \context; \theta)^\alpha}{\sum_{\utt'} 
+    \Listener_0(\target \| \utt', \context; \theta)^\alpha} 
+    \label{eq:s1} \\
+  \Listener_2(\target \| \utt, \context; \theta) 
+  &= 
+    \frac{
+    \Speaker_1(\utt \| \target, \context; \theta)
+    }{
+    \sum_{\target'} \Speaker_1(\utt \| \target', \context; \theta)
+    }
 \end{align}
+
+These definitions mirror those in \eq{eq:rsa-s1} and \eq{eq:rsa-l1}
+above, with $\Lex$ replaced by the learned weights $\theta$. We also
+explicitly represent the context $\context$, because we can now define
+features that explicitly take that information into account.
+\todocheck{Could say more about this if there is room.}
 
 Theoretically, the denominator in \eqref{eq:s1} should consist of a sum over
 the entire set of potential utterances, which is exponentially large in the
-maximum utterance length. As mentioned in \secref{sec:s0}, we limit this search by
-taking $\numsamples = 8$ samples from $\Speaker_0(\utt \| i, \context; \phi)$ for
+maximum utterance length and might not even be finite.
+As mentioned in \secref{sec:s0}, we limit this search by
+taking $\numsamples$ samples from $\Speaker_0(\utt \| i, \context; \phi)$ for
 each possible target index $i$, adding the actual utterance from the testing example,
 and taking the resulting set as the universe of possible utterances. Taking a number
 of samples from $\Speaker_0$ for each referent in the context gives the pragmatic
 listener a variety of informative alternative utterances to consider when
-interpreting the true input description.
-
-The \term{inverse temperature} parameter $\alpha$ governs the ``rationality'' of
-the speaker modeled by the pragmatic listener; a large $\alpha$ means that the
-listener expects the speaker to choose the most informative utterance consistently, 
-whereas a small $\alpha$ means the listener expects the speaker to choose suboptimal
-utterances frequently. This affects the listener's interpretations: the more reliable
-the speaker is in choosing the optimal utterance for a referent, the more the
-listener will take deviations from an optimal utterance as a signal to choose a
-different referent.
+interpreting the true input description. In practice, we have found that $\numsamples$
+can be quite small; in our experiments, it is set to $8$.
 
 We find we can obtain an additional small improvement in listener accuracy
 by blending the pragmatic listener with the base listener:
-\begin{align}
-\Listener^{*}(\target \| \utt, \context; \theta) &\propto {\Listener_0}(\target \| \utt, \context; \theta)^{\beta} \cdot {} \nonumber \\
-&\phantom{{} \propto {}} \Listener_2(\target \| \utt, \context; \theta)^{1-\beta}  \label{eq:beta}
-\end{align}
+\begin{multline}
+\Listener^{*}(\target \| \utt, \context; \theta) \propto \\ {\Listener_0}(\target \| \utt, \context; \theta)^{\beta} \cdot {}
+\Listener_2(\target \| \utt, \context; \theta)^{1-\beta}  \label{eq:beta}
+\end{multline}
 
 This allows the model to adjust the extent to which it overrides the learned model
 with the pragmatic reasoning. A base weight $\beta = 0$ makes the blended model
@@ -505,12 +520,13 @@ and uses the base model's outputs.
 
 \subsection{Training} \label{sec:training}
 
-Our listener and speaker models are trained using Adadelta \todocheck{(cite)} and
-Adam \todocheck{(cite)}, adaptive variants of stochastic gradient descent (SGD).
-The choice of optimization algorithm and learning rate for each model\footnote{For
-$\Speaker_0$: Adam, learning rate $\alpha = {}$0.004; for $\Listener_0$: Adadelta,
-learning rate $\eta = {}$0.2.}
-were tuned with grid search on a held-out tuning set consisting of 3,500 contexts.
+Our listener and speaker models are trained using Adadelta
+\todocheck{(cite)} and Adam \todocheck{(cite)}, adaptive variants of
+stochastic gradient descent (SGD). The choice of optimization
+algorithm and learning rate for each model were tuned with grid search
+on a held-out tuning set consisting of 3,500 contexts.\footnote{For
+  $\Speaker_0$: Adam, learning rate $\alpha = {}$0.004; for
+  $\Listener_0$: Adadelta, learning rate $\eta = {}$0.2.}
 
 We also use a more fine-grained grid search on this tuning set to determine the
 values of the two pragmatic reasoning parameters, $\alpha$ and $\beta$.
@@ -522,21 +538,28 @@ discussion of these values.
 % Thu Nov 17 15:41:24 2016
 \begin{table*}[ht]
 \centering
-\begin{tabular}{lrrr|rrr}
-  & \multicolumn{3}{c}{human}& \multicolumn{3}{c}{model}\\ \hline
-  & far& split& close& far& split& close\\ \hline
-\# Chars & 7.53 & 11.30 & 12.93 & 8.51 & 11.60 & 14.31 \\ 
+\begin{tabular}{lrrr@{\hspace{38pt}}rrr}
+  \toprule
+  & \multicolumn{3}{c}{human}& \multicolumn{3}{c}{model}\\
+  & far& split& close& far& split& close\\
+  \midrule
+  \# Chars & 7.53 & 11.30 & 12.93 & 8.51 & 11.60 & 14.31 \\ 
   \# Comparatives & 0.02 & 0.14 & 0.13 & 0.04 & 0.09 & 0.13 \\ 
   \# Negatives & 0.03 & 0.10 & 0.12 & 0.05 & 0.09 & 0.13 \\ 
   \# Superlatives & 0.02 & 0.06 & 0.16 & 0.05 & 0.10 & 0.17 \\ 
   \# Words & 1.46 & 2.04 & 2.27 & 1.61 & 2.09 & 2.51 \\ 
-   \hline
+   \bottomrule
 \end{tabular}
 \caption{Corpus statistics and statistics of samples from $\Speaker_1$ (rates per utterance). \todocheck{todo: put errors in, include wordnet level of informativity}} \label{table:metrics}
 \end{table*}
 
 
 \section{Behavioral results}
+
+\todocheck{It would be good to have a short paragraph explaining why
+  we want to do this behavioral analysis. The goal should be to convey
+  that this wasn't just an annotation project, but rather a motivated
+  cogsci-style experiment.}
 
 \begin{figure}
 \includegraphics[scale = .5]{figures/allListenerAccuracy.eps}
@@ -553,25 +576,29 @@ Since color reference is a difficult task even for humans, we compared listener 
 For ease of comparison to computational results, we focus on five metrics capturing different aspects of the rich pragmatic behavior displayed by speakers in our task (see Table \ref{table:metrics}). 
 
 \paragraph{Words and characters} We counted the average number of words and characters per message, after removing stop words and punctuation. We found that participants used longer messages when distractors were closer to the target in color space.
+\todocheck{Could this be substantiated with a linear regression?}
 
-\paragraph{Comparatives and superlatives} We used the StanfordNLP POS tagger to count the number of comparatives (JJR or RBR) and superlatives (JJS or RBS) per message. We found that participants were more likely to use these constructions when one or more distractors were close to the target. Additionally, we found evidence of an asymmetry in the use of these constructions across the \emph{split} and \emph{close} conditions. Comparatives were used somewhat more often in the `split' condition, where only one distractor was close to the target, while superlatives were much more likely to be used in the `close' condition.
+
+\paragraph{Comparatives and superlatives} We used the StanfordNLP POS tagger \todocheck{cite} to count the number of comparatives (JJR or RBR) and superlatives (JJS or RBS) per message. We found that participants were more likely to use these constructions when one or more distractors were close to the target. Additionally, we found evidence of an asymmetry in the use of these constructions across the \emph{split} and \emph{close} conditions. Comparatives were used somewhat more often in the `split' condition, where only one distractor was close to the target, while superlatives were much more likely to be used in the `close' condition.
+\todocheck{Could this be substantiated with a linear regression?}
 
 \paragraph{Negatives} We counted occurrences of the string `not.' Participants were more likely to use negative constructions when one or more distractors were close to the target.
+\todocheck{Could this be substantiated with a linear regression?}
 
 \paragraph{WordNet specificity} \todocheck{To do...} \cite{Fellbaum1998}
 
 \begin{table}[t]
 \centering
 \begin{tabular}{lrrrrrr}
-  \hline
+  \toprule
    & \multicolumn{3}{c}{accuracy} & \multicolumn{3}{c}{perplexity} \\
    & $\Speaker_h$ & $\Speaker_0$ & $\Speaker_1$ & $\Speaker_h$ & $\Speaker_0$ & $\Speaker_1$ \\
-  \hline
+  \midrule
   $\Listener_0$ & 83.39 & 83.66 & \oracle{99.75} & 1.69 & 1.71 & \oracle{1.03} \\
-  $\Listener_2$ & \best{84.11} & \best{84.82} & \oracle{\todocheck{$>$99}} & \best{1.49} & \best{1.45} & \oracle{\todocheck{$<$1.1}} \\
-  \hline
+  $\Listener_1$ & \best{84.11} & \best{84.82} & \oracle{\todocheck{$>$99}} & \best{1.49} & \best{1.45} & \oracle{\todocheck{$<$1.1}} 
+  \\[0.5ex]
   $\Listener_h$ & \todocheck{87.5} \\
-   \hline
+   \bottomrule
 \end{tabular}
 \caption{Overall accuracy and perplexity of the base and pragmatic listeners
 on inputs from various speakers, plus human accuracy. $\Speaker_h$ and $\Listener_h$
@@ -721,6 +748,13 @@ An enticing avenue of future work is to use variational methods to scale
 up an end-to-end pragmatic model like that of \newcite{Monroe2015} to
 allow for arbitrarily large spaces of alternative utterances.
 \todocheck{(todo: more wrap-up?)}
+
+\todocheck{We would also mention that we didn't model the sequential nature
+of the utterances in the corpus. This is a liability for us: it might
+confuse readers that we didn't do it, given the nature of the corpus, 
+and they might criticize us for not doing it. A strong concluding note
+on this (perhaps foreshadowed somewhere early in the paper) could help
+with this issue.}
 
 %\section{Credits}
 %
