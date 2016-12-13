@@ -267,7 +267,7 @@ To obtain a corpus of natural color reference data across varying
 contexts, we recruited \todocheck{\#} unique participants from Amazon
 Mechanical Turk to play 1,117 real-time, multi-player communication
 games of 50 rounds each, using the open-source framework of
-\cite{Hawkins15_RealTimeWebExperiments}.  \todocheck{After non-native
+\newcite{Hawkins15_RealTimeWebExperiments}.  \todocheck{After non-native
   English speakers and incomplete games were excluded, we were left
   with a corpus of 47,100 utterances across 942 games [report modal
   number of games per turker?]}. Participants were sorted into dyads,
@@ -412,8 +412,7 @@ utterances that let us approximate the normalization required for
     \label{fig:model:speaker}
   \end{subfigure}
   %
-  \caption{The neural base speaker and listener agents.
-    \todocheck{RNN initial states not shown. Seem okay?}}
+  \caption{The neural base speaker and listener agents.}
   \label{fig:model}
 \end{figure*}
 
@@ -442,7 +441,8 @@ of denotations of color language, particularly periodic components.
 Our base listener agent $\Listener_0$ is an LSTM encoder model that produces a Gaussian
 distribution over colors in a transformed representation space (\figref{fig:model:listener}).
 The words in the input are embedded in a 100-dimensional vector space. Word embeddings
-are initialized randomly \todocheck{(how?)} and trained. The sequence of word vectors are
+are initialized to random normally-distributed vectors ($\mu = 0$, $\sigma = 0.01$)
+and trained. The sequence of word vectors are
 used as input to an LSTM with 100-dimensional hidden state, and a linear
 transformation is applied to the output representation to produce a covariance matrix
 and mean vector for a Gaussian distribution in color representation space. 
@@ -462,14 +462,21 @@ The speaker model consists of an LSTM context encoder
 and an LSTM description decoder (\figref{fig:model:speaker}). In this model, the colors of the context
 $\referent_i \in \context$ are transformed into Fourier representation space,
 and the sequence of color representations is passed through an LSTM with
-100-dimensional hidden state.
+100-dimensional hidden state. The context is reordered to place the target color
+last, minimizing the length of dependence between the most important input color
+and the output \cite{Sutskever2014} and eliminating the need to represent the
+index of the target separately.
 The output of this recurrent neural network is concatenated with a
 100-dimensional embedding for the previous token at each time step in decoding.
 The resulting vector is input along with the previous cell state to the LSTM cell,
 and an affine transformation and softmax function are applied to the output to
 produce a probability distribution predicting the following token of the description.
+The model is substantively similar to well-known models for image caption generation
+\cite{Karpathy2015,Vinyals2015}, but using a recurrent neural network for producing
+the input representation and feeding this representation into the output network
+at each time step.
 
-\subsection{Pragmatic listener}
+\subsection{Pragmatic listener}\label{sec:l2}
 
 Using the above base agents, we define our pragmatic listener
 $\Listener_{1}$:
@@ -506,6 +513,12 @@ listener a variety of informative alternative utterances to consider when
 interpreting the true input description. In practice, we have found that $\numsamples$
 can be quite small; in our experiments, it is set to $8$.
 
+To reduce the noise
+resulting from the stochastically chosen alternative utterance sets, we also perform
+this alternative set sampling $n$ times and average the resulting probabilities in
+the final $\Listener_2$ output. We again choose $n = 8$ as a satisfactory
+compromise between modeling effectiveness and computation time.
+
 We find we can obtain an additional small improvement in listener accuracy
 by blending the pragmatic listener with the base listener. This blended listener,
 denoted $\Listener^*$, is defined as:
@@ -521,13 +534,13 @@ and uses the base model's outputs.
 
 \subsection{Training} \label{sec:training}
 
-Our listener and speaker models are trained using Adadelta
-\todocheck{(cite)} and Adam \todocheck{(cite)}, adaptive variants of
+Our listener and speaker models are trained using ADADELTA
+\cite{Zeiler2012} and Adam \cite{Kingma2014}, adaptive variants of
 stochastic gradient descent (SGD). The choice of optimization
 algorithm and learning rate for each model were tuned with grid search
 on a held-out tuning set consisting of 3,500 contexts.\footnote{For
-  $\Speaker_0$: Adam, learning rate $\alpha = {}$0.004; for
-  $\Listener_0$: Adadelta, learning rate $\eta = {}$0.2.}
+  $\Listener_0$: ADADELTA, learning rate $\eta = {}$0.2; for
+  $\Speaker_0$: Adam, learning rate $\alpha = {}$0.004.}
 
 We also use a more fine-grained grid search on this tuning set to determine the
 values of the two pragmatic reasoning parameters, $\alpha$ and $\beta$.
@@ -580,7 +593,7 @@ For ease of comparison to computational results, we focus on five metrics captur
 \todocheck{Could this be substantiated with a linear regression?}
 
 
-\paragraph{Comparatives and superlatives} We used the StanfordNLP POS tagger \todocheck{cite} to count the number of comparatives (JJR or RBR) and superlatives (JJS or RBS) per message. We found that participants were more likely to use these constructions when one or more distractors were close to the target. Additionally, we found evidence of an asymmetry in the use of these constructions across the \emph{split} and \emph{close} conditions. Comparatives were used somewhat more often in the `split' condition, where only one distractor was close to the target, while superlatives were much more likely to be used in the `close' condition.
+\paragraph{Comparatives and superlatives} We used the Stanford CoreNLP part-of-speech tagger \cite{Toutanova2003} to count the number of comparatives (JJR or RBR) and superlatives (JJS or RBS) per message. We found that participants were more likely to use these constructions when one or more distractors were close to the target. Additionally, we found evidence of an asymmetry in the use of these constructions across the \emph{split} and \emph{close} conditions. Comparatives were used somewhat more often in the `split' condition, where only one distractor was close to the target, while superlatives were much more likely to be used in the `close' condition.
 \todocheck{Could this be substantiated with a linear regression?}
 
 \paragraph{Negatives} We counted occurrences of the string `not.' Participants were more likely to use negative constructions when one or more distractors were close to the target.
@@ -673,8 +686,9 @@ model has to pick up on the most subtle distinctions.
     \textbf{blue} & \best{            78}  &    22 & $<$1 \\
     \bottomrule
 \end{tabular}
-\caption{Conditional probability tables used in the calculation of $\Listener^*$
-for one example in the dev set.}
+\caption{Conditional probability tables used to calculate $\Listener^*$
+for one dev set example. Sample sizes are reduced to save space; here,
+$m = 2$ and $n = 1$ (see \secref{sec:l2}).}
 \label{fig:rsaExample}
 \end{figure}
 
@@ -717,8 +731,10 @@ evidently, is not quite pragmatic enough.
 
 The $\alpha$ value of 0.544${}<{}$1 indicates that the pragmatic listener is
 modeling a somewhat less reliable speaker than one that uses a straightforward
-softmax choice distribution. Various values of $\alpha$ have been shown to
-be optimal for different tasks; \todocheck{(citations)}.
+softmax choice distribution. Empirical values of $\alpha$ fitting human behavior
+vary from task to task; \newcite{Kao-etal:2014} give $\alpha = 0.36$ for predicting
+hyperbole in numeric expressions, while \newcite{Graf2016} give $\alpha = 10.8$ for
+predicting hypernymy level in object references.
 
 \begin{figure}
 \centering
