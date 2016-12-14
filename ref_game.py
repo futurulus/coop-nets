@@ -220,7 +220,7 @@ class ExhaustiveL2Learner(Learner):
                     self.write_speaker_utterances('s1_samples.%s.jsons', output_grid,
                                                   speaker_sample_indices, l0_log_probs.shape)
                 if options.exhaustive_output_speaker_predictions:
-                    speaker_pred_indices = np.argmax(speaker_dist, axis=1)
+                    speaker_pred_indices = np.argmax(speaker_dist, axis=2)
                     self.write_speaker_utterances('s1_predictions.%s.jsons', output_grid,
                                                   speaker_pred_indices, l0_log_probs.shape)
             # Normalize again across context colors.
@@ -260,7 +260,7 @@ class ExhaustiveL2Learner(Learner):
         batch_size, num_sample_sets, context_len, num_alt_utts = tensor_shape
         for i in range(num_sample_sets):
             utts = []
-            sample_set_indices = indices[:, i]
+            sample_set_indices = indices[i, :]
             for j, index in enumerate(sample_set_indices):
                 utts.append(output_grid[np.ravel_multi_index((j, i, 0, index),
                                                              tensor_shape)].input)
