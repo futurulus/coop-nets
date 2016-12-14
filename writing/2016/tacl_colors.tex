@@ -33,7 +33,7 @@
 \DeclareMathOperator*{\argmax}{arg\,max}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Code to use with NAACL/ACL style files to simulate natbib's 
+% Code to use with NAACL/ACL style files to simulate natbib's
 % \citealt, which prints citations with no parentheses. This should
 % work if pasted into the preamble. \cite, \newcite, and \shortcite
 % should continue to work as before.
@@ -187,7 +187,7 @@ they favor the description \word{pink} for the middle color.
   \begin{tabular}[c]{r@{. \ } ccc l}
     \toprule
     \multicolumn{4}{c}{Context} & Utterance \\
-    \midrule    
+    \midrule
     1&\colorContext{2421DE}{605DA2}{0144FE}{darker blue}\\
     2&\colorContext{5866A7}{2DD2BC}{C23D5A}{Purple}\\
     3&\colorContext{5866A7}{9953AC}{2DD2A6}{blue}\\
@@ -215,7 +215,7 @@ these base agents: the \emph{pragmatic speaker} produces
 utterances based on a literal listener
 \cite{AndreasKlein16_NeuralPragmatics}, and the \emph{pragmatic
   listener} intereprets utterances based on the pragmatic speaker's
-behavior. 
+behavior.
 
 % We evaluate our model in a \term{reference game} task: given a context consisting
 % of a set of potential \term{referents}, one referent is selected as the \term{target}
@@ -225,7 +225,7 @@ behavior.
 % to the correct referent. The reference game setting tests the ability of our model
 % to do two distinct forms of pragmatic reasoning: the model must consider
 % not only world context in the form of the set of available referents,
-% but also linguistic context in the form of the speaker's goals and constraints in 
+% but also linguistic context in the form of the speaker's goals and constraints in
 % describing the target.
 
 We evaluate this model with a new corpus of reference games in which
@@ -246,7 +246,7 @@ of metaphor and shared associations.
 Experiments on this data show that our pragmatic model improves accuracy
 in interpreting human-produced descriptions over the RNN-based classifier
 alone. Moreover, the improvements from pragmatic reasoning come primarily
-in the hardest cases. By this we mean 
+in the hardest cases. By this we mean
 %
 \begin{enumerate*}[label=(\arabic*)]
 \item contexts featuring colors that are very similar, thus requiring
@@ -261,7 +261,7 @@ in the hardest cases. By this we mean
 \section{Task and data collection}\label{sec:corpus}
 
 We compare agents on a task of language understanding in a reference
-game \cite{Rosenberg:Cohen:1964,Clark:Wilkes-Gibbs:1986,Paetzel-etal:2014}. 
+game \cite{Rosenberg:Cohen:1964,Clark:Wilkes-Gibbs:1986,Paetzel-etal:2014}.
 A listener agent $\Listener$ is presented with a context set of colors
 $\context = \{\referent_{i}, i=1..\contextlen\}$ and an English
 utterance $\utt$ that describes the target color
@@ -295,7 +295,7 @@ to advance to the next trial. Both participants were free to use the
 chat box at any point.
 
 To ensure a range of difficulty, we randomly interspersed an equal
-number of trials from three different conditions: 
+number of trials from three different conditions:
 %
 \begin{enumerate*}[label=(\arabic*)]%
 \item \emph{close}, where colors were all within a distance of
@@ -307,12 +307,12 @@ number of trials from three different conditions:
     threshold value of $\theta = 20$ to create conditions.},
 \item \emph{split}, where one distractor was within a distance of
   $\theta$ of the target, but the other distractor was further than
-  $\theta$, and 
+  $\theta$, and
 \item \emph{far}, where all colors were farther than $\theta$ from one
   another. Colors were rejection sampled uniformly from RGB (red,
   green, blue) space to meet these constraints.
 \end{enumerate*}
-\todocheck{Let's include here the number of each type of trial in the 
+\todocheck{Let's include here the number of each type of trial in the
 final corpus. Presumably, it's about 1/3 each, but it would be good
 to be explicit.}
 
@@ -334,17 +334,17 @@ $\alpha \in [0,\infty)$ is an inverse temperature parameter, and
 $\Lex(\utt, \target) = 1$ if $\utt$ is true of $\target$, else $0$:
 %
 \begin{align}
-  l_{0}(\target \| \utt, \Lex) 
-  &\propto 
-  \Lex(\utt, \target) \targetPrior(\target) 
+  l_{0}(\target \| \utt, \Lex)
+  &\propto
+  \Lex(\utt, \target) \targetPrior(\target)
   \\
   s_{1}(\utt \| \target, \Lex)
-  &\propto 
-  e^{\alpha\log(l_{0}(\target \| \utt, \Lex)) - \Costs(\utt)} 
+  &\propto
+  e^{\alpha\log(l_{0}(\target \| \utt, \Lex)) - \Costs(\utt)}
   \label{eq:rsa-s1}\\
-  l_{1}(\target \| \utt, \Lex) 
-  &\propto 
-  s_{1}(\utt \| \target, \Lex) \targetPrior(\target) 
+  l_{1}(\target \| \utt, \Lex)
+  &\propto
+  s_{1}(\utt \| \target, \Lex) \targetPrior(\target)
   \label{eq:rsa-l1}
 \end{align}
 
@@ -435,7 +435,7 @@ found this improved performance slightly.} vector $\feat$:
 \hat{\feat}_{jk\ell} &= \exp \left[-2\pi i \left(jh^* + ks^* + \ell v^*\right)\right] \\
 \feat &= \begin{bmatrix}
   \Re{\hat{\feat}} & \Im{\hat{\feat}}
-\end{bmatrix}\qquad j,k,\ell \in \{0,1,2\} 
+\end{bmatrix}\qquad j,k,\ell \in \{0,1,2\}
 \end{align*}
 where $(h^*, s^*, v^*) = (h / 360, s / 200, v/200)$.
 The Fourier transformation is meant to help the models identify non-convex components
@@ -450,7 +450,7 @@ are initialized to random normally-distributed vectors ($\mu = 0$, $\sigma = 0.0
 and trained. The sequence of word vectors are
 used as input to an LSTM with 100-dimensional hidden state, and a linear
 transformation is applied to the output representation to produce a covariance matrix
-and mean vector for a Gaussian distribution in color representation space. 
+and mean vector for a Gaussian distribution in color representation space.
 The Gaussian scores for each of the $\contextlen$ context colors are normalized to
 produce a probability distribution over the context colors. We denote this probability
 distribution by $\Listener_0(\target \| \utt, \context; \theta)$, where $\theta$ represents the
@@ -487,12 +487,12 @@ Using the above base agents, we define our pragmatic listener
 $\Listener_{1}$:
 %
 \begin{align}
-\Speaker_1(\utt \| \target, \context; \theta) 
-  &= \frac{\Listener_0(\target \| \utt, \context; \theta)^\alpha}{\sum_{\utt'} 
-    \Listener_0(\target \| \utt', \context; \theta)^\alpha} 
+\Speaker_1(\utt \| \target, \context; \theta)
+  &= \frac{\Listener_0(\target \| \utt, \context; \theta)^\alpha}{\sum_{\utt'}
+    \Listener_0(\target \| \utt', \context; \theta)^\alpha}
     \label{eq:s1} \\
-  \Listener_2(\target \| \utt, \context; \theta) 
-  &= 
+  \Listener_2(\target \| \utt, \context; \theta)
+  &=
     \frac{
     \Speaker_1(\utt \| \target, \context; \theta)
     }{
@@ -569,11 +569,11 @@ discussion of these values.
   & \multicolumn{3}{c}{human}& \multicolumn{3}{c}{model}\\
   & far& split& close& far& split& close\\
   \midrule
-  \# Chars & 7.53 & 11.30 & 12.93 & 8.51 & 11.60 & 14.31 \\ 
-  \# Comparatives & 0.02 & 0.14 & 0.13 & 0.04 & 0.09 & 0.13 \\ 
-  \# Negatives & 0.03 & 0.10 & 0.12 & 0.05 & 0.09 & 0.13 \\ 
-  \# Superlatives & 0.02 & 0.06 & 0.16 & 0.05 & 0.10 & 0.17 \\ 
-  \# Words & 1.46 & 2.04 & 2.27 & 1.61 & 2.09 & 2.51 \\ 
+  \# Chars & 7.53 & 11.30 & 12.93 & 8.51 & 11.60 & 14.31 \\
+  \# Comparatives & 0.02 & 0.14 & 0.13 & 0.04 & 0.09 & 0.13 \\
+  \# Negatives & 0.03 & 0.10 & 0.12 & 0.05 & 0.09 & 0.13 \\
+  \# Superlatives & 0.02 & 0.06 & 0.16 & 0.05 & 0.10 & 0.17 \\
+  \# Words & 1.46 & 2.04 & 2.27 & 1.61 & 2.09 & 2.51 \\
    \bottomrule
 \end{tabular}
 \caption{Corpus statistics and statistics of samples from $\Speaker_1$ (rates per utterance). \todocheck{todo: put errors in, include wordnet level of informativity}} \label{table:metrics}
@@ -582,10 +582,20 @@ discussion of these values.
 
 \section{Behavioral results}
 
-\todocheck{It would be good to have a short paragraph explaining why
-  we want to do this behavioral analysis. The goal should be to convey
-  that this wasn't just an annotation project, but rather a motivated
-  cogsci-style experiment.}
+Our corpus was developed, not only to facilitate the development of
+models for grounded language understanding, but also to provide a
+richer picture of human pragmatic communication. The collection effort
+was thus structured like a large-scale behavioral experiment, closely
+following experimental designs like those of
+\newcite{Clark:Wilkes-Gibbs:1986}. This paves the way to assessing our
+computational model not only in its terms, but also in terms of how
+its behavior compares to that of our human participants. Thus, the
+current section briefly reviews some findings from the huamn
+corpus that we use to inform our model assessment.
+
+\todocheck{Robert could perhaps expand or improve this paragraph. Also,
+are we doing enough with these humans results when we move to our model.
+I fear we aren't!}
 
 \begin{figure}
 \includegraphics[scale = .5]{figures/allListenerAccuracy.eps}
@@ -599,19 +609,52 @@ Since color reference is a difficult task even for humans, we compared listener 
 
 \subsection{Speaker behavior}
 
-For ease of comparison to computational results, we focus on five metrics capturing different aspects of the rich pragmatic behavior displayed by speakers in our task (see Table \ref{table:metrics}). 
+For ease of comparison to computational results, we focus on five metrics capturing different aspects of the rich pragmatic behavior displayed by speakers in our task (see Table \ref{table:metrics}).
 
-\paragraph{Words and characters} We counted the average number of words and characters per message, after removing stop words and punctuation. We found that participants used longer messages when distractors were closer to the target in color space.
+\paragraph{Words and characters}
+We expect speakers to be verbose in \emph{close} contexts; even if they do
+know enough basic color terms to distinguish all the colors lexically,
+they might be unsure that their listeners will and so resort to
+lengthy modifier phrases anyway. To assess this hypothesis,
+counted the average number of words and characters per message, after removing stop words and punctuation. We found that participants used longer messages when distractors were closer to the target in color space.
 \todocheck{Could this be substantiated with a linear regression?}
 
-
-\paragraph{Comparatives and superlatives} We used the Stanford CoreNLP part-of-speech tagger \cite{Toutanova2003} to count the number of comparatives (JJR or RBR) and superlatives (JJS or RBS) per message. We found that participants were more likely to use these constructions when one or more distractors were close to the target. Additionally, we found evidence of an asymmetry in the use of these constructions across the \emph{split} and \emph{close} conditions. Comparatives were used somewhat more often in the `split' condition, where only one distractor was close to the target, while superlatives were much more likely to be used in the `close' condition.
+\paragraph{Comparatives and superlatives}
+As we noted in \secref{sec:intro} comparative morphology implicitly
+encodes a dependence on the context; a speaker who refers to the
+target color as \word{the darker blue} is presupposing that there is
+another (lighter) blue in the context. Similarly, superlatives like
+\word{the bluest one} or \word{the lightest one} presuppose that all
+the colors can be compared along a specific semantic dimension.  We
+thus expect to see more of this morphology more often where two or
+more of the colors are comparable in this way. To test this,
+we used the Stanford CoreNLP part-of-speech tagger \cite{Toutanova2003} to count the number of comparatives (JJR or RBR) and superlatives (JJS or RBS) per message. We found that participants were more likely to use these constructions when one or more distractors were close to the target. Additionally, we found evidence of an asymmetry in the use of these constructions across the \emph{split} and \emph{close} conditions. Comparatives were used somewhat more often in the `split' condition, where only one distractor was close to the target, while superlatives were much more likely to be used in the `close' condition.
 \todocheck{Could this be substantiated with a linear regression?}
 
-\paragraph{Negatives} We counted occurrences of the string `not.' Participants were more likely to use negative constructions when one or more distractors were close to the target.
-\todocheck{Could this be substantiated with a linear regression?}
+\paragraph{Negatives}
+In our referential contexts, negation is likely to play a role similar
+to that of comparatives: a phrase like \word{not the red or blue one}
+singles out the third color, and \word{blue but not bright blue}
+achieves a more nuanced kind of comparison. Thus, as with
+comparatives, we expect negation to be more likely where two or more
+distractors are close to the target. To test this, we counted
+occurrences of the string `not' (by far the most frequent negation in
+the corpus). We found that participants were more likely to use
+negative constructions when one or more distractors were close to the
+target.  \todocheck{Could this be substantiated with a linear
+  regression?}
 
-\paragraph{WordNet specificity} \todocheck{To do...} \cite{Fellbaum1998}
+\paragraph{WordNet specificity}
+We expect speakers to prefer basic color terms wherever they suffice
+to achieve the communicative goal, since such terms are most likely to
+succeed with the widest range of listeners. Thus, a speaker will
+choose \word{blue} even for a clear periwinkle color. However, as the
+colors get closer together, the basic terms become too ambiguous,
+and thus the risk of specific terms becomes worthwhile. To evaluate
+this idea, we use WordNet \cite{Fellbaum1998} to derive a specificity
+hierarchy for color terms, and we hypothesized that \emph{close}
+conditions will tend to lead speakers to go lower in this hierarchy.
+\todocheck{To do...} \cite{Fellbaum1998}
 
 \begin{table}[t]
 \centering
@@ -776,7 +819,7 @@ predicting hypernymy level in object references.
 \label{fig:alpha_beta}
 \end{figure}
 
-Grid search over values of $\alpha$ and $\beta$ revealed that the optimal values of 
+Grid search over values of $\alpha$ and $\beta$ revealed that the optimal values of
 the two parameters are related (\figref{fig:alpha_beta}). Good combinations lay on
 a curve with $\alpha$ decreasing as $\beta$ increased; however, negative $\beta$ and
 very small $\alpha$ was catastrophic to perplexity.\footnote{We tuned the
@@ -1115,6 +1158,3 @@ with the expectation that others may find interest in this aspect as well.
 \bibliographystyle{acl2012.bst}
 
 \end{document}
-
-
-
