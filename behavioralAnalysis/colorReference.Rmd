@@ -79,7 +79,6 @@ makeModelDF <- function(listenerOutput, speakerOutput, sourceLabel) {
                               labels = c("close", "split", "far"))) %>%
     rename(clkTime = time)
 
-  View(robo_clks)
   robo_rawAggregated <- robo_clks %>% 
     left_join(robo_msgs, by = c("gameid", "roundNum")) 
 
