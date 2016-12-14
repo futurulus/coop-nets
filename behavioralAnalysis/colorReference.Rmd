@@ -1,11 +1,11 @@
 ---
 title: ''
-output: html_document
+output: html_notebook
 ---
 
 # Import libraries
 
-```{r, message=F, warning=F}
+```{r, warning=F, message=F}
 library(ggplot2)
 library(lme4)
 library(lmerTest)
@@ -79,6 +79,7 @@ makeModelDF <- function(listenerOutput, speakerOutput, sourceLabel) {
                               labels = c("close", "split", "far"))) %>%
     rename(clkTime = time)
 
+  View(robo_clks)
   robo_rawAggregated <- robo_clks %>% 
     left_join(robo_msgs, by = c("gameid", "roundNum")) 
 
@@ -124,12 +125,41 @@ paste(c(length(unique(combined$gameid)),
 ```{r}
 listener_df = combined %>% 
   group_by(gameid, roundNum, source) %>% 
-  filter(row_number()==1) # limit to one row per round
+  filter(row_number()==1) %>% # limit to one row per round
+  ungroup()
 
 listenerSummary = listener_df %>% group_by(condition, source) %>%
   summarize(percentCorrect = mean(numOutcome), 
              se = sqrt(percentCorrect*(1 - percentCorrect)/length(numOutcome))) 
 ```
+
+```{r}
+# TODO: bootstrap CIs...
+dodge <- position_dodge(width=0.9)
+listener_df %>% 
+  filter(source != 'human') %>%
+  select(gameid, roundNum, source, numOutcome, condition) %>%
+  spread(source, numOutcome) %>%
+  filter(!is.na(literal) & !is.na(pragmatic)) %>% # NAs come from diff exclusions
+  mutate(improvement = ifelse(!literal & pragmatic, 1, 0),
+         decline = ifelse(literal & !pragmatic, 1, 0),
+         nochange = ifelse(literal == pragmatic, 1, 0)) %>%
+  group_by(condition) %>%
+  summarize("improvedM" = mean(improvement), 
+            "declinedM" = mean(decline),
+            "se" = .5 * sqrt(1/length(improvement)),
+            "nochangeM" = mean(nochange)
+            ) %>%
+  gather(change, count, ends_with("M")) %>%
+  mutate(change = gsub(".$", "", change)) %>%
+  ggplot(aes(x = condition, y = count, fill = change)) +
+    geom_bar(stat = 'identity', position = dodge) +
+    geom_errorbar(aes(ymax = count + se, ymin = count - se),
+                  position=dodge, width=0.25) +
+    theme_bw() +
+    ylab("% of trials changed L0->L2")
+```
+
 
 ### Run mixed model:
 
@@ -243,4 +273,7 @@ summary(glmer(specificityIndicator ~ condition + (1 | gameid),
              data = specificityDF,
              family = 'binomial',
              contrasts = list(condition =  contr.treatment(3, base=which(levels(specificityDF$condition) == 'far')))))
+
+ggplot(specificityDF, aes(x = condition)) +
+  geom_bar()
 ```
