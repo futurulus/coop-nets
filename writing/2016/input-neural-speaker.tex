@@ -1,0 +1,70 @@
+\footnotesize
+\centering
+\begin{tikzpicture}[scale=0.90]
+
+  \tikzstyle{label}=[anchor=east,align=right,text width=2.5cm]
+  \tikzstyle{colorvec}=[draw, minimum width=6mm, minimum height=4mm]
+  \tikzstyle{hiddencolorvec}=[draw, minimum width=6mm, minimum height=4mm]
+  \tikzstyle{token}=[draw]
+  \tikzstyle{LSTM}=[draw,circle, minimum width=6mm, minimum height=4mm]
+  \tikzstyle{FC}=[draw, minimum width=1cm, minimum height=0.4cm]
+  \tikzstyle{softmax}=[draw,isosceles triangle,rotate=90]
+  \tikzstyle{output}=[inner sep=0]
+
+  \path
+  (1,0) node[colorvec,fill=ourlightblue](cx){$c_{1}$}
+  (2.5,0) node[colorvec,fill=ourgreen](cy){$c_{2}$}
+  (4,0) node[colorvec,fill=oursteelblue](cz){$c_{T}$};
+
+  \path
+  (1, 1) node[LSTM](hx){}
+  (2.5, 1) node[LSTM](hy){}
+  (4, 1) node[LSTM](hz){$h$};
+
+  \path
+  (5.5, 1) node[token](tx){$h;\langle s\rangle$}
+  (7, 1) node[token](ty){$h; u_{1}$}
+  (8.5,1) node[token](tz){$h; u_{2}$};
+
+  \path
+  (5.5, 2) node[LSTM](lx){}
+  (7, 2) node[LSTM](ly){}
+  (8.5,2) node[LSTM](lz){};
+
+  \path
+  (5.5, 3) node[FC](fx){}
+  (7, 3) node[FC](fy){}
+  (8.5,3) node[FC](fz){};
+
+  \path
+  (5.5, 4) node[softmax](sx){}
+  (7, 4) node[softmax](sy){}
+  (8.5,4) node[softmax](sz){};
+
+  \path
+  (5.5, 5) node[output](yx){$u_{1}$}
+  (7, 5) node[output](yy){$u_{2}$}
+  (8.5,5) node[output](yz){$\langle/s\rangle$};
+
+  \draw (4.75,2) node[label]{LSTM};
+  \draw (4.75,3) node[label]{Fully connected};
+  \draw (4.75,4) node[label]{Softmax};
+
+  \draw (cx)--(hx);
+  \draw (cy)--(hy);
+  \draw (cz)--(hz);
+
+  \draw (hx)--(hy)--(hz);
+  \draw (lx)--(ly)--(lz);
+
+  \draw (tx)--(lx)--(fx)--(sx)--(yx);
+  \draw (ty)--(ly)--(fy)--(sy)--(yy);
+  \draw (tz)--(lz)--(fz)--(sz)--(yz);
+
+  \draw[->,draw=ourgreen] (hz) to[out=-45,in=225] (tx);
+  \draw[->,draw=ourgreen] (hz) to[out=-45,in=225] (ty);
+  \draw[->,draw=ourgreen] (hz) to[out=-45,in=225] (tz);
+
+  \draw[->,draw=ourorange] (yx) to[out=10,in=140] (ty);
+  \draw[->,draw=ourorange] (yy) to[out=10,in=140] (tz);
+\end{tikzpicture}
