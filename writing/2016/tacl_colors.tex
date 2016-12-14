@@ -110,6 +110,11 @@
   \framebox{\negthickspace\colorPatch{#1}} & \colorPatch{#2} & \colorPatch{#3} & #4}
 
 \newcommand{\todocheck}[1]{\textcolor{red}{#1}}
+% For filling out boxed table cells to equal length
+\newcommand{\gzz}{\phantom{$<$00}}
+\newcommand{\gz}{\phantom{$<$0}}
+\newcommand{\zz}{\phantom{00}}
+\newcommand{\z}{\phantom{0}}
 
 \setlength\titlebox{6.5cm}    % Expanding the titlebox
 
@@ -534,6 +539,13 @@ and uses the base model's outputs.
 
 \subsection{Training} \label{sec:training}
 
+We split our corpus into equal train/dev/test splits (16,635 contexts per split)
+and preprocess the data by lowercasing, tokenizing
+to split off punctuation, and replacing tokens that appear once or not at all
+in the training split with the token \texttt{<unk>}. We also remove
+listener utterances and concatenate speaker utterances on the same context.
+We leave handling of interactive dialogue to future work (\secref{sec:conclusion}).
+
 Our listener and speaker models are trained using ADADELTA
 \cite{Zeiler2012} and Adam \cite{Kingma2014}, adaptive variants of
 stochastic gradient descent (SGD). The choice of optimization
@@ -644,34 +656,34 @@ model has to pick up on the most subtle distinctions.
 
 \begin{figure}[t!]
 \centering
-\begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r}
+\begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
     \toprule
 %     & \multicolumn{3}{c}{$\Listener_0$} \\
-    $\Listener_0$ & \colorPatch{3884C7} & \colorPatch{02F9FD} & \colorPatch{9E6461} \\
+    $\Listener_0$ & \colorContext{3884C7}{02F9FD}{9E6461}{} \\
     \midrule
     \textbf{blue} &             9\% & \best{   91} & $<$1 \\
     \midrule
-    true blue     & \framebox{  11} & \best{   89} & $<$1 \\
-    light blue    & \framebox{$<$1} & \best{$>$99} & $<$1 \\
-    brightest     & $<$1 & \framebox{\best{$>$99}} & $<$1 \\
-    bright blue   & $<$1 & \framebox{\best{$>$99}} & $<$1 \\
-    red           & $<$1 &     1 & \framebox{\best{  99}} \\
-    purple        & $<$1 &     2 & \framebox{\best{  98}} \\
+    true blue     & \framebox{\gz{}11} & \best{     89} & $<$1 \\
+    light blue    & \framebox{\zz{}$<$1} & \best{$>$99} & $<$1 \\
+    brightest     & $<$1 & \framebox{\best{\z{}$>$99}} & $<$1 \\
+    bright blue   & $<$1 & \framebox{\best{\z{}$>$99}} & $<$1 \\
+    red           & $<$1 &     1 & \framebox{\best{\gz{}99}} \\
+    purple        & $<$1 &     2 & \framebox{\best{\gz{}98}} \\
     \midrule
 %   & \multicolumn{3}{c}{$\Speaker_1$} \\
-    $\Speaker_1$ & \colorPatch{3884C7} & \colorPatch{02F9FD} & \colorPatch{9E6461}  \\
+    $\Speaker_1$ & \colorContext{3884C7}{02F9FD}{9E6461}{}  \\
     \midrule
     \textbf{blue} &             41  &    19 & $<$1 \\
     \midrule
-    true blue     & \framebox{\best{  47}} &    19 & $<$1 \\
-    light blue    & \framebox{   5} & \best{   20} & $<$1 \\
-    brightest     & $<$1 & \framebox{\best{   20}} & $<$1 \\
-    bright blue   &    2 & \framebox{\best{   20}} & $<$1 \\
-    red           &    1 &     2 & \framebox{\best{  50}} \\
-    purple        &    5 &     1 & \framebox{\best{  50}} \\
+    true blue     & \framebox{\best{\gz{}47}} &    19 & $<$1 \\
+    light blue    & \framebox{\gzz{}5} & \best{   20} & $<$1 \\
+    brightest     & $<$1 & \framebox{\best{\gz{}20}} & $<$1 \\
+    bright blue   &    2 & \framebox{\best{\gz{}20}} & $<$1 \\
+    red           &    1 &     2 & \framebox{\best{\gz{}50}} \\
+    purple        &    5 &     1 & \framebox{\best{\gz{}50}} \\
     \midrule
 %    & \multicolumn{3}{c}{$\Listener_2$} \\
-    $\Listener_2$ & \colorPatch{3884C7} & \colorPatch{02F9FD} & \colorPatch{9E6461} \\
+    $\Listener_2$ & \colorContext{3884C7}{02F9FD}{9E6461}{} \\
     \midrule
     \textbf{blue} & \best{            68}  &    32 & $<$1 \\
     \midrule
@@ -681,7 +693,7 @@ model has to pick up on the most subtle distinctions.
 %    bright blue   &    7 & \framebox{\best{   93}} & $<$1 \\
 %    red           &    2 &     5 & \framebox{\best{  94}} \\
 %    purple        &    9 &     2 & \framebox{\best{  89}} \\
-    $\Listener^*$ & \colorPatch{3884C7} & \colorPatch{02F9FD} & \colorPatch{9E6461} \\
+    $\Listener^*$ & \colorContext{3884C7}{02F9FD}{9E6461}{} \\
     \midrule
     \textbf{blue} & \best{            78}  &    22 & $<$1 \\
     \bottomrule
@@ -702,12 +714,33 @@ and it compensates by increasing referent $i$'s probability. This is beneficial
 when $i$ is the true target but harmful when $i$ is a distractor.
 
 \Figref{fig:rsaExample}
-shows one such example: \todocheck{(talk about specific example)}
+shows one such example: a context consisting of a somewhat prototypical blue,
+a bright cyan, and a purple-tinged brown, with the utterance \textit{blue}. The
+base listener interprets this as referring to the cyan with 91\% probability,
+perhaps due to the extreme saturation of the cyan maximally activating certain
+parts of the neural network. However, when the pragmatic model takes samples
+from $\Speaker_0$ to probe the space of alternative utterances, it becomes
+apparent that communicating the more ordinary blue to the listener is difficult:
+for the utterances chosen by the speaker intending this referent (\textit{true blue},
+\textit{light blue}), the listener also
+chooses the cyan with $>$89\% confidence.
+
+Pragmatic reasoning overcomes this difficulty. Only two of the utterances in the
+alternative set (the actual utterance \textit{blue} and the sampled alternative
+\textit{true blue}) result in any appreciable probability mass on the true target,
+so the pragmatic listener's model of the speaker predicts that the speaker
+would choose between those utterances most of the time. However, if the target
+were the cyan, the speaker would have a number of good options. Therefore, the
+fact that the speaker chose \textit{blue} is interpreted as evidence for the
+true target.
 
 \subsection{Speaker effectiveness} \label{sec:speaker_eff}
 
-\Tabref{table:speakerVsListener} shows the effectiveness of the two speaker models
-(base speaker $\Speaker_0$ and pragmatic speaker $\Speaker_1$) at describing the
+We also perform a ``machine communication'' experiment aimed at measuring the
+ability of the speaker agents to convey the information necessary to identify
+the target. \Tabref{table:speakerVsListener} shows the effectiveness of the
+two speaker models---the base speaker $\Speaker_0$ (\secref{sec:s0}) and the
+pragmatic speaker $\Speaker_1$ \eqref{eq:s1}---at describing the
 target color to the listener models.
 
 The pragmatic speaker is better at communicating
@@ -788,7 +821,7 @@ whereas we first compute the full normalized pragmatic
 model $\Listener(\Speaker(\Listener_0))$ and blend it with a base listener by
 $\Listener_0^{\beta} \cdot \Listener(\Speaker(\Listener_0))^{1 - \beta}$.
 
-\section{Conclusion}
+\section{Conclusion} \label{sec:conclusion}
 
 In this paper we presented a newly-collected corpus of color descriptions from
 reference games, and we showed that combining a model of pragmatic reasoning
@@ -805,14 +838,21 @@ listener failing to learn pragmatic behavior already present in the dataset.
 An enticing avenue of future work is to use variational methods to scale
 up an end-to-end pragmatic model like that of \newcite{Monroe2015} to
 allow for arbitrarily large spaces of alternative utterances.
-\todocheck{(todo: more wrap-up?)}
 
-\todocheck{We would also mention that we didn't model the sequential nature
-of the utterances in the corpus. This is a liability for us: it might
-confuse readers that we didn't do it, given the nature of the corpus, 
-and they might criticize us for not doing it. A strong concluding note
-on this (perhaps foreshadowed somewhere early in the paper) could help
-with this issue.}
+Another area of investigation we did not pursue in this work is the role of
+multi-turn dialogues in the corpus we collected. As noted in \secref{sec:corpus},
+both participants in our reference game task had the ability to use the chat window
+at any point, and many \todocheck{(how many?)} took advantage of the ability
+to have a two-way discussion. Modeling dialogue agents is substantially
+more challenging than modeling isolated speakers and listeners; multi-turn dialogue
+requires reasoning about previous utterances as context, anticipating
+responses for long-term planning, and (for the listener) deciding when
+to ask for clarification rather than commit to a referent
+\todocheck{(surely there are some classical citations on this problem)}.
+We look forward to examining this problem further, and we release our
+dataset\footnote{\url{http://anonymized/}}
+with the expectation that others may find interest in this aspect as well.
+
 
 %\section{Credits}
 %
