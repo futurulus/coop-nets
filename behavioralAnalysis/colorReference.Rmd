@@ -105,8 +105,8 @@ literalModel <- makeModelDF(
 )
      
 pragmaticModel <- makeModelDF(
-  "./modelOutput/listener_big_l2_untuned_clickedObj.csv",
-  "./modelOutput/speaker_big_sl_sampled_message.csv",
+  "./modelOutput/listener_big_l2_heldout_clickedObj.csv",
+  "./modelOutput/speaker_big_sl_perp_sampled_message.csv",
   "pragmatic"
 )
 ```
