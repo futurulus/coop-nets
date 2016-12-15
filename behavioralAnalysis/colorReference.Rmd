@@ -53,13 +53,14 @@ combined_human <- clks %>%
   left_join(msgs, by = c("gameid", "roundNum")) %>%
   filter(gameid %in% goodGames) %>%
   mutate(numOutcome = ifelse(outcome == "true", 1, 0)) %>%
-  mutate(numRawWords = 1 + str_count(contents, fixed(" "))) %>%
+  mutate(numRawWords = wc(contents)) %>%
+  filter(numRawWords > 0) %>% # Get rid of NAs from empty string messages
   mutate(strippedContents = str_replace_all(contents, "[^[:alnum:][:space:]']",' ')) %>%
   do(mutate(., cleanMsg = rm_stopwords(.$strippedContents, tm::stopwords("english"), 
                                        separate = F))) %>%
   mutate(numCleanChars = nchar(as.character(cleanMsg))) %>%
-  mutate(numCleanWords = 1 + str_count(cleanMsg, fixed(" "))) %>%
-  filter(numCleanWords < mean(numRawWords) + 4*sd(numRawWords)) %>%
+  mutate(numCleanWords = wc(cleanMsg)) %>%
+  filter(numRawWords < mean(numRawWords) + 4*sd(numRawWords)) %>%
   mutate(source = 'human')
 ```
 
