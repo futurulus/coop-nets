@@ -163,10 +163,10 @@ the target color.
 % is captured in game-theoretic and probabilistic models of pragmatic
 % language understanding \cite{Jaeger2012,Frank2012}.
 
-Human communication is \emph{situated}. As speakers, we choose our
-utterances based on what the context is like and who we are talking
-to; as listeners, we draw on the context and our model of the speaker
-when interpreting the utterances we hear. Dialogues involving color
+Human communication is \emph{situated}. In using language, we are sensitive
+to context and our interlocutors' expectations, when choosing our
+utterances as speakers and interpreting the utterances we hear as listeners.
+Dialogues involving color
 reference highlight this complex grounding in the environment and in
 our mental models of each other, and thus provide a test-bed for
 computational models of production and comprehension.
@@ -179,9 +179,10 @@ listener. In context~1, the comparative \word{darker} implicitly
 references both the target (boxed) and one of the other colors. In
 contexts 2 and 3, the target color is the same, but the distractors
 led the speaker to choose different basic color terms. Finally, in
-context~4, \word{red} is a pragmatic choice even though two colors are
-shades of red, because the interloctors assume about each other that
-they favor the description \word{pink} for the middle color.
+context~4, \word{blue} is a pragmatic choice even though two colors are
+shades of blue, because the interlocutors assume about each other that
+they find the target color a more prototypical representative of blue
+and would prefer other descriptions (\word{teal}, \word{cyan}) for the middle color.
 
 \begin{table}
   \centering
@@ -193,7 +194,7 @@ they favor the description \word{pink} for the middle color.
     1&\colorContext{2421DE}{605DA2}{0144FE}{darker blue}\\
     2&\colorContext{5866A7}{2DD2BC}{C23D5A}{Purple}\\
     3&\colorContext{5866A7}{9953AC}{2DD2A6}{blue}\\
-    4&\colorContext{FF0000}{FFC0CB}{008000}{red}\\
+    4&\colorContext{3884C7}{02F9FD}{9E6461}{blue}\\
     \bottomrule
   \end{tabular}
   \caption{Examples of color reference in context. The target color
@@ -203,7 +204,7 @@ they favor the description \word{pink} for the middle color.
   \label{table:examples}
 \end{table}
 
-In this paper, we present a unified model of pragmatic language use.
+In this paper, we present a scalable model of pragmatic language understanding.
 At its core, the model is a version of the Rational Speech Acts (RSA)
 model \cite{Frank2012}, in which agents reason recursively about
 each other's expectations and intentions to communicate more
@@ -579,7 +580,7 @@ discussion of these values.
   \% Superlatives & 0.02 & 0.06 & 0.16 & 0.05 & 0.10 & 0.17 \\ 
    \hline
 \end{tabular}
-\caption{Corpus statistics and statistics of samples from $\Speaker_1$ (rates per utterance). \todocheck{todo: check human words rates, put errors in?}} \label{table:metrics}
+\caption{Corpus statistics and statistics of samples from $\Speaker_1$ (rates per utterance). \todocheck{todo: check human words rates, put errors in?}}
 \label{table:metrics}
 \end{table*}
 
@@ -611,7 +612,7 @@ I fear we aren't!}
 
 \subsection{Listener behavior}
 
-Since color reference is a difficult task even for humans, we compared listener accuracy across conditions to calibrate our expectations about model performance. While participant accuracy was close to ceiling (97\%) on the `far' condition, they made significantly more errors on the `split' (90\%) and `close' (83\%) conditions (see \figref{fig:listenerAccuracy}).
+Since color reference is a difficult task even for humans, we compared listener accuracy across conditions to calibrate our expectations about model performance. While participant accuracy was close to ceiling (97\%) on the `far' condition, they made significantly more errors on the `split' (90\%) and `close' (83\%) conditions (see \todocheck{[make new figure/table for this]}).
 
 \subsection{Speaker behavior}
 
@@ -856,22 +857,25 @@ The closest work to ours that we are aware of is that of
 and listener models to model pragmatics. They implement and evaluate a
 pragmatic speaker $\Speaker(\Listener_0)$, with sampling from a neural
 $\Speaker_0$ model to limit the search space and regularize the model toward
-human-like utterances.
+human-like utterances. We show that these techniques prove beneficial in
+understanding (listener) tasks as well. Approaching pragmatics from the listener
+side requires taking the recursive reasoning process one step beyond theirs, to a
+two-level derived pragmatic model $\Listener(\Speaker(\Listener_0))$; i.e., we
+derive a pragmatic listener from their pragmatic speaker by normalizing once more
+over the colors.
 
-Our approach goes one step beyond theirs, in that we build a two-level derived
-pragmatic model $\Listener(\Speaker(\Listener_0))$; i.e., we use a similar sampling
-scheme to limit the search space in speaker modeling, and then explicitly normalize
-over the colors in the context to derive a pragmatic listener.
-
-Additionally, we use more powerful recurrent models for both the base speaker and the
-base listener; \newcite{AndreasKlein16_NeuralPragmatics} use multi-layer perceptron
-models over $n$-gram features. We also include the $\alpha$ inverse temperature
-parameter from \newcite{Goodman2013}, and we use a different strategy for blending the
+Additionally, we replace the multi-layer perceptron models over $n$-gram features
+used in \newcite{AndreasKlein16_NeuralPragmatics} with more effective
+recurrent models for both the base listener and the base speaker; in particular,
+our speaker is more expressive in that it is able to capture properties of
+the context when sampling alternative utterances.
+Finally, we add the $\alpha$ inverse temperature parameter from 
+\newcite{Goodman2013}, and we use a different strategy for blending the
 pragmatic and base models: their model blends the base speaker and base listener
-$\Speaker_0^{\beta} \cdot \Listener_0^{\beta}$ and
+($\Speaker_0^{\beta} \cdot \Listener_0^{1 - \beta}$) and
 normalizes across utterances to implicitly define a different pragmatic model,
 whereas we first compute the full normalized pragmatic
-model $\Listener(\Speaker(\Listener_0))$ and blend it with a base listener by
+model ($\Listener(\Speaker(\Listener_0))$) and blend it with a base listener by
 $\Listener_0^{\beta} \cdot \Listener(\Speaker(\Listener_0))^{1 - \beta}$.
 
 \section{Conclusion} \label{sec:conclusion}
