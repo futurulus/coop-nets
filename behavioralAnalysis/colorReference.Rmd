@@ -135,7 +135,7 @@ listenerSummary = listener_df %>% group_by(condition, source) %>%
 
 ```{r}
 # TODO: bootstrap CIs...
-pdf("changedByCondition.pdf", width=6,height=4,paper='special')
+pdf("../writing/2016/figures/changedByCondition.pdf", width=6,height=3,paper='special')
 dodge <- position_dodge(width=0.9)
 listener_df %>% 
   filter(source != 'human') %>%
