@@ -135,20 +135,21 @@ listenerSummary = listener_df %>% group_by(condition, source) %>%
 
 ```{r}
 # TODO: bootstrap CIs...
+pdf("changedByCondition.pdf", width=6,height=4,paper='special')
 dodge <- position_dodge(width=0.9)
 listener_df %>% 
   filter(source != 'human') %>%
   select(gameid, roundNum, source, numOutcome, condition) %>%
   spread(source, numOutcome) %>%
   filter(!is.na(literal) & !is.na(pragmatic)) %>% # NAs come from diff exclusions
-  mutate(improvement = ifelse(!literal & pragmatic, 1, 0),
-         decline = ifelse(literal & !pragmatic, 1, 0),
-         nochange = ifelse(literal == pragmatic, 1, 0)) %>%
+  mutate(improvement = ifelse(!literal & pragmatic, 100, 0),
+         decline = ifelse(literal & !pragmatic, 100, 0)) %>%
+#         nochange = ifelse(literal == pragmatic, 1, 0)) %>%
   group_by(condition) %>%
   summarize("improvedM" = mean(improvement), 
             "declinedM" = mean(decline),
-            "se" = .5 * sqrt(1/length(improvement)),
-            "nochangeM" = mean(nochange)
+            "se" = 50 * sqrt(1/length(improvement))#,
+            # "nochangeM" = mean(nochange)
             ) %>%
   gather(change, count, ends_with("M")) %>%
   mutate(change = gsub(".$", "", change)) %>%
@@ -157,7 +158,8 @@ listener_df %>%
     geom_errorbar(aes(ymax = count + se, ymin = count - se),
                   position=dodge, width=0.25) +
     theme_bw() +
-    ylab("% of trials changed L0->L2")
+    ylab("% of trials changed, L0 -> L*")
+dev.off()
 ```
 
 
