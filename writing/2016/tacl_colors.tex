@@ -24,6 +24,8 @@
 \usepackage[font=small]{subcaption}
 \usepackage{colortbl}
 \usepackage{tikz}
+\usepackage{comment}
+\usepackage{epstopdf}
 \usetikzlibrary{shapes.geometric}
 \makeatletter
 \newcommand{\@BIBLABEL}{\@emptybiblabel}
@@ -538,8 +540,12 @@ and uses the base model's outputs.
 \subsection{Training} \label{sec:training}
 
 We split our corpus into equal train/dev/test splits (16,635 contexts per split)
-and preprocess the data by lowercasing, tokenizing
-to split off punctuation, and replacing tokens that appear once or not at all
+and preprocess the data by (1) lowercasing; (2) tokenizing
+by splitting off punctuation as well as the endings \word{\mbox{-er}}, \word{\mbox{-est}}, and
+\word{\mbox{-ish}};\footnote{We
+only apply this heuristic ending segmentation for the listener; the speaker is trained to produce
+words with these endings unsegmented.} and
+(3) replacing tokens that appear once or not at all
 in the training split with the token \texttt{<unk>}. We also remove
 listener utterances and concatenate speaker utterances on the same context.
 We leave handling of interactive dialogue to future work (\secref{sec:conclusion}).
@@ -558,23 +564,23 @@ Our final model uses
 $\alpha = 0.544$ and $\beta = -0.15$; see \secref{sec:alpha_beta} for more
 discussion of these values.
 
-% latex table generated in R 3.3.0 by xtable 1.8-2 package
-% Thu Nov 17 15:41:24 2016
+% latex table generated in R 3.3.2 by xtable 1.8-2 package
+% Thu Dec 15 15:35:44 2016
 \begin{table*}[ht]
 \centering
-\begin{tabular}{lrrr@{\hspace{38pt}}rrr}
-  \toprule
-  & \multicolumn{3}{c}{human}& \multicolumn{3}{c}{model}\\
-  & far& split& close& far& split& close\\
-  \midrule
-  \# Chars & 7.53 & 11.30 & 12.93 & 8.51 & 11.60 & 14.31 \\
-  \# Comparatives & 0.02 & 0.14 & 0.13 & 0.04 & 0.09 & 0.13 \\
-  \# Negatives & 0.03 & 0.10 & 0.12 & 0.05 & 0.09 & 0.13 \\
-  \# Superlatives & 0.02 & 0.06 & 0.16 & 0.05 & 0.10 & 0.17 \\
-  \# Words & 1.46 & 2.04 & 2.27 & 1.61 & 2.09 & 2.51 \\
-   \bottomrule
+\begin{tabular}{lrrr|rrr}
+  & \multicolumn{3}{c}{human}& \multicolumn{3}{c}{pragmatic}\\ \hline
+  & far& split& close& far& split& close\\ \hline
+  \# Chars & 7.61 & 11.55 & 13.37 & 8.56 & 11.78 & 14.96 \\ 
+  \# Words & \todocheck{1.46} & \todocheck{2.04} & \todocheck{2.27} & 1.62 & 2.13 & 2.62 \\ 
+  \% Comparatives & 0.02 & 0.15 & 0.13 & 0.04 & 0.09 & 0.14 \\ 
+  \% High Specificity & 1.07 & 1.28 & 1.29 & 0.94 & 1.14 & 1.09 \\ 
+  \% Negatives & 0.03 & 0.10 & 0.12 & 0.04 & 0.09 & 0.14 \\ 
+  \% Superlatives & 0.02 & 0.06 & 0.16 & 0.05 & 0.10 & 0.17 \\ 
+   \hline
 \end{tabular}
-\caption{Corpus statistics and statistics of samples from $\Speaker_1$ (rates per utterance). \todocheck{todo: put errors in, include wordnet level of informativity}} \label{table:metrics}
+\caption{Corpus statistics and statistics of samples from $\Speaker_1$ (rates per utterance). \todocheck{todo: check human words rates, put errors in?}} \label{table:metrics}
+\label{table:metrics}
 \end{table*}
 
 
@@ -595,11 +601,13 @@ corpus that we use to inform our model assessment.
 are we doing enough with these humans results when we move to our model.
 I fear we aren't!}
 
+\begin{comment}
 \begin{figure}
 \includegraphics[scale = .5]{figures/allListenerAccuracy.eps}
 \caption{Listener performance across conditions, for both human participants and model output}
 \label{fig:listenerAccuracy}
 \end{figure}
+\end{comment}
 
 \subsection{Listener behavior}
 
@@ -1157,6 +1165,6 @@ with the expectation that others may find interest in this aspect as well.
 %Do not number the acknowledgment section. Do not include this section when submitting your paper for review.
 
 \bibliography{colors}
-\bibliographystyle{acl2012.bst}
+\bibliographystyle{acl2012}
 
 \end{document}
