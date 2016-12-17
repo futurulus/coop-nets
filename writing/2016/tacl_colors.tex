@@ -117,6 +117,7 @@
 \newcommand{\gz}{\phantom{$<$0}}
 \newcommand{\zz}{\phantom{00}}
 \newcommand{\z}{\phantom{0}}
+\newcommand{\p}{\phantom{\%}}
 
 \setlength\titlebox{6.5cm}    % Expanding the titlebox
 
@@ -297,6 +298,72 @@ information to the listener, who could then click on one of the colors
 to advance to the next trial. Both participants were free to use the
 chat box at any point.
 
+\newcommand{\Lex}{\mathcal{L}}
+\newcommand{\Costs}{\kappa}
+\newcommand{\Messages}{U}
+\newcommand{\targetPrior}{P}
+
+\begin{figure*}[t]
+  \centering
+  %
+  \begin{subfigure}[t]{0.3\textwidth}
+    \centering
+    \begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
+    \toprule
+     & \colorContext{3884C7}{02F9FD}{9E6461}{} \\
+    \midrule
+    blue & \best{50}\% & \best{50}\p & 0\p \\
+    teal & 0\p & \best{100}\p & 0\p \\
+    dull & \best{50}\p & 0\p & \best{50}\p \\
+    \bottomrule
+    \end{tabular}
+    \caption{The literal listener $l_{0}$ chooses colors that match the
+             literal semantics of the utterance; other than that, it
+             guesses randomly.}
+    \label{fig:basic-rsa:l0}
+  \end{subfigure}
+  %
+  \hfill
+  %
+  \begin{subfigure}[t]{0.3\textwidth}
+    \centering
+    \begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
+    \toprule
+     & \colorContext{3884C7}{02F9FD}{9E6461}{} \\
+    \midrule
+    blue & \best{50}\p & 33\p & 0\p \\
+    teal & 0\p & \best{67}\p & 0\p \\
+    dull & \best{50}\p & 0\p & \best{100}\p \\
+    \bottomrule
+    \end{tabular}
+    \caption{The pragmatic speaker $s_{1}$ soft-maximizes the informativity of
+             its utterances. (For simplicity, $\alpha = 1$ and
+             $\Costs(\utt) = 0$.)}
+    \label{fig:basic-rsa:s1}
+  \end{subfigure}
+  %
+  \hfill
+  %
+  \begin{subfigure}[t]{0.3\textwidth}
+    \centering
+    \begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
+    \toprule
+     & \colorContext{3884C7}{02F9FD}{9E6461}{} \\
+    \midrule
+    blue & \best{60}\p & 40\p & 0\p \\
+    teal & 0\p & \best{100}\p & 0\p \\
+    dull & 33\p & 0\p & \best{67}\p \\
+    \bottomrule
+    \end{tabular}
+    \caption{The pragmatic listener $l_{1}$ uses Bayes' rule to infer the target
+             using the speaker's utterance as evidence.}
+    \label{fig:basic-rsa:l1}
+  \end{subfigure}
+  %
+  \caption{An example of RSA applied to color reference.}
+  \label{fig:basic-rsa}
+\end{figure*}
+
 To ensure a range of difficulty, we randomly interspersed an equal
 number of trials from three different conditions:
 %
@@ -322,50 +389,60 @@ to be explicit.}
 
 \section{Models}
 
-\newcommand{\Lex}{\mathcal{L}}
-\newcommand{\Costs}{\kappa}
-\newcommand{\Messages}{U}
-\newcommand{\targetPrior}{P}
-
-Our model is intended as a scalable version of RSA.  As applied to the
-color reference games introduced in \secref{sec:corpus}, the basic RSA
-model is defined as follows, where $\target$ is a color in the context
-set $\context$, $\utt$ is a message drawn from a set of possible
-utterances $\Messages$, $\targetPrior$ is a prior over colors,
-$\Costs$ is a real-valued cost function on utterances,
-$\alpha \in [0,\infty)$ is an inverse temperature parameter, and
-$\Lex(\utt, \target) = 1$ if $\utt$ is true of $\target$, else $0$:
-%
+Our model is intended as a scalable version of RSA. We first define the
+basic RSA model as applied to the
+color reference games introduced in \secref{sec:corpus}; a worked example
+is shown in \figref{fig:basic-rsa}. The starting point of RSA is a model
+of a \term{literal listener} (\figref{fig:basic-rsa:l0}):
 \begin{align}
   l_{0}(\target \| \utt, \Lex)
   &\propto
   \Lex(\utt, \target) \targetPrior(\target)
-  \\
+\end{align}
+where $\target$ is a color in the context
+set $\context$, $\utt$ is a message drawn from a set of possible
+utterances $\Messages$, $\targetPrior$ is a prior over colors,
+and $\Lex(\utt, \target)$ is a semantic interpretation function that
+takes the value $1$ if $\utt$ is true of $\target$, else $0$.
+
+To derive a model of a \term{pragmatic speaker} (\figref{fig:basic-rsa:s1}), 
+RSA postulates that
+a speaker behaves according to a distribution that soft-maximizes
+a utility function that rewards informativity and penalizes cost:
+\begin{align}
   s_{1}(\utt \| \target, \Lex)
   &\propto
   e^{\alpha\log(l_{0}(\target \| \utt, \Lex)) - \Costs(\utt)}
-  \label{eq:rsa-s1}\\
+  \label{eq:rsa-s1}
+\end{align}
+Here, $\Costs$ is a real-valued cost function on utterances, and
+$\alpha \in [0,\infty)$ is an inverse temperature parameter governing
+the ``rationality'' of the speaker model.
+A large $\alpha$ means that the pragmatic speaker is expected to choose
+the most informative utterance (minus cost)
+consistently, whereas a small $\alpha$ means the
+speaker is modeled as choosing suboptimal utterances frequently.
+
+Finally, a \term{pragmatic listener} (\figref{fig:basic-rsa:l1})
+interprets utterances by reasoning about the behavior of the pragmatic speaker:
+\begin{align}
   l_{1}(\target \| \utt, \Lex)
   &\propto
   s_{1}(\utt \| \target, \Lex) \targetPrior(\target)
   \label{eq:rsa-l1}
 \end{align}
 
-The most important feature of this model is that the pragmatic
-listener $l_{1}$ reasons, not about the semantic interpretation
-function $\Lex$ directly, but rather about a speaker who reasons about
-a listener who reasons about $\Lex$ directly. The inverse temperature
-parameter $\alpha$ governs the ``rationality'' of the speaker modeled
-by the pragmatic listener; a large $\alpha$ means that the listener
-expects the speaker to choose the most informative utterance
-consistently, whereas a small $\alpha$ means the listener expects the
-speaker to choose suboptimal utterances frequently. This affects the
+Note that the $\alpha$ parameter of the speaker indirectly affects the
 listener's interpretations: the more reliable the speaker is in
 choosing the optimal utterance for a referent, the more the listener
 will take deviations from an optimal utterance as a signal to choose a
 different referent.
 
-The back-and-forth nature of this interpretive process mirrors the
+The most important feature of this model is that the pragmatic
+listener $l_{1}$ reasons, not about the semantic interpretation
+function $\Lex$ directly, but rather about a speaker who reasons about
+a listener who reasons about $\Lex$ directly. The back-and-forth
+nature of this interpretive process mirrors the
 cooperative principle of conversational implicature \cite{Grice75} and
 reflects more general ideas from Bayesian cognitive modeling
 \cite{Tenenbaum-etal:2011}. The model and its variants have been shown
@@ -401,7 +478,7 @@ utterances that let us approximate the normalization required for
     \centering
     \input{input-neural-listener}
     \caption{The $\Listener_{0}$ agent processes a color description
-      sequentially. The final represententation is transformed into a
+      sequentially. The final representation is transformed into a
       Gaussian distribution in color space, which is used to score the
       context colors.}
     \label{fig:model:listener}
@@ -492,7 +569,7 @@ $\Listener_{1}$:
   &= \frac{\Listener_0(\target \| \utt, \context; \theta)^\alpha}{\sum_{\utt'}
     \Listener_0(\target \| \utt', \context; \theta)^\alpha}
     \label{eq:s1} \\
-  \Listener_2(\target \| \utt, \context; \theta)
+  \Listener_1(\target \| \utt, \context; \theta)
   &=
     \frac{
     \Speaker_1(\utt \| \target, \context; \theta)
@@ -522,7 +599,7 @@ can be quite small; in our experiments, it is set to $8$.
 To reduce the noise
 resulting from the stochastically chosen alternative utterance sets, we also perform
 this alternative set sampling $n$ times and average the resulting probabilities in
-the final $\Listener_2$ output. We again choose $n = 8$ as a satisfactory
+the final $\Listener_1$ output. We again choose $n = 8$ as a satisfactory
 compromise between modeling effectiveness and computation time.
 
 We find we can obtain an additional small improvement in listener accuracy
@@ -530,7 +607,7 @@ by blending the pragmatic listener with the base listener. This blended listener
 denoted $\Listener^*$, is defined as:
 \begin{multline}
 \Listener^{*}(\target \| \utt, \context; \theta) \propto \\ {\Listener_0}(\target \| \utt, \context; \theta)^{\beta} \cdot {}
-\Listener_2(\target \| \utt, \context; \theta)^{1-\beta}  \label{eq:beta}
+\Listener_1(\target \| \utt, \context; \theta)^{1-\beta}  \label{eq:beta}
 \end{multline}
 
 This allows the model to adjust the extent to which it overrides the learned model
@@ -547,7 +624,7 @@ by splitting off punctuation as well as the endings \word{\mbox{-er}}, \word{\mb
 only apply this heuristic ending segmentation for the listener; the speaker is trained to produce
 words with these endings unsegmented.} and
 (3) replacing tokens that appear once or not at all
-in the training split with the token \texttt{<unk>}. We also remove
+in the training split with \texttt{<unk>}. We also remove
 listener utterances and concatenate speaker utterances on the same context.
 We leave handling of interactive dialogue to future work (\secref{sec:conclusion}).
 
@@ -733,8 +810,8 @@ often cannot rely only on basic color terms.
     red           &    1 &     2 & \framebox{\best{\gz{}50}} \\
     purple        &    5 &     1 & \framebox{\best{\gz{}50}} \\
     \midrule
-%    & \multicolumn{3}{c}{$\Listener_2$} \\
-    $\Listener_2$ & \colorContext{3884C7}{02F9FD}{9E6461}{} \\
+%    & \multicolumn{3}{c}{$\Listener_1$} \\
+    $\Listener_1$ & \colorContext{3884C7}{02F9FD}{9E6461}{} \\
     \midrule
     \textbf{blue} & \best{            68}  &    32 & $<$1 \\
     \midrule
