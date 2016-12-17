@@ -166,14 +166,15 @@ the target color.
 
 Human communication is \emph{situated}. In using language, we are sensitive
 to context and our interlocutors' expectations, when choosing our
-utterances as speakers and interpreting the utterances we hear as listeners.
-Dialogues involving color
-reference highlight this complex grounding in the environment and in
+utterances (as speakers) and when interpreting the utterances we hear (as listeners).
+Visual referring expression tasks exercise this complex process of grounding
+in the environment and in
 our mental models of each other, and thus provide a test-bed for
 computational models of production and comprehension.
 
-\Tabref{table:examples} illustrates the situated nature of color
-reference with utterances from a task-oriented dialogue corpus we
+\Tabref{table:examples} illustrates the situated nature of
+reference understanding with descriptions of colors from a task-oriented
+dialogue corpus we
 introduce with this paper. In these dialogues, the speaker is trying
 to identify their (privately assigned) target color for the
 listener. In context~1, the comparative \word{darker} implicitly
@@ -205,7 +206,8 @@ and would prefer other descriptions (\word{teal}, \word{cyan}) for the middle co
   \label{table:examples}
 \end{table}
 
-In this paper, we present a scalable model of pragmatic language understanding.
+In this paper, we present a scalable, learned model of pragmatic
+language understanding.
 At its core, the model is a version of the Rational Speech Acts (RSA)
 model \cite{Frank2012}, in which agents reason recursively about
 each other's expectations and intentions to communicate more
@@ -218,7 +220,7 @@ to large data sets. The RSA recursion is then defined in terms of
 these base agents: the \emph{pragmatic speaker} produces
 utterances based on a literal listener
 \cite{AndreasKlein16_NeuralPragmatics}, and the \emph{pragmatic
-  listener} intereprets utterances based on the pragmatic speaker's
+  listener} interprets utterances based on the pragmatic speaker's
 behavior.
 
 % We evaluate our model in a \term{reference game} task: given a context consisting
@@ -454,7 +456,7 @@ communicative domains
 \cite{Tellex2014a,Vogel:Potts:Jurafsky:2013}.
 
 The scalability problems of RSA stem from the set of messages
-$\Messages$ and the interpretation functon $\Lex$. In most versions of
+$\Messages$ and the interpretation function $\Lex$. In most versions of
 RSA, these are specified by hand (but see \citealt{Monroe2015}).  This
 presents a serious practical obstacle to applying RSA to large data
 sets containing realistic utterances. Relatedly, the truth-functional
@@ -628,9 +630,10 @@ in the training split with \texttt{<unk>}. We also remove
 listener utterances and concatenate speaker utterances on the same context.
 We leave handling of interactive dialogue to future work (\secref{sec:conclusion}).
 
-Our listener and speaker models are trained using ADADELTA
+We use ADADELTA
 \cite{Zeiler2012} and Adam \cite{Kingma2014}, adaptive variants of
-stochastic gradient descent (SGD). The choice of optimization
+stochastic gradient descent (SGD), to train listener and speaker models.
+The choice of optimization
 algorithm and learning rate for each model were tuned with grid search
 on a held-out tuning set consisting of 3,500 contexts.\footnote{For
   $\Listener_0$: ADADELTA, learning rate $\eta = {}$0.2; for
@@ -672,7 +675,7 @@ following experimental designs like those of
 \newcite{Clark:Wilkes-Gibbs:1986}. This paves the way to assessing our
 computational model not only in its terms, but also in terms of how
 its behavior compares to that of our human participants. Thus, the
-current section briefly reviews some findings from the huamn
+current section briefly reviews some findings from the human
 corpus that we use to inform our model assessment.
 
 \todocheck{Robert could perhaps expand or improve this paragraph. Also,
