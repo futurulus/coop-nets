@@ -129,6 +129,8 @@
 \newcommand{\z}{\phantom{0}}
 \newcommand{\p}{\phantom{\%}}
 
+\newcommand{\cond}{\emph}
+
 \setlength\titlebox{6.5cm}    % Expanding the titlebox
 
 \title{Colors in Context: A Pragmatic Neural Model for \\
@@ -262,7 +264,7 @@ including negations, comparatives and superlatives, and increased use
 of metaphor and shared associations.
 
 Experiments on this data show that our pragmatic model improves accuracy
-in interpreting human-produced descriptions over the RNN-base agent
+in interpreting human-produced descriptions over the RNN base agent
 alone. Moreover, the improvements from pragmatic reasoning come primarily
 in the hardest cases. By this we mean
 %
@@ -379,7 +381,7 @@ chat box at any point.
     \label{fig:basic-rsa:l1}
   \end{subfigure}
   %
-  \caption{An example of RSA applied to an idealized color reference task.}
+  \caption{An example of RSA applied to a color reference task.}
   \label{fig:basic-rsa}
 \end{figure*}
 
@@ -387,17 +389,17 @@ To ensure a range of difficulty, we randomly interspersed an equal
 number of trials from three different conditions:
 %
 \begin{enumerate*}[label=(\arabic*)]%
-\item \emph{close}, where colors were all within a distance of
+\item \cond{close}, where colors were all within a distance of
   $\theta$ from one another but still perceptible,\footnote{We used the
     most recent CIEDE standard to measure color differences, which is
     calibrated to human vision \cite{SharmaWuDalal05_DeltaE}. All
     distances were constrained to be larger than a lower bound of
     $\epsilon = 5$ to ensure perceptible differences, and we used a
     threshold value of $\theta = 20$ to create conditions.} 
-\item \emph{split}, where one distractor was within a distance of
+\item \cond{split}, where one distractor was within a distance of
   $\theta$ of the target, but the other distractor was further than
   $\theta$, and
-\item \emph{far}, where all colors were farther than $\theta$ from one
+\item \cond{far}, where all colors were farther than $\theta$ from one
   another. Colors were rejection sampled uniformly from RGB (red,
   green, blue) space to meet these constraints.
 \end{enumerate*}
@@ -580,7 +582,7 @@ The resulting vector is input along with the previous cell state to the LSTM cel
 and an affine transformation and softmax function are applied to the output to
 produce a probability distribution predicting the following token of the description.
 The model is substantively similar to well-known models for image caption generation
-\cite{Karpathy2015,Vinyals2015}, in using a second recurrent neural network for producing
+\cite{Karpathy2015,Vinyals2015}, but using a second recurrent neural network for producing
 the input representation and feeding this representation into the output network
 at each time step.
 
@@ -724,7 +726,7 @@ I fear we aren't!}
 
 \subsection{Listener behavior}
 
-Since color reference is a difficult task even for humans, we compared listener accuracy across conditions to calibrate our expectations about model performance. While participants' accuracy was close to ceiling (97\%) on the `far' condition, they made significantly more errors on the `split' (90\%) and `close' (83\%) conditions (see \todocheck{[make new figure/table for this]}).
+Since color reference is a difficult task even for humans, we compared listener accuracy across conditions to calibrate our expectations about model performance. While participants' accuracy was close to ceiling (97\%) on the \cond{far} condition, they made significantly more errors on the \cond{split} (90\%) and \cond{close} (83\%) conditions (see \todocheck{[make new figure/table for this]}).
 
 \subsection{Speaker behavior}
 
@@ -734,7 +736,7 @@ displayed by both human and artificial speakers in our task
 (\tabref{table:metrics}).
 
 \paragraph{Words and characters}
-We expect human speakers to be verbose in `close' contexts; even if
+We expect human speakers to be verbose in \cond{close} contexts; even if
 they do know enough basic color terms to distinguish all the colors
 lexically, they might be unsure that their listeners will and so
 resort to lengthy modifier phrases anyway. To assess this hypothesis,
@@ -744,7 +746,7 @@ used longer messages when distractors were closer to the target in
 color space. \todocheck{Could this be substantiated with a linear
   regression?} As \tabref{table:metrics} shows, our $\Speaker_{1}$ agent
 shows exactly the same positive association between utterance length
-and the `far', `split`, and `close` contexts. \todocheck{Regression
+and the \cond{far}, \cond{split}, and \cond{close} contexts. \todocheck{Regression
   for this too?}
 
 \paragraph{Comparatives and superlatives}
@@ -761,10 +763,10 @@ of comparatives (JJR or RBR) and superlatives (JJS or RBS) per
 message. We found that participants were more likely to use these
 constructions when one or more distractors were close to the target.
 Additionally, we found evidence of an asymmetry in the use of these
-constructions across the \emph{split} and \emph{close} conditions.
-Comparatives were used somewhat more often in the `split' condition,
+constructions across the \cond{split} and \cond{close} conditions.
+Comparatives were used somewhat more often in the \cond{split} condition,
 where only one distractor was close to the target, while superlatives
-were much more likely to be used in the `close' condition.
+were much more likely to be used in the \cond{close} condition.
 \todocheck{Could this be substantiated with a linear regression?}
 
 Importantly, our pragmatic speaker shows these same patterns,
@@ -796,8 +798,8 @@ thus the risk of specific terms becomes worthwhile (though lengthy
 descriptions might be a safer strategy, as discussed above). To
 evaluate this idea, we use WordNet \cite{Fellbaum1998} to derive a
 specificity hierarchy for color terms, and we hypothesized that
-\emph{close} conditions will tend to lead speakers to go lower in this
-hierarchy. \todocheck{To do... and include comparison with our $\Speaker_{1}$.} \cite{Fellbaum1998}
+\cond{close} conditions will tend to lead speakers to go lower in this
+hierarchy. \todocheck{To do... and include comparison with our $\Speaker_{1}$.}
 
 \begin{table}[t]
 \centering
@@ -837,7 +839,7 @@ permutation test \cite{Pado2006}, 10,000 samples} over the base model on both me
 
 Breaking out the number of examples changed by condition
 (\figref{fig:changedByCondition}) reveals that
-the primary gain from the pragmatic model is in the `close' condition, when the
+the primary gain from the pragmatic model is in the \cond{close} condition, when the
 model has to distinguish three colors that are all nearby in color space and
 often cannot rely only on basic color terms.
 
