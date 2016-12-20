@@ -639,13 +639,15 @@ denoted $\Listener^*$, is defined as:
 \Listener_1(\target \| \utt, \context; \theta)^{1-\beta}  \label{eq:beta}
 \end{multline}
 %
-\todocheck{I think people might expect $0 \leqslant \beta \leqslant
-  1$. However, we evidentially tested a different range. Let's say
-  here what values $\beta$ can have.} This allows the model to adjust
+This allows the model to adjust
 the extent to which it overrides the learned model with the pragmatic
-reasoning. A base weight $\beta = 0$ makes the blended model
-equivalent to the pragmatic model, and $\beta = 1$ ignores the
-pragmatic reasoning and uses the base model's outputs.
+reasoning. The value of the base weight
+$\beta$ can be any real number; however, we find that good values of $\beta$
+lie in the range [-1, 1]. Setting $\beta = 0$ makes the blended model
+equivalent to the pragmatic model; $\beta = 1$ ignores the
+pragmatic reasoning and uses the base model's outputs; $\beta = -1$
+``subtracts'' the base model from the pragmatic model (in log probability space)
+to yield a ``hyperpragmatic'' model.
 
 \subsection{Training} \label{sec:training}
 
