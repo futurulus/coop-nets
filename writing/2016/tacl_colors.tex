@@ -582,9 +582,10 @@ The resulting vector is input along with the previous cell state to the LSTM cel
 and an affine transformation and softmax function are applied to the output to
 produce a probability distribution predicting the following token of the description.
 The model is substantively similar to well-known models for image caption generation
-\cite{Karpathy2015,Vinyals2015}, but using a second recurrent neural network for producing
-the input representation and feeding this representation into the output network
-at each time step.
+\cite{Karpathy2015,Vinyals2015}, which use the output of a convolutional neural
+network as the representation of an input image and provide this representation
+to the RNN as an initial state or first word (we represent the context using
+a second RNN and concatenate the context representation onto each input word vector).
 
 \subsection{Pragmatic listener}\label{sec:l2}
 
