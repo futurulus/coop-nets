@@ -18,7 +18,7 @@ library(stringr)
 library(knitr)
 library(xtable)
 library(readr)
-setwd("C:/Users/wmonroe4/Local/research/pragmatics/coop-nets/behavioralAnalysis/")
+setwd("~/Repos/coop-nets/behavioralAnalysis/")
 ```
 
 # Pre-processing human data
