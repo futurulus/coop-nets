@@ -125,17 +125,6 @@ paste(c(length(unique(combined$gameid)),
 # Listener analysis: Do people make more mistakes on harder trials?
 
 ```{r}
-listener_df = combined %>% 
-  group_by(gameid, roundNum, source) %>% 
-  filter(row_number()==1) %>% # limit to one row per round
-  ungroup()
-
-listenerSummary = listener_df %>% group_by(condition, source) %>%
-  summarize(percentCorrect = mean(numOutcome), 
-             se = sqrt(percentCorrect*(1 - percentCorrect)/length(numOutcome))) 
-```
-
-```{r}
 library(bootstrap)
 
 ## for bootstrapping 95% confidence intervals
@@ -146,7 +135,18 @@ ci.low <- function(x,na.rm=T) {
 ci.high <- function(x,na.rm=T) {
   quantile(bootstrap(1:length(x),1000,theta,x,na.rm=na.rm)$thetastar,.975,na.rm=na.rm) - mean(x,na.rm=na.rm)}
 
-# TODO: bootstrap CIs...
+listener_df = combined %>% 
+  group_by(gameid, roundNum, source) %>% 
+  filter(row_number()==1) %>% # limit to one row per round
+  ungroup()
+
+listenerSummary = listener_df %>% group_by(condition, source) %>%
+  summarize(percentCorrect = mean(numOutcome), 
+            low = ci.low(numOutcome),
+            high = ci.high(numOutcome)) 
+```
+
+```{r}
 pdf("../writing/2016/figures/changedByCondition.pdf", width=6,height=3,paper='special')
 dodge <- position_dodge(width=0.9)
 listener_df %>% 
@@ -195,7 +195,7 @@ We find main effects of difficulty and of model; also interaction where humans a
 
 ```{r}
 listenerSummary %>%
-  select(-se) %>%
+  select(-low, -high) %>%
   spread(condition, percentCorrect)
 ```
 
@@ -203,11 +203,21 @@ listenerSummary %>%
 
 ```{r}
 pdf("../writing/2016/figures/listenerAccuracy.pdf", width = 6, height = 3)
+
+ordering <- function(source) {
+  match(source, c("literal", "pragmatic", "human"))
+}
+
 dodge <- position_dodge(width=0.9)
-ggplot(listenerSummary, aes(x = condition, y = percentCorrect, fill = source)) +
+listenerSummary %>%
+  mutate(sourceNum = paste(ordering(source), source)) %>%
+  ggplot(aes(x = condition, y = percentCorrect, fill = sourceNum)) +
     geom_bar(stat = "identity", position = "dodge") +
-    geom_errorbar(aes(ymax = percentCorrect + se, ymin = percentCorrect - se), 
+    geom_errorbar(aes(ymax = percentCorrect + high, ymin = percentCorrect - low), 
                   position=dodge, width=0.25) + 
+    coord_cartesian(ylim = c(0.7, 1.0)) +
+    ylab("% correct") +
+    scale_fill_discrete("agent", labels=c("literal (L0)", "pragmatic (L1)", "human")) +
     theme_bw()
 dev.off()
 ```
