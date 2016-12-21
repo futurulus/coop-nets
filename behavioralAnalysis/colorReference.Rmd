@@ -1,6 +1,8 @@
 ---
 title: ''
-output: html_notebook
+output:
+  html_document: default
+  html_notebook: default
 ---
 
 # Import libraries
@@ -16,7 +18,7 @@ library(stringr)
 library(knitr)
 library(xtable)
 library(readr)
-setwd("~/Repos/coop-nets/behavioralAnalysis/")
+setwd("C:/Users/wmonroe4/Local/research/pragmatics/coop-nets/behavioralAnalysis/")
 ```
 
 # Pre-processing human data
@@ -134,6 +136,16 @@ listenerSummary = listener_df %>% group_by(condition, source) %>%
 ```
 
 ```{r}
+library(bootstrap)
+
+## for bootstrapping 95% confidence intervals
+## by Michael Frank: https://github.com/langcog/pragmods/blob/master/analysis/useful_dplyr.R
+theta <- function(x,xdata,na.rm=T) {mean(xdata[x],na.rm=na.rm)}
+ci.low <- function(x,na.rm=T) {
+  mean(x,na.rm=na.rm) - quantile(bootstrap(1:length(x),1000,theta,x,na.rm=na.rm)$thetastar,.025,na.rm=na.rm)}
+ci.high <- function(x,na.rm=T) {
+  quantile(bootstrap(1:length(x),1000,theta,x,na.rm=na.rm)$thetastar,.975,na.rm=na.rm) - mean(x,na.rm=na.rm)}
+
 # TODO: bootstrap CIs...
 pdf("../writing/2016/figures/changedByCondition.pdf", width=6,height=3,paper='special')
 dodge <- position_dodge(width=0.9)
@@ -146,16 +158,22 @@ listener_df %>%
          decline = ifelse(literal & !pragmatic, 100, 0)) %>%
 #         nochange = ifelse(literal == pragmatic, 1, 0)) %>%
   group_by(condition) %>%
-  summarize("improvedM" = mean(improvement), 
-            "declinedM" = mean(decline),
-            "se" = 50 * sqrt(1/length(improvement))#,
+  summarize("improvedMS" = mean(improvement), 
+            "declinedMS" = mean(decline),
+            # "se" = 50 * sqrt(1/length(improvement)),
+            "improvedLS" = ci.low(improvement),
+            "declinedLS" = ci.low(decline),
+            "improvedHS" = ci.high(improvement),
+            "declinedHS" = ci.high(decline)
             # "nochangeM" = mean(nochange)
             ) %>%
-  gather(change, count, ends_with("M")) %>%
-  mutate(change = gsub(".$", "", change)) %>%
-  ggplot(aes(x = condition, y = count, fill = change)) +
+  gather(key, count, ends_with("S")) %>%
+  mutate(key = gsub(".$", "", key)) %>%
+  extract(key, c("change", "statistic"), "(.*)(.)") %>%
+  spread(statistic, count) %>%
+  ggplot(aes(x = condition, y = M, fill = change)) +
     geom_bar(stat = 'identity', position = dodge) +
-    geom_errorbar(aes(ymax = count + se, ymin = count - se),
+    geom_errorbar(aes(ymax = M + H, ymin = M - L),
                   position=dodge, width=0.25) +
     theme_bw() +
     ylab("% of trials changed, L0 -> L*")
