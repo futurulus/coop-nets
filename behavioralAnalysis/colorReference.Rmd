@@ -233,7 +233,6 @@ We're going to run both human and model output through a pipeline to get a table
 ```{r}
 taggedDF = read_csv("taggedColorMsgs2.csv") %>% 
   rename(role = sender) %>% 
-  mutate(source = ifelse(source == "model", "pragmatic", source)) %>%
   mutate(contents = trimws(as.character(contents)))
 
 informativityDF = read_csv("informativities.csv") %>%
@@ -243,7 +242,6 @@ informativityDF = read_csv("informativities.csv") %>%
 
 # TODO: present se in table (e.g. in parens after mean)
 resultTable = combined %>% 
-  filter(source %in% c("human", "pragmatic")) %>%
   left_join(taggedDF) %>%
   left_join(informativityDF) %>%
   filter(numRawWords > 0) %>% # Get rid of NAs from empty strings
@@ -274,6 +272,7 @@ resultTable = combined %>%
   unite(comb, source,condition) %>%
   mutate(comb = ordered(comb, 
                         levels = c('human_far', 'human_split', 'human_close',
+                                   'literal_far', 'literal_split', 'literal_close',
                                   'pragmatic_far', 'pragmatic_split', 'pragmatic_close'))) %>%
   spread(comb, mu)
 
@@ -288,7 +287,7 @@ addtorow <- list(
   pos = list(-1, 0), 
   command = c(topRow,secondRow)
 )
-print(xtable(resultTable, label = "table:metrics", align = "llrrr|rrr"), 
+print(xtable(resultTable, label = "table:metrics", align = "llrrr|rrr|rrr"), 
       add.to.row= addtorow, include.rownames = FALSE, include.colnames = F,
       floating.environment = "table*")
 ```
