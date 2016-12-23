@@ -55,15 +55,18 @@ combined_human <- clks %>%
   left_join(msgs, by = c("gameid", "roundNum")) %>%
   filter(gameid %in% goodGames) %>%
   mutate(numOutcome = ifelse(outcome == "true", 1, 0)) %>%
-  mutate(numRawWords = wc(contents)) %>%
+  mutate(numRawWords = word_count(contents)) %>%
+  mutate(numRawChars = character_count(contents)) %>%
   filter(numRawWords > 0) %>% # Get rid of NAs from empty string messages
+  filter(numRawWords < mean(numRawWords) + 4*sd(numRawWords)) %>%
   mutate(strippedContents = str_replace_all(contents, "[^[:alnum:][:space:]']",' ')) %>%
   do(mutate(., cleanMsg = rm_stopwords(.$strippedContents, tm::stopwords("english"), 
                                        separate = F))) %>%
-  mutate(numCleanChars = nchar(as.character(cleanMsg))) %>%
-  mutate(numCleanWords = wc(cleanMsg)) %>%
-  filter(numRawWords < mean(numRawWords) + 4*sd(numRawWords)) %>%
+  mutate(numCleanChars = character_count(cleanMsg)) %>%
+  mutate(numCleanWords = word_count(cleanMsg)) %>%
   mutate(source = 'human')
+
+combined_human
 ```
 
 # Preprocessing model data
@@ -82,19 +85,21 @@ makeModelDF <- function(listenerOutput, speakerOutput, sourceLabel) {
                               labels = c("close", "split", "far"))) %>%
     rename(clkTime = time)
 
-  robo_rawAggregated <- robo_clks %>% 
-    left_join(robo_msgs, by = c("gameid", "roundNum")) 
-
-  combined_model <- robo_rawAggregated %>%
+  combined_model <- robo_clks %>% 
+    left_join(robo_msgs, by = c("gameid", "roundNum")) %>%
     mutate(numOutcome = ifelse(outcome == "true", 1, 0)) %>%
-    mutate(numRawWords = 1 + str_count(contents, fixed(" "))) %>%
+    mutate(numRawWords = word_count(contents)) %>%
+    mutate(numRawChars = character_count(contents)) %>%
+    filter(numRawWords > 0) %>% # Get rid of NAs from empty string messages 
+    filter(numRawWords < mean(numRawWords) + 4*sd(numRawWords)) %>% # Get rid of longest outliers
     mutate(strippedContents = str_replace_all(contents, "[^[:alnum:][:space:]']",' ')) %>%
     do(mutate(., cleanMsg = rm_stopwords(.$strippedContents, tm::stopwords("english"), 
                                          separate = F))) %>%
-    mutate(numCleanChars = nchar(as.character(cleanMsg))) %>%
-    mutate(numCleanWords = 1 + str_count(cleanMsg, fixed(" "))) %>%
-    filter(numCleanWords < mean(numCleanWords) + 4*sd(numCleanWords)) %>%
+    mutate(numCleanWords = word_count(cleanMsg)) %>%
+    mutate(numCleanChars = character_count(cleanMsg)) %>%
     mutate(source = sourceLabel) 
+  
+  return(combined_model)
 }
 ```
 
@@ -112,6 +117,8 @@ pragmaticModel <- makeModelDF(
   "./modelOutput/speaker_big_sl_perp_sampled_message.csv",
   "pragmatic"
 )
+
+literalModel
 ```
 
 
@@ -139,11 +146,6 @@ listener_df = combined %>%
   group_by(gameid, roundNum, source) %>% 
   filter(row_number()==1) %>% # limit to one row per round
   ungroup()
-
-listenerSummary = listener_df %>% group_by(condition, source) %>%
-  summarize(percentCorrect = mean(numOutcome), 
-            low = ci.low(numOutcome),
-            high = ci.high(numOutcome)) 
 ```
 
 ```{r}
@@ -184,9 +186,9 @@ dev.off()
 ### Run mixed model:
 
 ```{r}
-conditionMod = glmer(numOutcome ~ condition*source + (1 | gameid), family = "binomial", 
-                     data = listener_df);
-summary(conditionMod)
+# conditionMod = glmer(numOutcome ~ condition*source + (1 | gameid), family = "binomial", 
+#                      data = listener_df);
+# summary(conditionMod)
 ```
 
 We find main effects of difficulty and of model; also interaction where humans are *much* better at "easy" condition while computers are only moderately better...
@@ -194,7 +196,12 @@ We find main effects of difficulty and of model; also interaction where humans a
 ### Make human vs. model table
 
 ```{r}
-listenerSummary %>%
+
+# Print out summary of listener performance
+listener_df %>% group_by(condition, source) %>%
+  summarize(percentCorrect = mean(numOutcome), 
+            low = ci.low(numOutcome),
+            high = ci.high(numOutcome)) %>%
   select(-low, -high) %>%
   spread(condition, percentCorrect)
 ```
@@ -219,7 +226,7 @@ dev.off()
 
 # Generate latex table for TACL paper:
 
-Note that taggedColorMsgs.csv is created in tagPOS.ipynb.
+Note that taggedColorMsgs2.csv is created in tagPOS.ipynb & informativities.csv is created in wordnet.ipynb
 
 We're going to run both human and model output through a pipeline to get a table with the different conditions as columns and different metrics as rows... 
 
@@ -239,14 +246,14 @@ resultTable = combined %>%
   filter(source %in% c("human", "pragmatic")) %>%
   left_join(taggedDF) %>%
   left_join(informativityDF) %>%
-  filter(numCleanChars > 0) %>% # Get rid of NAs from empty strings
+  filter(numRawWords > 0) %>% # Get rid of NAs from empty strings
   mutate(comparativesIndicator = numComp > 0) %>%
   mutate(superlativesIndicator = numSuper > 0) %>%
   mutate(negativesIndicator = str_count(contents, fixed("not ")) > 0) %>%
   mutate(specificityIndicator = specificity > 7) %>%
    group_by(gameid, condition, source) %>%
-   summarise(numWordsPerMessage = mean(numCleanWords),
-             numCharsPerMessage = mean(numCleanChars),
+   summarise(numWordsPerMessage = mean(numRawWords),
+             numCharsPerMessage = mean(numRawChars),
              comparativesRate = mean(comparativesIndicator),
              superlativesRate = mean(superlativesIndicator),
              negativesRate = mean(negativesIndicator),
