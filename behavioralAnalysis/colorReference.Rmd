@@ -287,6 +287,9 @@ addtorow <- list(
   command = c(paste0(topRow, secondRow, collapse = '\n'))
 )
 
+# Note: After copying into paper, I replace the alignment's | with @{\hspace{40pt}} 
+# and also reorder the rows to not be alphabetical
+
 cap <- ("Corpus statistics and statistics of samples from $\\Speaker_1$
   (rates per utterance). The human and artificial speakers show
   the same correlations between language use and context type.")
