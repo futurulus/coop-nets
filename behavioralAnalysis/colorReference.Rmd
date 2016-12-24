@@ -237,7 +237,6 @@ taggedDF = read_csv("taggedColorMsgs2.csv") %>%
 
 informativityDF = read_csv("informativities.csv") %>%
   rename(role = sender) %>% 
-  mutate(source = ifelse(source == "model", "pragmatic", source)) %>%
   mutate(contents = trimws(as.character(contents)))
 
 # TODO: present se in table (e.g. in parens after mean)
@@ -255,16 +254,16 @@ resultTable = combined %>%
              comparativesRate = mean(comparativesIndicator),
              superlativesRate = mean(superlativesIndicator),
              negativesRate = mean(negativesIndicator),
-             specificityRate = sum(specificityIndicator, na.rm = T)) %>%
+             specificityRate = mean(specificityIndicator, na.rm = T)) %>%
    group_by(condition, source) %>% 
    summarize("# WordsM" = mean(numWordsPerMessage), 
              "# CharsM" = mean(numCharsPerMessage),
              numWordsPerMessageSE = sd(numWordsPerMessage)/sqrt(length(numWordsPerMessage)),
-             "% NegativesM" = mean(negativesRate),
+             "% NegativesM" = 100*mean(negativesRate),
              numNegativesSE = sd(negativesRate)/sqrt(length(negativesRate)),
-             "% ComparativesM" = mean(comparativesRate),
-             "% SuperlativesM" = mean(superlativesRate),
-             "% High SpecificityM" = mean(specificityRate)) %>%
+             "% ComparativesM" = 100*mean(comparativesRate),
+             "% SuperlativesM" = 100*mean(superlativesRate),
+             "% High SpecificityM" = 100*mean(specificityRate, na.rm = T)) %>%
   gather(metric, mu, ends_with("M")) %>%
   #gather(garbage, se, ends_with("SE")) %>%
   mutate("metric (per message)" = gsub(".$", "", metric)) %>%
@@ -280,16 +279,22 @@ topRow <- paste0(paste0('& \\multicolumn{3}{c}{',
                         unique(combined$source), 
                         '}', collapse=''), '\\\\')
 secondRow <- paste0('& ', 
-                    paste0(rep(c("far", "split", "close"), 2), collapse='& '),
+                    paste0(rep(c("far", "split", "close"), 3), collapse='& '),
                     '\\\\')
 
 addtorow <- list(
-  pos = list(-1, 0), 
-  command = c(topRow,secondRow)
+  pos = list(0), 
+  command = c(paste0(topRow, secondRow, collapse = '\n'))
 )
-print(xtable(resultTable, label = "table:metrics", align = "llrrr|rrr|rrr"), 
+
+cap <- ("Corpus statistics and statistics of samples from $\\Speaker_1$
+  (rates per utterance). The human and artificial speakers show
+  the same correlations between language use and context type.")
+print(xtable(resultTable, label = "table:metrics", align = "llrrr|rrr|rrr",
+              display=rep('f',11), digits = 1, caption = cap), 
       add.to.row= addtorow, include.rownames = FALSE, include.colnames = F,
-      floating.environment = "table*")
+      floating.environment = "table*", booktabs=T, hline.after = c(-1,0,nrow(resultTable)))
+
 ```
 
 Statistically more or less of different things?
