@@ -75,11 +75,12 @@ ggplot(numGamesPlayed, aes(x = numGames, y = numParticipants)) +
   scale_y_log10()
 ```
 
-Now we clean the data: join data frames together, . Note: there's a bunch of additional pre-processing that it'd be nice to do but seems inessential. For instance, it would be nice to strip all the meta-commentary (e.g. "oops" after missing, complaining about task, etc.)
+Now we join the data frames together and do some pre-computation of some features we're going to use. Note: there's a bunch of additional pre-processing that it'd be nice to do but seems inessential. For instance, it would be nice to strip all the meta-commentary (e.g. "oops" after missing, complaining about task, etc.)
 
 ```{r}
 combined_human <- clks %>%
   left_join(msgs, by = c("gameid", "roundNum")) %>%
+  left_join(workerIds, by = c("gameid", "role")) %>% 
   filter(gameid %in% goodGames) %>%
   mutate(numOutcome = ifelse(outcome == "true", 1, 0)) %>%
   mutate(numRawWords = word_count(contents)) %>%
@@ -93,7 +94,12 @@ combined_human <- clks %>%
   mutate(numCleanWords = word_count(cleanMsg)) %>%
   mutate(source = 'human')
 
-combined_human
+```
+
+Why are some of the unique worker ids NAs? Because there was a small number of turkers (`{r} length(unique(combined_human %>% filter(is.na(workerid_uniq))))`) that completed the task but did not submit their HIT. We're including this data even though we don't have complete subject info. 
+
+```{r}
+length(unique(combined_human %>% filter(is.na(workerid_uniq))))
 ```
 
 # Preprocessing model data
@@ -124,7 +130,8 @@ makeModelDF <- function(listenerOutput, speakerOutput, sourceLabel) {
                                          separate = F))) %>%
     mutate(numCleanWords = word_count(cleanMsg)) %>%
     mutate(numCleanChars = character_count(cleanMsg)) %>%
-    mutate(source = sourceLabel) 
+    mutate(source = sourceLabel) %>%
+    mutate(workerid_uniq = NA)
   
   return(combined_model)
 }
@@ -151,9 +158,9 @@ literalModel
 
 ```{r}
 combined = rbind(combined_human, literalModel, pragmaticModel) 
-paste(c(length(unique(combined$gameid)), 
+paste(c(length(unique(combined_human$gameid)), 
         "complete games w/ native english speakers out of a total of",
-        length(unique(subjInfo$gameid))), collapse = " ")
+        length(unique(rawAggregated$gameid))), collapse = " ")
 ```
 
 # Listener analysis: Do people make more mistakes on harder trials?
