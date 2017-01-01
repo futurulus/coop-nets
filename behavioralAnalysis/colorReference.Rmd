@@ -23,9 +23,7 @@ setwd("~/Repos/coop-nets/behavioralAnalysis/")
 
 # Pre-processing human data
 
-First, we want to clean the data: join data frames together, remove games where participants were confused, spoke english as a second language, or didn't complete all trials.
-
-Note: there's a bunch of additional pre-processing that it's still be nice to do. For instance, it would be nice to strip all the meta-commentary (e.g. "oops" after missing, complaining about task, etc.)
+First, we read in the different data tables and align the fields.
 
 ```{r}
 msgs = read_csv("./humanOutput/colorReferenceMessage2.csv") %>%
@@ -41,16 +39,45 @@ subjInfo = read.csv("./humanOutput/colorReferenceSubjectInfo2.csv") %>%
   rename(gameid = gameID) %>%
   select(-workerid)
 
+workerIds = read.csv("./humanOutput/colorReferenceWorkerIDs.csv") 
+
 rawAggregated <- clks %>% 
   left_join(msgs, by = c("gameid", "roundNum")) %>%
-  left_join(subjInfo, by = c("gameid", "role")) 
+  left_join(subjInfo, by = c("gameid", "role")) %>%
+  left_join(workerIds, by = c("gameid", "role"))
+```
 
+Next, create our inclusion criterion (remove games where participants were confused, spoke english as a second language, or didn't complete all trials) and create a list of the games that satisfy it.
+
+```{r}
 goodGames <- unique((rawAggregated %>% 
   filter(nativeEnglish == "yes") %>%
   filter(confused == "yes") %>%
   group_by(gameid) %>%
   filter(length(unique(roundNum)) == 50))$gameid)
+```
 
+Get histogram of # games per turker
+
+```{r}
+numGamesPlayed <- workerIds %>% 
+  group_by(workerid_uniq) %>% 
+  summarize(numGames = length(gameid)) %>%
+  group_by(numGames) %>%
+  summarize(numParticipants = length(workerid_uniq))
+
+ggplot(numGamesPlayed, aes(x = numGames, y = numParticipants)) + 
+  geom_bar(stat = 'identity')
+
+# On log scale if you prefer...
+ggplot(numGamesPlayed, aes(x = numGames, y = numParticipants)) + 
+  geom_bar(stat = 'identity') +
+  scale_y_log10()
+```
+
+Now we clean the data: join data frames together, . Note: there's a bunch of additional pre-processing that it'd be nice to do but seems inessential. For instance, it would be nice to strip all the meta-commentary (e.g. "oops" after missing, complaining about task, etc.)
+
+```{r}
 combined_human <- clks %>%
   left_join(msgs, by = c("gameid", "roundNum")) %>%
   filter(gameid %in% goodGames) %>%
