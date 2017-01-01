@@ -213,7 +213,7 @@ four cases re-enforces the context dependence of color descriptions.
     4&\colorContext{3884C7}{02F9FD}{9E6461}{blue}\\
     \bottomrule
   \end{tabular}
-  \caption{Examples of color reference in context. The target color
+  \caption{Examples of color reference in context, taken from our corpus. The target color
     is boxed. The speaker's description is shaped not only
     by this target, but also by the other context colors and their
     relationships.}
@@ -222,7 +222,7 @@ four cases re-enforces the context dependence of color descriptions.
 
 In this paper, we present a scalable, learned model of pragmatic
 language understanding. At its core, the model is a version of the
-Rational Speech Acts (RSA) model \cite{Frank2012}, in which agents
+Rational Speech Acts (RSA) model \cite{Frank2012,GoodmanFrank16_RSATiCS}, in which agents
 reason recursively about each other's expectations and intentions to
 communicate more effectively than literal semantic agents could. In
 most work on RSA, the literal semantic agents use fixed message sets
@@ -248,12 +248,10 @@ speaker's behavior.
 % but also linguistic context in the form of the speaker's goals and constraints in
 % describing the target.
 
-We evaluate this model with a new, psycholinguistically motivated corpus of reference games in which
-the referents are patches of color. We focus on the effectiveness of
-our listener agents for simplicity. (In our model, listeners depend on
-speakers, so this implicitly evaluates our speakers as well.) The
-corpus includes 942 complete games with 47,100 utterances produced by
-humans playing these games with real-time feedback. The linguistic
+We evaluate this model with a new, psycholinguistically motivated corpus of real-time, dyadic reference games in which
+the referents are patches of color. 
+The corpus includes 942 complete games with 47,100 utterances produced by
+human participants paired into dyads on the web. The linguistic
 behavior of the players exhibits many of the intricacies of language
 in general, including not just the context dependence and cognitive
 complexity discussed above, but also compositionality, vagueness, and
@@ -263,10 +261,12 @@ colors in context elicits much greater variety in language use,
 including negations, comparatives and superlatives, and increased use
 of metaphor and shared associations.
 
-Experiments on this data show that our pragmatic model improves accuracy
+We focus on the effectiveness of
+our listener agents for simplicity.\footnote{In our model, listeners depend on
+speakers, so this implicitly evaluates our speakers as well.} Experiments on this data show that our pragmatic model improves accuracy
 in interpreting human-produced descriptions over the RNN base agent
 alone. Moreover, the improvements from pragmatic reasoning come primarily
-in the hardest cases. By this we mean
+in the hardest cases:
 %
 \begin{enumerate*}[label=(\arabic*)]
 \item contexts featuring colors that are very similar, thus requiring
