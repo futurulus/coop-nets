@@ -187,7 +187,7 @@ computational models of production and comprehension.
 \Tabref{table:examples} illustrates the situated nature of
 reference understanding with descriptions of colors from a task-oriented
 dialogue corpus we
-introduce with this paper. In these dialogues, the speaker is trying
+introduce in this paper. In these dialogues, the speaker is trying
 to identify their (privately assigned) target color for the
 listener. In context~1, the comparative \word{darker} implicitly
 refers to both the target (boxed) and one of the other colors. In
@@ -280,14 +280,10 @@ in the hardest cases:
 
 \section{Task and data collection}\label{sec:corpus}
 
-\todocheck{It would be good to open this section with a sentence or
-  two on the background of these tangrams games, articulating why
-  they have been important in cognitive science. That will help to
-  begin developing the theme that we are doing cognitive science as
-  well as NLP.}
-We compare agents on a task of language understanding in a reference
-game \cite{Rosenberg:Cohen:1964,Clark:Wilkes-Gibbs:1986,Paetzel-etal:2014}.
-A listener agent $\Listener$ is presented with a context set of colors
+We evaluate our agents on a task of language understanding in a dyadic reference
+game \cite{Rosenberg:Cohen:1964,KraussWeinheimer64_ReferencePhrases,Paetzel-etal:2014}. Unlike traditional tasks, where participants provide impartial judgements of language in isolation, reference games embed language use in a more natural, goal-oriented communicative context \cite{Clark96,TanenhausBrownSchmidt08_LanguageNatural}. Since they offer the simplest experimental setup where many pragmatic and discourse-level phenomena emerge, these games have been used widely in cognitive science to study common ground and conventionalization \cite{Clark:Wilkes-Gibbs:1986}, referential domains \cite{BrownSchmidtTanenhaus08_TargetedGame}, perspective-taking \cite{HannaTanenhausTrueswell03_CommonGroundPerspective}, and overinformativeness \cite{KoolenGattGoudbeekKrahmer11_Overspecification}.
+
+More formally, in our reference game, a listener agent $\Listener$ is presented with a context set of colors
 $\context = \{\referent_{i}, i=1..\contextlen\}$ and an English
 utterance $\utt$ that describes the target color
 $\referent_{\target} \in \context$. The agent does not know the index
@@ -308,8 +304,7 @@ environment containing a chat box and an array of three color patches
 \begin{figure}
 \includegraphics[scale = .2]{figures/speakerView.png}
 \caption{Example trial in corpus collection task, from speaker's
-  perspective. \todocheck{The rationale for the black background could
-    be given (just) in the caption.}}
+  perspective. The target color (boxed) was presented among two distractors on a neutral background.}
 \label{fig:taskScreenshot}
 \end{figure}
 
