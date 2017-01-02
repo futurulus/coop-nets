@@ -47,14 +47,17 @@ rawAggregated <- clks %>%
   left_join(workerIds, by = c("gameid", "role"))
 ```
 
-Next, create our inclusion criterion (remove games where participants were confused, spoke english as a second language, or didn't complete all trials) and create a list of the games that satisfy it.
+Next, create our exclusion criterion (remove games where participants were confused, spoke english as a second language, or didn't complete all trials) and create a list of the games that satisfy it. 
+
+Note that (1) by using subjInfo to create lists of bad IDs, we can exclude a game even if it was the *listener* who isn't a native english speaker and they didn't talk at all and (2) this *doesn't* exclude NAs. 
 
 ```{r}
-goodGames <- unique((rawAggregated %>% 
-  filter(nativeEnglish == "yes") %>%
-  filter(confused == "yes") %>%
-  group_by(gameid) %>%
-  filter(length(unique(roundNum)) == 50))$gameid)
+nonNativeSpeakerIDs <- unique((subjInfo %>% filter(nativeEnglish != "yes"))$gameid)
+confusedIDs <- unique((subjInfo %>% filter(confused != "yes"))$gameid)
+incompleteIDs <- unique((rawAggregated %>% 
+                           group_by(gameid) %>% 
+                           filter(length(unique(roundNum)) != 50))$gameid)
+badGames <- union(incompleteIDs, union(nonNativeSpeakerIDs, confusedIDs))
 ```
 
 Get histogram of # games per turker
@@ -65,6 +68,7 @@ numGamesPlayed <- workerIds %>%
   summarize(numGames = length(gameid)) %>%
   group_by(numGames) %>%
   summarize(numParticipants = length(workerid_uniq))
+numGamesPlayed
 
 ggplot(numGamesPlayed, aes(x = numGames, y = numParticipants)) + 
   geom_bar(stat = 'identity')
@@ -73,6 +77,8 @@ ggplot(numGamesPlayed, aes(x = numGames, y = numParticipants)) +
 ggplot(numGamesPlayed, aes(x = numGames, y = numParticipants)) + 
   geom_bar(stat = 'identity') +
   scale_y_log10()
+
+length(unique(workerIds$workerid_uniq))
 ```
 
 Now we join the data frames together and do some pre-computation of some features we're going to use. Note: there's a bunch of additional pre-processing that it'd be nice to do but seems inessential. For instance, it would be nice to strip all the meta-commentary (e.g. "oops" after missing, complaining about task, etc.)
@@ -81,7 +87,7 @@ Now we join the data frames together and do some pre-computation of some feature
 combined_human <- clks %>%
   left_join(msgs, by = c("gameid", "roundNum")) %>%
   left_join(workerIds, by = c("gameid", "role")) %>% 
-  filter(gameid %in% goodGames) %>%
+  filter(!(gameid %in% badGames)) %>%
   mutate(numOutcome = ifelse(outcome == "true", 1, 0)) %>%
   mutate(numRawWords = word_count(contents)) %>%
   mutate(numRawChars = character_count(contents)) %>%
@@ -93,13 +99,37 @@ combined_human <- clks %>%
   mutate(numCleanChars = character_count(cleanMsg)) %>%
   mutate(numCleanWords = word_count(cleanMsg)) %>%
   mutate(source = 'human')
+```
 
+```{r}
+paste(c(length(unique(combined_human$gameid)), 
+        "complete games w/ native english speakers out of a total of",
+        length(unique(rawAggregated$gameid))), collapse = " ")
+
+length(combined_human$gameid)
 ```
 
 Why are some of the unique worker ids NAs? Because there was a small number of turkers (`{r} length(unique(combined_human %>% filter(is.na(workerid_uniq))))`) that completed the task but did not submit their HIT. We're including this data even though we don't have complete subject info. 
 
 ```{r}
-length(unique(combined_human %>% filter(is.na(workerid_uniq))))
+paste(c(length(unique((combined_human %>% filter(is.na(workerid_uniq)))$gameid)),
+        "games where we don't have complete subject info"), collapse = ' ')
+
+setdiff(unique(clks$gameid), unique(workerIds$gameid))
+```
+
+Speakers sometimes sent more than one message per round... 
+
+```{r}
+combined_human %>% 
+  filter(role == "speaker") %>% 
+  group_by(gameid, roundNum) %>% 
+  summarize(numMessages = length(contents)) %>% 
+  group_by(numMessages) %>% 
+  summarize(numRounds = length(roundNum))
+
+paste(c("total of", length((combined_human %>% filter(role == "speaker"))$gameid), "utterances"),
+      collapse = ' ')
 ```
 
 # Preprocessing model data
@@ -158,9 +188,6 @@ literalModel
 
 ```{r}
 combined = rbind(combined_human, literalModel, pragmaticModel) 
-paste(c(length(unique(combined_human$gameid)), 
-        "complete games w/ native english speakers out of a total of",
-        length(unique(rawAggregated$gameid))), collapse = " ")
 ```
 
 # Listener analysis: Do people make more mistakes on harder trials?
