@@ -74,6 +74,7 @@ combined_human <- clks %>%
   left_join(msgs, by = c("gameid", "roundNum")) %>%
   left_join(workerIds, by = c("gameid", "role")) %>% 
   filter(!(gameid %in% badGames)) %>%
+  filter(role == "speaker") %>% 
   mutate(numOutcome = ifelse(outcome == "true", 1, 0)) %>%
   mutate(numRawWords = word_count(contents)) %>%
   mutate(numRawChars = character_count(contents)) %>%
@@ -127,7 +128,7 @@ Why are some of the unique worker ids in the filtered corpus NAs? Because there 
 
 ```{r}
 paste(c(length(unique((combined_human %>% filter(is.na(workerid_uniq)))$gameid)),
-        "games where we don't have complete subject info"), collapse = ' ')
+        "games where we don't have complete subject info on speaker"), collapse = ' ')
 ```
 
 Speakers sometimes sent more than one message per round... 
