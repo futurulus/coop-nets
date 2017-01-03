@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -o errexit
+
+if [ "$#" != 4 ]; then
+    echo "Usage: $(basename $0) runs/speaker_outputs runs/listener_dir runs/new_output_dir gpu0"
+    exit -2
+fi
+
+speaker_outputs="$1"
+listener_dir="$2"
+output_dir="$3"
+device="$4"
+
+if [ -e "$output_dir"/config.json ]; then
+    echo "${output_dir}/config.json exists. Delete it if you really want to overwrite."
+    exit 1
+fi
+
+# Assume:
+# - speaker outputs are in json lines format at $speaker_outputs
+# - listener can be rerun by using config file in $listener_dir
+# - listener has been evaluated on same eval set as that used to generate
+#   speaker outputs
+# - listener dir contains data files for that eval set at data.eval.jsons
+
+# Generate jsons data file substituting in utterances
+mkdir -p "$output_dir"
+cp "$speaker_outputs" "$output_dir"/predictions.eval.jsons
+cp "$listener_dir"/data.eval.jsons "$output_dir"/
+echo '{}' > "$output_dir"/config.json
+touch "$output_dir"/scores.eval.jsons
+
+echo "Replacing utterances in data file"
+python replace_utts.py --run_dir "$output_dir" --speaker_dir "$output_dir"
+
+rm "$output_dir"/config.json
+rm "$output_dir"/scores.eval.jsons
+rm "$output_dir"/predictions.eval.jsons
+rm "$output_dir"/data.eval.jsons
+
+# Start the job
+
+if [ -e "$listener_dir"/model.p ]; then
+    echo "Using model from listener directory: ${listener_dir}/model.p"
+    python run_experiment.py -C "$listener_dir"/config.json \
+                             -R "$output_dir" \
+                             --load "$listener_dir"/model.p \
+                             --device "$device" \
+                             --data_source file \
+                             --train_data_file "$output_dir"/data_replaced.eval.jsons \
+                             --test_data_file "$output_dir"/data_replaced.eval.jsons
+else
+    echo "Using model from config settings:"
+    grep load "$listener_dir"/config.json
+    python run_experiment.py -C "$listener_dir"/config.json \
+                             -R "$output_dir" \
+                             --device "$device" \
+                             --data_source file \
+                             --train_data_file "$output_dir"/data_replaced.eval.jsons \
+                             --test_data_file "$output_dir"/data_replaced.eval.jsons
+fi
