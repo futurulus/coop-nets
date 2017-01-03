@@ -484,6 +484,104 @@ def hawkins_big_tune_test(listener=False):
     return hawkins_tune_test(listener=listener, suffix='2', tuning_insts=3500)
 
 
+# train: 1124-1:1  (start) - 8994-5:50
+# dev:   2641-2:1          - 8574-6:50
+# test:  5913-4:1          - 8452-5:50 (end)
+#
+# Training contexts: 15615
+# Dev contexts: 15720
+# Test contexts: 15659
+
+FILTERED_SPLIT_IDS = [
+    '1124-1',
+    '2641-2',
+    '5913-4',
+]
+FILTERED_SPLIT = None
+FILTERED_DATASET_LISTENER = None
+FILTERED_DATASET_SPEAKER = None
+
+
+def filtered(listener=False):
+    global FILTERED_DATASET_LISTENER, FILTERED_DATASET_SPEAKER, FILTERED_SPLIT
+    if FILTERED_DATASET_LISTENER is not None:
+        if listener:
+            return FILTERED_DATASET_LISTENER
+        else:
+            return FILTERED_DATASET_SPEAKER
+
+    FILTERED_SPLIT = []
+    FILTERED_DATASET_LISTENER = []
+
+    instances = defaultdict(list)
+    with open('behavioralAnalysis/humanOutput/filteredCorpus.csv', 'r') as infile:
+        for row in csv.DictReader(infile):
+            key = (row['gameid'], row['roundNum'])
+
+            if len(FILTERED_SPLIT) < len(FILTERED_SPLIT_IDS) and \
+                    key[0] == FILTERED_SPLIT_IDS[len(FILTERED_SPLIT)]:
+                FILTERED_SPLIT.append(len(FILTERED_DATASET_LISTENER))
+
+            message = row['contents']
+
+            if key in instances:
+                current_dict = dict(FILTERED_DATASET_LISTENER[instances[key]].__dict__)
+                message_key = 'input' if listener else 'output'
+                current_dict[message_key] = ' ~ '.join((current_dict[message_key], message))
+                FILTERED_DATASET_LISTENER[instances[key]] = Instance(**current_dict)
+                continue
+
+            instances[key] = len(FILTERED_DATASET_LISTENER)
+
+            context = [
+                (hsl_to_hsv((row['%sColH' % i],
+                             row['%sColS' % i],
+                             row['%sColL' % i])),
+                 row['%sLocS' % i], row['%sStatus' % i])
+                for i in ('click', 'alt1', 'alt2')
+            ]
+            context.sort(key=lambda c: c[1])
+            target_idx = [i for i, (_, _, status) in enumerate(context) if status == 'target']
+            assert len(target_idx) == 1, context
+            target_idx = target_idx[0]
+            alt_colors = [c for (c, _, _) in context]
+
+            FILTERED_DATASET_LISTENER.append(
+                Instance(input=message, output=target_idx, alt_outputs=alt_colors,
+                         source=key + (row['condition'],))
+            )
+
+    FILTERED_DATASET_SPEAKER = [inst.inverted() for inst in FILTERED_DATASET_LISTENER]
+
+    if listener:
+        return FILTERED_DATASET_LISTENER
+    else:
+        return FILTERED_DATASET_SPEAKER
+
+
+def filtered_train(listener=False):
+    insts = filtered(listener=listener)
+    assert FILTERED_SPLIT[0] == 0
+    train_insts = insts[:FILTERED_SPLIT[1]]
+    print('Training contexts: {}'.format(len(train_insts)))
+    rng.shuffle(train_insts)
+    return train_insts
+
+
+def filtered_dev(listener=False):
+    insts = filtered(listener=listener)
+    dev_insts = insts[FILTERED_SPLIT[1]:FILTERED_SPLIT[2]]
+    print('Dev contexts: {}'.format(len(dev_insts)))
+    return dev_insts
+
+
+def filtered_test(listener=False):
+    insts = filtered(listener=listener)
+    test_insts = insts[FILTERED_SPLIT[2]:]
+    print('Test contexts: {}'.format(len(test_insts)))
+    return test_insts
+
+
 def uniform(color):
     r, g, b = rng.uniform(size=(3,))
     h, s, v = colorsys.rgb_to_hsv(r, g, b)
@@ -541,6 +639,8 @@ SOURCES = {
     'hawkins_big_test': DataSource(hawkins_big_train, hawkins_big_test),
     'hawkins_big_tune': DataSource(hawkins_big_tune_train, hawkins_big_tune_test),
     'hawkins_big_easyhard':  DataSource(hawkins_big_easy, hawkins_big_hard),
+    'filtered_dev': DataSource(filtered_train, filtered_dev),
+    'filtered_test': DataSource(filtered_train, filtered_test),
     'ams_literal': DataSource(amsterdam_literal_train, amsterdam_test),
     'ams_unambig': DataSource(amsterdam_unambiguous_train, amsterdam_test),
     'ams_1word': DataSource(amsterdam_1word_train, amsterdam_test),
