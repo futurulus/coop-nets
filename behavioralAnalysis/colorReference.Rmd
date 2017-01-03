@@ -23,29 +23,34 @@ setwd("~/Repos/coop-nets/behavioralAnalysis/")
 
 # Pre-processing human data
 
+## Imports 
+
 First, we read in the different data tables and align the fields.
 
 ```{r}
-msgs = read_csv("./humanOutput/colorReferenceMessage2.csv") %>%
+msgs = read_csv("./humanOutput/rawCorpus/messages.csv") %>%
   rename(msgTime = time, 
          role = sender)
 
-clks = read.csv("./humanOutput/colorReferenceClicks2.csv") %>%
+clks = read.csv("./humanOutput/rawCorpus/clicks.csv") %>%
   mutate(condition = factor(condition, levels = c("closer", "further", "equal"), 
                             labels = c("close", "split", "far"))) %>%
   rename(clkTime = time)
 
-subjInfo = read.csv("./humanOutput/colorReferenceSubjectInfo2.csv") %>%
+subjInfo = read.csv("./humanOutput/rawCorpus/subjectInfo.csv") %>%
   rename(gameid = gameID) %>%
   select(-workerid)
 
-workerIds = read.csv("./humanOutput/colorReferenceWorkerIDs.csv") 
+workerIds = read.csv("./humanOutput/rawCorpus/uniqueWorkerIDs.csv") 
 
 rawAggregated <- clks %>% 
   left_join(msgs, by = c("gameid", "roundNum")) %>%
   left_join(subjInfo, by = c("gameid", "role")) %>%
   left_join(workerIds, by = c("gameid", "role"))
+
 ```
+
+## Exclusions 
 
 Next, create our exclusion criterion (remove games where participants were confused, spoke english as a second language, or didn't complete all trials) and create a list of the games that satisfy it. 
 
@@ -60,26 +65,7 @@ incompleteIDs <- unique((rawAggregated %>%
 badGames <- union(incompleteIDs, union(nonNativeSpeakerIDs, confusedIDs))
 ```
 
-Get histogram of # games per turker
-
-```{r}
-numGamesPlayed <- workerIds %>% 
-  group_by(workerid_uniq) %>% 
-  summarize(numGames = length(gameid)) %>%
-  group_by(numGames) %>%
-  summarize(numParticipants = length(workerid_uniq))
-numGamesPlayed
-
-ggplot(numGamesPlayed, aes(x = numGames, y = numParticipants)) + 
-  geom_bar(stat = 'identity')
-
-# On log scale if you prefer...
-ggplot(numGamesPlayed, aes(x = numGames, y = numParticipants)) + 
-  geom_bar(stat = 'identity') +
-  scale_y_log10()
-
-length(unique(workerIds$workerid_uniq))
-```
+## Create filtered data frame
 
 Now we join the data frames together and do some pre-computation of some features we're going to use. Note: there's a bunch of additional pre-processing that it'd be nice to do but seems inessential. For instance, it would be nice to strip all the meta-commentary (e.g. "oops" after missing, complaining about task, etc.)
 
@@ -99,23 +85,49 @@ combined_human <- clks %>%
   mutate(numCleanChars = character_count(cleanMsg)) %>%
   mutate(numCleanWords = word_count(cleanMsg)) %>%
   mutate(source = 'human')
+
+write_csv(combined_human, path = "filteredCorpus.csv")
 ```
 
 ```{r}
 paste(c(length(unique(combined_human$gameid)), 
         "complete games w/ native english speakers out of a total of",
-        length(unique(rawAggregated$gameid))), collapse = " ")
-
-length(combined_human$gameid)
+        length(unique(rawAggregated$gameid)),
+        "games with at least one message"), collapse = " ")
 ```
 
-Why are some of the unique worker ids NAs? Because there was a small number of turkers (`{r} length(unique(combined_human %>% filter(is.na(workerid_uniq))))`) that completed the task but did not submit their HIT. We're including this data even though we don't have complete subject info. 
+## Meta-data analyses
+
+Get histogram of # games per turker
+
+```{r}
+numGamesPlayed <- workerIds %>% 
+  group_by(workerid_uniq) %>% 
+  summarize(numGames = length(gameid)) %>%
+  group_by(numGames) %>%
+  summarize(numParticipants = length(workerid_uniq))
+
+# ggplot(numGamesPlayed, aes(x = numGames, y = numParticipants)) + 
+#   geom_bar(stat = 'identity')
+
+paste(c("modal number is", 
+         numGamesPlayed$numGames[[which.max(numGamesPlayed$numParticipants)]],
+         "game, totaling", 
+         round(100 * max(numGamesPlayed$numParticipants)/sum(numGamesPlayed$numParticipants)),
+        "% of participants"), collapse = " ")
+```
+
+Apparently there was a bug affecting a small number of turkers where both players were assigned to the same role. Since this seemed to cause their game to terminate early, all of these players were excluded under pre-set criteria.
+
+```{r}
+workerIds %>% group_by(gameid, role) %>% tally() %>% filter(n > 1)
+```
+
+Why are some of the unique worker ids in the filtered corpus NAs? Because there was a small number of turkers that completed the task but did not submit their HIT. We're including this data even though we don't have complete subject info. 
 
 ```{r}
 paste(c(length(unique((combined_human %>% filter(is.na(workerid_uniq)))$gameid)),
         "games where we don't have complete subject info"), collapse = ' ')
-
-setdiff(unique(clks$gameid), unique(workerIds$gameid))
 ```
 
 Speakers sometimes sent more than one message per round... 
