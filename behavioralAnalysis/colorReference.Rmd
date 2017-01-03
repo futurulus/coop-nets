@@ -47,7 +47,6 @@ rawAggregated <- clks %>%
   left_join(msgs, by = c("gameid", "roundNum")) %>%
   left_join(subjInfo, by = c("gameid", "role")) %>%
   left_join(workerIds, by = c("gameid", "role"))
-
 ```
 
 ## Exclusions 
@@ -87,7 +86,7 @@ combined_human <- clks %>%
   mutate(numCleanWords = word_count(cleanMsg)) %>%
   mutate(source = 'human')
 
-write_csv(combined_human, path = "filteredCorpus.csv")
+write_csv(combined_human, path = "humanOutput/filteredCorpus.csv")
 ```
 
 ```{r}
@@ -124,7 +123,13 @@ Apparently there was a bug affecting a small number of turkers where both player
 workerIds %>% group_by(gameid, role) %>% tally() %>% filter(n > 1)
 ```
 
-Why are some of the unique worker ids in the filtered corpus NAs? Because there was a small number of turkers that completed the task but did not submit their HIT. We're including this data even though we don't have complete subject info. 
+Note that the games in the raw messages dataset are a superset of the games in the raw clicks dataset; this is because a number of games ended with a player disconnecting before ever clicking, even though some messages were sent.
+
+```{r}
+setdiff(unique(msgs$gameid), unique(clks$gameid))
+```
+
+Why are some of the unique worker ids in the filtered corpus NAs? Because there was a small number of turkers that completed the task but did not submit their HIT. We're including this data even though we don't have complete subject info on them. 
 
 ```{r}
 paste(c(length(unique((combined_human %>% filter(is.na(workerid_uniq)))$gameid)),
