@@ -194,11 +194,6 @@ pragmaticModel <- makeModelDF(
   "pragmatic"
 )
 
-literalModel
-```
-
-
-```{r}
 combined = rbind(combined_human, literalModel, pragmaticModel) 
 ```
 
@@ -269,12 +264,12 @@ We find main effects of difficulty and of model; also interaction where humans a
 ### Make human vs. model table
 
 ```{r}
-
-# Print out summary of listener performance
-listener_df %>% group_by(condition, source) %>%
+listenerSummary <- listener_df %>% group_by(condition, source) %>%
   summarize(percentCorrect = mean(numOutcome), 
             low = ci.low(numOutcome),
-            high = ci.high(numOutcome)) %>%
+            high = ci.high(numOutcome)) 
+
+listenerSummary %>%
   select(-low, -high) %>%
   spread(condition, percentCorrect)
 ```
