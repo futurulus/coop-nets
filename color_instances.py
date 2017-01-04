@@ -526,8 +526,7 @@ def filtered(listener=False):
 
             if key in instances:
                 current_dict = dict(FILTERED_DATASET_LISTENER[instances[key]].__dict__)
-                message_key = 'input' if listener else 'output'
-                current_dict[message_key] = ' ~ '.join((current_dict[message_key], message))
+                current_dict['input'] = ' ~ '.join((current_dict['input'], message))
                 FILTERED_DATASET_LISTENER[instances[key]] = Instance(**current_dict)
                 continue
 
