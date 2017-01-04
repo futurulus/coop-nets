@@ -161,7 +161,8 @@ paste(c("modal number is",
          round(100 * max(msgsPerRound$numRounds)/sum(msgsPerRound$numRounds)),
         "% of rounds"), collapse = " ")
 
-paste(c("total of", length((combined_human %>% filter(role == "speaker"))$gameid), "utterances"),
+paste(c("total of", length((combined_human %>% filter(role == "speaker"))$gameid), "utterances in",
+        sum(msgsPerRound$numRounds), "rounds"),
       collapse = ' ')
 ```
 
@@ -221,6 +222,10 @@ combined = rbind(combined_human, literalModel, pragmaticModel)
 
 # Listener analysis: Do people make more mistakes on harder trials?
 
+### Setup 
+
+Define some helper functions...
+
 ```{r}
 library(bootstrap)
 
@@ -237,6 +242,14 @@ listener_df = combined %>%
   filter(row_number()==1) %>% # limit to one row per round
   ungroup()
 ```
+
+### Compute overall human error rate 
+
+```{r}
+listener_df %>% filter(source == "human") %>% summarize(errorRate = mean(numOutcome))
+```
+
+### Look at model differences across conditions
 
 ```{r}
 pdf("../writing/2016/figures/changedByCondition.pdf", width=6,height=3,paper='special')
