@@ -283,19 +283,12 @@ in the hardest cases:
 We evaluate our agents on a task of language understanding in a dyadic reference
 game \cite{Rosenberg:Cohen:1964,KraussWeinheimer64_ReferencePhrases,Paetzel-etal:2014}. Unlike traditional tasks, where participants provide impartial judgements of language in isolation, reference games embed language use in a more natural, goal-oriented communicative context \cite{Clark96,TanenhausBrownSchmidt08_LanguageNatural}. Since they offer the simplest experimental setup where many pragmatic and discourse-level phenomena emerge, these games have been used widely in cognitive science to study common ground and conventionalization \cite{Clark:Wilkes-Gibbs:1986}, referential domains \cite{BrownSchmidtTanenhaus08_TargetedGame}, perspective-taking \cite{HannaTanenhausTrueswell03_CommonGroundPerspective}, and overinformativeness \cite{KoolenGattGoudbeekKrahmer11_Overspecification}.
 
+\todocheck{rdh: Do we need this paragraph here? We informally define the game in the intro, and the notation is re-introduced in the next section.}
 More formally, in our reference game, a listener agent $\Listener$ is presented with a context set of colors
 $\context = \{\referent_{i}, i=1..\contextlen\}$ and an English
 utterance $\utt$ that describes the target color
 $\referent_{\target} \in \context$. The agent does not know the index
 $\target$ of the target color and must guess it from $\utt$.
-
-To obtain a corpus of natural color reference data across varying
-contexts, we recruited 967 unique participants from Amazon
-Mechanical Turk to play 1,059 games of 50 rounds each, using the open-source framework of
-\newcite{Hawkins15_RealTimeWebExperiments}.  Participants were sorted into dyads,
-randomly assigned the role of speaker or listener, and placed in a game
-environment containing a chat box and an array of three color patches
-(\figref{fig:taskScreenshot}). After non-native English speakers, incomplete games, and extremely long utterances ($>4\sigma$ above the mean) were excluded, we were left with a corpus of 53,365 speaker utterances across 948 games. Participants were allowed to play more than once, but the modal number of games played per participant was one (75\%).
 
 \begin{figure}
 \includegraphics[scale = .2]{figures/speakerView.png}
@@ -303,12 +296,19 @@ environment containing a chat box and an array of three color patches
   perspective. The target color (boxed) was presented among two distractors on a neutral background.}
 \label{fig:taskScreenshot}
 \end{figure}
-
+To obtain a corpus of natural color reference data across varying
+contexts, we recruited 967 unique participants from Amazon
+Mechanical Turk to play 1,059 games of 50 rounds each, using the open-source framework of
+\newcite{Hawkins15_RealTimeWebExperiments}.  
+Participants were sorted into dyads, randomly assigned the role of speaker or listener,
+and placed in a game environment containing a chat box and an array of three color patches
+(\figref{fig:taskScreenshot}). 
 On each round, one of the three colors was chosen to be the target and
 highlighted for the speaker. They were instructed to communicate this
 information to the listener, who could then click on one of the colors
 to advance to the next trial. Both participants were free to use the
 chat box at any point.
+
 
 \newcommand{\Lex}{\mathcal{L}}
 \newcommand{\Costs}{\kappa}
@@ -394,10 +394,8 @@ number of trials from three different conditions:
   another. Colors were rejection sampled uniformly from RGB (red,
   green, blue) space to meet these constraints.
 \end{enumerate*}
-\todocheck{Let's include here the number of each type of trial in the
-final corpus. Presumably, it's about 1/3 each, but it would be good
-to be explicit.}
 
+After non-native English speakers, incomplete games, and extremely long utterances were excluded, we were left with a corpus of 53,365 speaker utterances across 46,994 rounds in 948 unique games. The three conditions are equally represented, with 15,519 \emph{close} trials, 15,693 \emph{split} trials, and 15,782 \emph{far} trials. Participants were allowed to play more than once, but the modal number of games played per participant was one (75\%). The modal number of messages sent per round was also one (90\%). We have released our raw, pre-filtered corpus alongside the filtered version we used throughout our analyses. 
 
 \section{Models}
 

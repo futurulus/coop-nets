@@ -84,7 +84,8 @@ combined_human <- clks %>%
                                        separate = F))) %>%
   mutate(numCleanChars = character_count(cleanMsg)) %>%
   mutate(numCleanWords = word_count(cleanMsg)) %>%
-  mutate(source = 'human')
+  mutate(source = 'human') %>%
+  select(-strippedContents, -cleanMsg)
 
 write_csv(combined_human, path = "humanOutput/filteredCorpus.csv")
 ```
@@ -136,15 +137,29 @@ paste(c(length(unique((combined_human %>% filter(is.na(workerid_uniq)))$gameid))
         "games where we don't have complete subject info on speaker"), collapse = ' ')
 ```
 
+Check total number of each kind of condition in the final corpus:
+
+```{r}
+combined_human %>% group_by(gameid, roundNum) %>% 
+  filter(row_number()==1) %>% # limit to one row per round
+  group_by(condition) %>% tally()
+```
+
 Speakers sometimes sent more than one message per round... 
 
 ```{r}
-combined_human %>% 
+msgsPerRound <- combined_human %>% 
   filter(role == "speaker") %>% 
   group_by(gameid, roundNum) %>% 
   summarize(numMessages = length(contents)) %>% 
   group_by(numMessages) %>% 
   summarize(numRounds = length(roundNum))
+
+paste(c("modal number is", 
+         msgsPerRound$numMessages[[which.max(msgsPerRound$numRounds)]],
+         "message, totaling", 
+         round(100 * max(msgsPerRound$numRounds)/sum(msgsPerRound$numRounds)),
+        "% of rounds"), collapse = " ")
 
 paste(c("total of", length((combined_human %>% filter(role == "speaker"))$gameid), "utterances"),
       collapse = ' ')
@@ -179,7 +194,8 @@ makeModelDF <- function(listenerOutput, speakerOutput, sourceLabel) {
     mutate(numCleanWords = word_count(cleanMsg)) %>%
     mutate(numCleanChars = character_count(cleanMsg)) %>%
     mutate(source = sourceLabel) %>%
-    mutate(workerid_uniq = NA)
+    mutate(workerid_uniq = NA) %>%
+    select(-strippedContents, -cleanMsg)
   
   return(combined_model)
 }
@@ -305,13 +321,13 @@ Note that taggedColorMsgs2.csv is created in tagPOS.ipynb & informativities.csv 
 We're going to run both human and model output through a pipeline to get a table with the different conditions as columns and different metrics as rows... 
 
 ```{r}
-taggedDF = read_csv("taggedColorMsgs2.csv") %>% 
-  rename(role = sender) %>% 
-  mutate(contents = trimws(as.character(contents)))
+taggedDF = read_csv("taggedColorMsgs.csv") %>% 
+  mutate(contents = trimws(as.character(contents))) %>%
+  select(gameid, roundNum, source, contents, numSuper, numComp)
 
 informativityDF = read_csv("informativities.csv") %>%
-  rename(role = sender) %>% 
-  mutate(contents = trimws(as.character(contents)))
+  mutate(contents = trimws(as.character(contents))) %>%
+  select(gameid, roundNum, source, contents, specificity)
 
 # TODO: present se in table (e.g. in parens after mean)
 resultTable = combined %>% 
