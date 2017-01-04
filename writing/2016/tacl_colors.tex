@@ -281,14 +281,13 @@ in the hardest cases:
 \section{Task and data collection}\label{sec:corpus}
 
 We evaluate our agents on a task of language understanding in a dyadic reference
-game \cite{Rosenberg:Cohen:1964,KraussWeinheimer64_ReferencePhrases,Paetzel-etal:2014}. Unlike traditional tasks, where participants provide impartial judgements of language in isolation, reference games embed language use in a more natural, goal-oriented communicative context \cite{Clark96,TanenhausBrownSchmidt08_LanguageNatural}. Since they offer the simplest experimental setup where many pragmatic and discourse-level phenomena emerge, these games have been used widely in cognitive science to study common ground and conventionalization \cite{Clark:Wilkes-Gibbs:1986}, referential domains \cite{BrownSchmidtTanenhaus08_TargetedGame}, perspective-taking \cite{HannaTanenhausTrueswell03_CommonGroundPerspective}, and overinformativeness \cite{KoolenGattGoudbeekKrahmer11_Overspecification}.
+game \cite{Rosenberg:Cohen:1964,KraussWeinheimer64_ReferencePhrases,Paetzel-etal:2014}. Unlike traditional language tasks, where participants provide impartial judgements of language in isolation, reference games embed language use in a more natural, goal-oriented communicative context \cite{Clark96,TanenhausBrownSchmidt08_LanguageNatural}. Since they offer the simplest experimental setup where many pragmatic and discourse-level phenomena emerge, these games have been used widely in cognitive science to study topics like common ground and conventionalization \cite{Clark:Wilkes-Gibbs:1986}, referential domains \cite{BrownSchmidtTanenhaus08_TargetedGame}, perspective-taking \cite{HannaTanenhausTrueswell03_CommonGroundPerspective}, and overinformativeness \cite{KoolenGattGoudbeekKrahmer11_Overspecification}.
 
-\todocheck{rdh: Do we need this paragraph here? We informally define the game in the intro, and the notation is re-introduced in the next section.}
-More formally, in our reference game, a listener agent $\Listener$ is presented with a context set of colors
-$\context = \{\referent_{i}, i=1..\contextlen\}$ and an English
-utterance $\utt$ that describes the target color
-$\referent_{\target} \in \context$. The agent does not know the index
-$\target$ of the target color and must guess it from $\utt$.
+%More formally, in our reference game, a listener agent $\Listener$ is presented with a context set of colors
+%$\context = \{\referent_{i}, i=1..\contextlen\}$ and an English
+%utterance $\utt$ that describes the target color
+%$\referent_{\target} \in \context$. The agent does not know the index
+%$\target$ of the target color and must guess it from $\utt$.
 
 \begin{figure}
 \includegraphics[scale = .2]{figures/speakerView.png}
@@ -395,7 +394,7 @@ number of trials from three different conditions:
   green, blue) space to meet these constraints.
 \end{enumerate*}
 
-After non-native English speakers, incomplete games, and extremely long utterances were excluded, we were left with a corpus of 53,365 speaker utterances across 46,994 rounds in 948 unique games. The three conditions are equally represented, with 15,519 \emph{close} trials, 15,693 \emph{split} trials, and 15,782 \emph{far} trials. Participants were allowed to play more than once, but the modal number of games played per participant was one (75\%). The modal number of messages sent per round was also one (90\%). We have released our raw, pre-filtered corpus alongside the filtered version we used throughout our analyses. 
+After non-native English speakers, incomplete games, and extremely long utterances were excluded, we were left with a corpus of 53,365 speaker utterances across 46,994 rounds in 948 unique games. The three conditions are equally represented, with 15,519 \emph{close} trials, 15,693 \emph{split} trials, and 15,782 \emph{far} trials. Participants were allowed to play more than once, but the modal number of games played per participant was one (75\%). The modal number of messages sent per round was also one (90\%). We have released the raw, pre-filtered data from these experiments alongside the filtered corpus we used throughout our analyses (\todocheck{put URL}). 
 
 \section{Models}
 
@@ -640,7 +639,7 @@ to yield a ``hyperpragmatic'' model.
 
 \subsection{Training} \label{sec:training}
 
-We split our corpus into equal train/dev/test splits (16,635 contexts per split)
+We split our corpus into equal train/dev/test splits (\todocheck{16,635} contexts per split)
 and preprocess the data by (1) lowercasing; (2) tokenizing
 by splitting off punctuation as well as the endings \word{\mbox{-er}}, \word{\mbox{-est}}, and
 \word{\mbox{-ish}};\footnote{We
@@ -648,7 +647,7 @@ only apply this heuristic ending segmentation for the listener; the speaker is t
 words with these endings unsegmented.} and
 (3) replacing tokens that appear once or not at all
 in the training split with \texttt{<unk>}. We also remove
-listener utterances and concatenate speaker utterances on the same context.
+listener utterances and concatenate speaker utterances on the same context. \todocheck{[rdh: listener utterances are not already removed from the filtered corpus; we could concatenate speaker utterances too?]}.
 We leave handling of interactive dialogue to future work (\secref{sec:conclusion}).
 
 We use ADADELTA
@@ -691,20 +690,16 @@ discussion of these values.
 
 \section{Behavioral results}
 
-Our corpus was developed, not only to facilitate the development of
+Our corpus was developed not only to facilitate the development of
 models for grounded language understanding, but also to provide a
 richer picture of human pragmatic communication. The collection effort
 was thus structured like a large-scale behavioral experiment, closely
 following experimental designs like those of
 \newcite{Clark:Wilkes-Gibbs:1986}. This paves the way to assessing our
-computational model not only in its terms, but also in terms of how
-its behavior compares to that of our human participants. Thus, the
-current section briefly reviews some findings from the human
+model not solely based on the listener's classification accuracy, but also in terms of how
+sophisticated qualitative features of the speaker's production compare to that of our human participants. 
+Thus, the current section briefly reviews some novel findings from the human
 corpus that we use to inform our model assessment.
-
-\todocheck{Robert could perhaps expand or improve this paragraph. Also,
-are we doing enough with these humans results when we move to our model.
-I fear we aren't!}
 
 \begin{figure}
 \includegraphics[scale = .5]{figures/listenerAccuracy}
@@ -799,7 +794,7 @@ hierarchy. \todocheck{To do... and include comparison with our $\Speaker_{1}$.}
   $\Listener_0$ & 83.39 & 83.66 & \oracle{99.75} & 1.69 & 1.71 & \oracle{1.03} \\
   $\Listener^*$ & \best{84.11} & \best{84.82} & \oracle{99.93} & \best{1.49} & \best{1.45} & \oracle{1.08}
   \\[0.5ex]
-  $\Listener_h$ & 89.87 \\
+  $\Listener_h$ & 90.03 \\
    \bottomrule
 \end{tabular}
 \caption{Overall accuracy and perplexity of the base and pragmatic listeners
