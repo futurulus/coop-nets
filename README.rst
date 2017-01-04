@@ -1,18 +1,10 @@
-Learning to Generate Compositional Color Descriptions
-=====================================================
+Colors in Context
+=================
 
 Code and supplementary material
 
 Note that this repo is split off from a larger project still in development:
 https://github.com/futurulus/coop-nets
-
-Outputs tables
---------------
-
-A full table of samples from the model that provided the examples in Table 1
-and Table 3 is included at: ::
-
-    outputs/color_samples.html
 
 Dependencies
 ------------
@@ -31,64 +23,30 @@ OS X (but see "Troubleshooting": missing g++ will cause the program to run
 impossibly slowly). The code is unlikely to run on Windows, but you're welcome
 to try.
 
-Usage
------
-
-The easiest way to see the model in action is to use the ``colordesc``
-module: ::
-
-    >>> import colordesc
-    >>> describer = colordesc.ColorDescriber()
-    >>> describer.describe((255, 0, 0))
-    'red'
-
-This loads a pickled Theano model, which may not be very robust to different
-system configurations or very future-proof; if you run into problems with this,
-read on.
-
-Repickling from model params
-----------------------------
-
-The pickle files in the ``models`` directory, with the exception of
-``lstm_fourier_quick.p``, contain only the parameters of the model, which
-makes them more portable, but they require a bit more work: ::
-
-    $ mkdir -p runs/lstm_fourier
-    $ cp models/lstm_fourier.p runs/lstm_fourier/model.p
-    $ python quickpickle.py --config models/lstm_fourier.config.json --run_dir runs/lstm_fourier
-    $ python
-    >>> import colordesc, cPickle as pickle
-    >>> with open('runs/lstm_fourier/quickpickle.p', 'rb') as picklefile:
-    ...     describer = colordesc.ColorDescriber(picklefile)
-    >>> describer.describe((255, 0, 0))
-    'red'
+<!-- TODO: wrapper module for colors in context -->
 
 Running experiments
 -------------------
 
 To re-run the experiments from the paper (Table 2) with pre-trained models, use
-the following command, where ``lstm_fourier`` (our best model) can be replaced
-with any of the eight experiment configurations in the outputs/ directory: ::
+the following command, where ``lstar`` (our best model) can be replaced
+with ``l0`` for the base listener: ::
 
-    python run_experiment.py --config models/lstm_fourier.config.json \
-                             --load models/lstm_fourier.p \
+    python run_experiment.py --config models/l2.config.json \
+                             --load models/l2.p \
                              --progress_tick 10
 
-This should take about 15 minutes on a typical new-ish machine. Look for these
-metrics in the outputs to compare with Table 2: ::
-
-    dev.perplexity.gmean
-    dev.aic.sum
-    dev.accuracy.mean
+This should take about (TODO: measure time on CPU) on a typical new-ish machine.
+Look for ``dev.accuracy.mean`` in the output to compare with Table 2.
 
 The results of the experiment, including predictions and log-likelihood scores,
 will be logged to the directory ::
 
-    runs/lstm_fourier
+    runs/lstar
 
 To retrain a model from scratch, supply only the config file: ::
 
-    python run_experiment.py --config models/lstm_fourier.config.json
+    python run_experiment.py --config models/l2.config.json
 
 Note that this may require several days to train on CPU. A properly-configured
 GPU usually takes a few hours and can be used by passing ``--device gpu0``. See
@@ -128,7 +86,7 @@ Troubleshooting
   ``--overwrite`` (or specify a different output directory with ``--run_dir
   DIR``).  The program will remind you of this if you forget.
 
-* Very large dev perplexity (``dev.perplexity.gmean`` > 50) could indicate
+* Very low accuracies (``dev.accuracy.mean`` < 0.5) could indicate
   incompatible changes in the version of Lasagne or Theano (we've seen this
   with Lasagne 0.1). We've reproduced our main results using the development
   versions of Theano and Lasagne as of June 2, 2016:

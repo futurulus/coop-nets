@@ -1,0 +1,138 @@
+{
+  "ac_inv_temperature": 1.0,
+  "ac_num_samples": 1,
+  "ac_sampler_learner": "Speaker",
+  "ac_sampler_model": null,
+  "aug_data_source": "hawkins_dev",
+  "aug_model": null,
+  "aug_noise_prob": 0.0,
+  "batch_size": 128,
+  "data_source": [
+    "filtered_dev"
+  ],
+  "detect_nans": false,
+  "device": "gpu3",
+  "direct_base_is_listener": 0,
+  "direct_base_learner": "Listener",
+  "direct_base_uses_context": false,
+  "direct_min_score": null,
+  "eval_agent": 0,
+  "exhaustive_base_learner": "Listener",
+  "exhaustive_base_weight": 0.0,
+  "exhaustive_inv_temperature": 1.0,
+  "exhaustive_num_sample_sets": 1,
+  "exhaustive_num_samples": 0,
+  "exhaustive_output_all_grids": false,
+  "exhaustive_output_speaker_predictions": false,
+  "exhaustive_output_speaker_samples": false,
+  "exhaustive_reject_duplicates": 0,
+  "exhaustive_sampler_learner": "Speaker",
+  "exhaustive_sampler_model": null,
+  "grad_of_est": false,
+  "layer_by_layer": false,
+  "learner": "RecurrentContextSpeaker",
+  "listener": false,
+  "listener_bidi": false,
+  "listener_cell": "LSTM",
+  "listener_cell_size": 20,
+  "listener_class": [
+    "Listener"
+  ],
+  "listener_color_repr": "buckets",
+  "listener_color_resolution": [
+    4
+  ],
+  "listener_dropout": 0.2,
+  "listener_eval_batch_size": 65536,
+  "listener_forget_bias": 5.0,
+  "listener_grad_clipping": 0.0,
+  "listener_hidden_color_layers": 0,
+  "listener_hsv": false,
+  "listener_learning_rate": 1.0,
+  "listener_nonlinearity": "rectify",
+  "listener_optimizer": "rmsprop",
+  "listener_prior": "Unigram",
+  "listener_sample_smoothed": false,
+  "listener_samples": 128,
+  "listener_tokenizer": "whitespace",
+  "listener_unk_threshold": 0,
+  "load": null,
+  "lux_batch_size": 1000,
+  "lux_threads": 8,
+  "monitor_activations": false,
+  "monitor_grads": false,
+  "monitor_params": true,
+  "monitor_subgrads": false,
+  "monitor_sublosses": false,
+  "no_graphviz": true,
+  "no_nan_suppression": false,
+  "num_distractors": 4,
+  "output_test_data": true,
+  "output_train_data": false,
+  "progress_tick": 300,
+  "random_seed": "DefaultRandomSeed",
+  "reset_optimizer_vars": true,
+  "rsa_alpha": [
+    1.0
+  ],
+  "rsa_beta": [
+    1.0
+  ],
+  "rsa_learning_rate": 0.1,
+  "rsa_listeners": 1,
+  "rsa_mu": [
+    1.0
+  ],
+  "rsa_nu": [
+    1.0
+  ],
+  "rsa_optimizer": "rmsprop",
+  "rsa_speakers": 1,
+  "run_dir": "runs/hawkins_filtered_s0",
+  "speaker_beam_size": 1,
+  "speaker_cell": "LSTM",
+  "speaker_cell_size": 100,
+  "speaker_class": [
+    "Speaker"
+  ],
+  "speaker_color_repr": "fourier",
+  "speaker_color_resolution": [
+    3
+  ],
+  "speaker_dropout": 0.1,
+  "speaker_eval_batch_size": 4096,
+  "speaker_forget_bias": 0.0,
+  "speaker_grad_clipping": 0.0,
+  "speaker_hidden_color_layers": 0,
+  "speaker_hidden_out_layers": 0,
+  "speaker_hsv": true,
+  "speaker_learning_rate": 0.004,
+  "speaker_no_mask": false,
+  "speaker_nonlinearity": "tanh",
+  "speaker_optimizer": "adam",
+  "speaker_prior": "Uniform",
+  "speaker_recurrent_layers": 1,
+  "speaker_repeat_color": true,
+  "speaker_sample_smoothed": false,
+  "speaker_samples": 128,
+  "speaker_tokenizer": "unigram",
+  "speaker_unk_threshold": 1,
+  "test_data_file": null,
+  "test_size": [
+    10000000
+  ],
+  "train_data_file": null,
+  "train_epochs": 1,
+  "train_iters": 15,
+  "train_size": [
+    10000000
+  ],
+  "true_grad_clipping": 0.0,
+  "tuna_cv_folds": 5,
+  "tuna_cv_test_fold": 4,
+  "tuna_section": "*",
+  "validation_size": [
+    3500
+  ],
+  "verbosity": 4
+}
