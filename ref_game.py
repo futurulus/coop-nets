@@ -260,7 +260,7 @@ class ExhaustiveL2Learner(Learner):
         batch_size, num_sample_sets, context_len, num_alt_utts = tensor_shape
         for i in range(num_sample_sets):
             utts = []
-            sample_set_indices = indices[i, :]
+            sample_set_indices = indices[:, i]
             for j, index in enumerate(sample_set_indices):
                 utts.append(output_grid[np.ravel_multi_index((j, i, 0, index),
                                                              tensor_shape)].input)
