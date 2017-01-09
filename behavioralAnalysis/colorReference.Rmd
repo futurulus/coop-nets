@@ -439,15 +439,21 @@ summary(glmer(comparativesIndicator ~ conditionHelmert + (1|gameid),
               family = 'binomial', data = speakerStats %>% filter(source == 'human')))
 ```
 
-### Superlatives
+```{r}
+summary(glmer(comparativesIndicator ~ conditionHelmert + (1|gameid), 
+              family = 'binomial', data = speakerStats %>% filter(source == 'pragmatic')))
+```
+
+### Negatives
 
 ```{r}
-# contrasts(speakerStats$conditionHelmert) <- matrix(c(2,-1, -1, 
-#                                                      0, 1, -1), 
-#                                                    ncol = 2)
-# contrasts(speakerStats$conditionHelmert)
-summary(glmer(superlativesIndicator ~ conditionHelmert + (1|gameid), 
+summary(glmer(negativesIndicator ~ condition + (1|gameid), 
               family = 'binomial', data = speakerStats %>% filter(source == 'human')))
+```
+
+```{r}
+summary(glmer(negativesIndicator ~ condition + (1|gameid), 
+              family = 'binomial', data = speakerStats %>% filter(source == 'pragmatic')))
 ```
 
 ### High specificity
@@ -456,10 +462,10 @@ Statistically more or less of different things?
 
 ```{r}
 summary(glmer(specificityIndicator ~ condition + (1 | gameid), 
-             data = specificityDF,
-             family = 'binomial',
-             contrasts = list(condition =  contr.treatment(3, base=which(levels(specificityDF$condition) == 'far')))))
+             family = 'binomial', data = speakerStats %>% filter(source == 'human')))
+```
 
-ggplot(specificityDF, aes(x = condition)) +
-  geom_bar()
+```{r}
+summary(glmer(specificityIndicator ~ condition + (1 | gameid), 
+             family = 'binomial', data = speakerStats %>% filter(source == 'pragmatic')))
 ```

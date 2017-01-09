@@ -716,7 +716,7 @@ Since color reference is a difficult task even for humans, we compared listener 
 For ease of comparison to computational results, we focus on five
 metrics capturing different aspects of the rich pragmatic behavior
 displayed by both human and artificial speakers in our task
-(\tabref{table:metrics}).
+(\tabref{table:metrics}). In all cases, we report test statistics from a mixed-effects regression including condition as a fixed effect and game ID as a random effect; due to the relatively large corpus, all test statistics reported correspond to $p$-values $<~10^{-5}$ and have been omitted.
 
 \paragraph{Words and characters}
 We expect human speakers to be more verbose in \cond{split} and \cond{close} 
@@ -727,8 +727,7 @@ enough simple color terms to distinguish all the colors
 lexically, they might be unsure that their listeners will and so
 resort to modifiers anyway. To assess this hypothesis,
 we counted the average number of words and characters per message. 
-Compared to the baseline \cond{far} condition, a mixed-effects regression with 
-game ID as a random effect found that participants used significantly longer messages both in the \cond{split} condition ($t =  45.85$) and the \cond{close} condition ($t = 73.06$)\footnote{Due to the large corpus, all test statistics reported correspond to $p$-values $<~10^{-5}$ and have been omitted.} Similar results hold for the character metric. As \tabref{table:metrics} shows, our $\Speaker_{1}$  agent
+Compared to the baseline \cond{far} context, participants used significantly longer messages both in the \cond{split} context ($t =  45.85$) and the \cond{close} context ($t = 73.06$). Similar results hold for the character metric. As \tabref{table:metrics} shows, our $\Speaker_{1}$  agent
 shows the same increase in utterance length in the \cond{split} ($t = 18.07$) and \cond{close} ($t = 35.77$) contexts.
 
 \paragraph{Comparatives and superlatives}
@@ -742,16 +741,18 @@ thus expect to see this morphology more often where two or more of the
 colors are comparable in this way. To test this, we used the Stanford
 CoreNLP part-of-speech tagger \cite{Toutanova2003} to mark the presence or absence of comparatives (JJR or RBR) and superlatives (JJS or RBS) for each message. 
 
-Logistic mixed-effects regressions on these two binary variables uncovered two
-related patterns. First, participants were significantly more likely to use both
-comparatives ($z = 37.39$) and superlatives ($z = 31.32$) when one or more
-distractors were close to the target. Second, we found evidence of an asymmetry in 
-the use of these constructions across the \cond{split} and \cond{close} contexts.
-Comparatives were used signfiicantly more often in the \cond{split} context ($z = 4.4$), where only one distractor was close to the target, while superlatives
-were much more likely to be used in the \cond{close} condition ($z = 32.72$)\footnote{We used Helmert coding to examine this pair of orthogonal contrasts}.
+We found two related patterns across conditions. First, participants were significantly 
+more likely to use both comparatives ($z = 37.39$) and superlatives ($z = 31.32$) 
+when one or more distractors were close to the target. Second, we found evidence of 
+an asymmetry in  the use of these constructions across the \cond{split} and 
+\cond{close} contexts. Comparatives were used signfiicantly more often in the 
+\cond{split} context ($z = 4.4$), where only one distractor was close to the target, 
+while superlatives were much more likely to be used in the \cond{close} condition 
+($z = 32.72$)\footnote{We used Helmert coding to examine this pair of orthogonal 
+contrasts, compared to dummy coding in the analysis}.
 
 Importantly, our pragmatic speaker shows the first of these two patterns
-producing significantly more comparatives ($z = 14.45$) and superlatives ($z = 16$) in the \cond{split} or \cond{close} conditions than in the baseline \cond{far} condition. It does not, however, capture the second asymmetric pattern where comparatives use peaks in the \emph{split} condition. This suggests that our model is simulating the human strategy at some level.
+producing significantly more comparatives ($z = 14.45$) and superlatives ($z = 16$) in the \cond{split} or \cond{close} conditions than in the baseline \cond{far} condition. It does not, however, capture the second asymmetric pattern where comparatives use peaks in the \emph{split} condition. This suggests that our model is simulating the human strategy at some level, but that more subtle patterns require further attention.
 
 \paragraph{Negatives}
 In our referential contexts, negation is likely to play a role similar
@@ -761,11 +762,7 @@ achieves a more nuanced kind of comparison. Thus, as with
 comparatives, we expect negation to be more likely where one or more
 distractors are close to the target. To test this, we counted
 occurrences of the string `not' (by far the most frequent negation in
-the corpus). We found that participants were more likely to use
-negative constructions when one or more distractors were close to the
-target. \todocheck{Could this be substantiated with a linear
-  regression?} Our pragmatic speaker's use of negation shows the 
-same relationship to the context \todocheck{regression summary?}.
+the corpus). Compared to the baseline \cond{far} context, we found that participants were more likely to use negative constructions when one ($z = 27.36$) or both ($z = 34.32$) distractors were close to the target. Our pragmatic speaker's use of negation shows the  same relationship to the context ($z = 8.55$ and $z= 16.61$ respectively).
 
 \paragraph{WordNet specificity}
 We expect speakers to prefer basic color terms wherever they suffice
@@ -777,8 +774,12 @@ thus the risk of specific terms becomes worthwhile (though lengthy
 descriptions might be a safer strategy, as discussed above). To
 evaluate this idea, we use WordNet \cite{Fellbaum1998} to derive a
 specificity hierarchy for color terms, and we hypothesized that
-\cond{close} conditions will tend to lead speakers to go lower in this
-hierarchy. \todocheck{To do... and include comparison with our $\Speaker_{1}$.}
+\cond{split} or \cond{close} conditions will tend to lead speakers to go lower in this
+hierarchy. 
+
+For each message, we transformed adjectives into their closest noun forms (e.g. `reddish' $\rightarrow$ `red'), filtered to include only nouns with `color' in their hypernym paths, calculated the depth of the hypernym path of each color word, and took the maximum depth occurring in a message. For instance, the message ``deep magenta, purple with some pink'' received a high specificity score of 9. It has three color terms: ``purple'' and ``pink,'' which have the basic-level depth of 7, and ``magenta,'' which is a highly specific color term with a depth of 9. Finally, because there weren't meaningful differences between words at depths of 8 (``rose'', ``teal'') and 9 (``tan,'' ``taupe''), we conducted our analyses on a binary variable thresholded to distinguish ``high specificity'' messages with a depth greater than 7. 
+
+We found a small but reliable increase in the likelihood of ``high specificity'' messages from human speakers in the \cond{split}  ($z = 2.84, p = 0.005$) and \cond{close}  ($z = 2.33, p = 0.02$) contexts, compared to the baseline \cond{far} context. Our pragmatic model showed a similar effect ($z = 2.65, p =0.008$ and $z = 2.1, p =0.036$ respectively).
 
 \begin{table}[t]
 \centering
