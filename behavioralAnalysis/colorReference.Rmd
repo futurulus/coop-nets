@@ -285,17 +285,6 @@ listener_df %>%
 dev.off()
 ```
 
-
-### Run mixed model:
-
-```{r}
-# conditionMod = glmer(numOutcome ~ condition*source + (1 | gameid), family = "binomial", 
-#                      data = listener_df);
-# summary(conditionMod)
-```
-
-We find main effects of difficulty and of model; also interaction where humans are *much* better at "easy" condition while computers are only moderately better...
-
 ### Make human vs. model table
 
 ```{r}
@@ -303,7 +292,7 @@ listenerSummary <- listener_df %>% group_by(condition, source) %>%
   summarize(percentCorrect = mean(numOutcome), 
             low = ci.low(numOutcome),
             high = ci.high(numOutcome)) 
-
+print(listenerSummary)
 listenerSummary %>%
   select(-low, -high) %>%
   spread(condition, percentCorrect)
@@ -343,14 +332,19 @@ informativityDF = read_csv("informativities.csv") %>%
   select(gameid, roundNum, source, contents, specificity)
 
 # TODO: present se in table (e.g. in parens after mean)
-resultTable = combined %>% 
+speakerStats = combined %>% 
   left_join(taggedDF) %>%
   left_join(informativityDF) %>%
   filter(numRawWords > 0) %>% # Get rid of NAs from empty strings
+  mutate(condition = relevel(condition, ref = 'far')) %>%
   mutate(comparativesIndicator = numComp > 0) %>%
   mutate(superlativesIndicator = numSuper > 0) %>%
   mutate(negativesIndicator = str_count(contents, fixed("not ")) > 0) %>%
   mutate(specificityIndicator = specificity > 7) %>%
+  select(gameid, roundNum, condition, source, numRawWords, numRawChars,
+         comparativesIndicator, superlativesIndicator, negativesIndicator, specificityIndicator)
+
+resultTable = speakerStats %>%
    group_by(gameid, condition, source) %>%
    summarise(numWordsPerMessage = mean(numRawWords),
              numCharsPerMessage = mean(numRawChars),
@@ -403,14 +397,64 @@ print(xtable(resultTable, label = "table:metrics", align = "llrrr|rrr|rrr",
 
 ```
 
+# Regressions
+
+## Listener 
+
+```{r}
+conditionMod = glmer(numOutcome ~ condition*source + (1 | gameid), family = "binomial",
+                     data = listener_df);
+summary(conditionMod)
+```
+
+We find main effects of difficulty and of model; also interaction where humans are *much* better at "easy" condition while computers are only moderately better...
+
+## Speaker
+
+### Words
+
+```{r}
+summary(lmer(numRawWords ~ condition + (1|gameid), data = speakerStats %>% filter(source == 'human')))
+```
+
+### Characters
+
+```{r}
+summary(lmer(numRawChars ~ condition + (1|gameid), data = speakerStats %>% filter(source == 'human')))
+```
+
+```{r}
+summary(lmer(numRawWords ~ condition + (1|gameid), data = speakerStats %>% filter(source == 'pragmatic')))
+```
+
+### Comparatives
+
+```{r}
+speakerStats$conditionHelmert <- speakerStats$condition
+contrasts(speakerStats$conditionHelmert) <- matrix(c(2,-1, -1, 
+                                                     0, 1, -1), 
+                                                   ncol = 2)
+contrasts(speakerStats$conditionHelmert)
+summary(glmer(comparativesIndicator ~ conditionHelmert + (1|gameid), 
+              family = 'binomial', data = speakerStats %>% filter(source == 'human')))
+```
+
+### Superlatives
+
+```{r}
+# contrasts(speakerStats$conditionHelmert) <- matrix(c(2,-1, -1, 
+#                                                      0, 1, -1), 
+#                                                    ncol = 2)
+# contrasts(speakerStats$conditionHelmert)
+summary(glmer(superlativesIndicator ~ conditionHelmert + (1|gameid), 
+              family = 'binomial', data = speakerStats %>% filter(source == 'human')))
+```
+
+### High specificity
+
 Statistically more or less of different things?
 
 ```{r}
-specificityDF = combined %>% 
-  filter(source %in% c("human")) %>%
-  left_join(informativityDF) %>%
-  mutate(specificityIndicator = specificity > 7)
-
 summary(glmer(specificityIndicator ~ condition + (1 | gameid), 
              data = specificityDF,
              family = 'binomial',
