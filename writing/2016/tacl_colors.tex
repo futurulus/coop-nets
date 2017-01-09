@@ -577,6 +577,8 @@ a second RNN and concatenate the context representation onto each input word vec
 
 \subsection{Pragmatic listener}\label{sec:l2}
 
+\todocheck{Maybe call this section ``pragmatic agents'' since we also define the prag speaker here, which we refer back to later?}
+
 Using the above base agents, we define a pragmatic speaker
 $\Speaker_{1}$ and a pragmatic listener
 $\Listener_{1}$:
@@ -714,7 +716,7 @@ Since color reference is a difficult task even for humans, we compared listener 
 For ease of comparison to computational results, we focus on five
 metrics capturing different aspects of the rich pragmatic behavior
 displayed by both human and artificial speakers in our task
-(\tabref{table:metrics}). In all cases, we report test statistics from a mixed-effects regression including condition as a fixed effect and game ID as a random effect; due to the relatively large corpus, all test statistics reported correspond to $p$-values $<~10^{-5}$ and have been omitted.
+(\tabref{table:metrics}). As can be seen, our pragmatic speaker model did not differ qualitatively from our literal speaker on any of the metrics, hence we only present results for humans and the pragmatic model. In all cases, we report test statistics from a mixed-effects regression including condition as a fixed effect and game ID as a random effect; except where noted, all test statistics reported correspond to $p$-values $<~10^{-4}$ and have been omitted for readability.
 
 \paragraph{Words and characters}
 We expect human speakers to be more verbose in \cond{split} and \cond{close} 
@@ -775,7 +777,7 @@ specificity hierarchy for color terms, and we hypothesized that
 \cond{split} or \cond{close} conditions will tend to lead speakers to go lower in this
 hierarchy. 
 
-For each message, we transformed adjectives into their closest noun forms (e.g. `reddish' $\rightarrow$ `red'), filtered to include only nouns with `color' in their hypernym paths, calculated the depth of the hypernym path of each color word, and took the maximum depth occurring in a message. For instance, the message ``deep magenta, purple with some pink'' received a high specificity score of 9. It has three color terms: ``purple'' and ``pink,'' which have the basic-level depth of 7, and ``magenta,'' which is a highly specific color term with a depth of 9. Finally, because there weren't meaningful differences between words at depths of 8 (``rose'', ``teal'') and 9 (``tan,'' ``taupe''), we conducted our analyses on a binary variable thresholded to distinguish ``high specificity'' messages with a depth greater than 7. 
+For each message, we transformed adjectives into their closest noun forms (e.g. `reddish' $\rightarrow$ `red'), filtered to include only nouns with `color' in their hypernym paths, calculated the depth of the hypernym path of each color word, and took the maximum depth occurring in a message. For instance, the message ``deep magenta, purple with some pink'' received a score of 9. It has three color terms: ``purple'' and ``pink,'' which have the basic-level depth of 7, and ``magenta,'' which is a highly specific color term with a depth of 9. Finally, because there weren't meaningful differences between words at depths of 8 (``rose'', ``teal'') and 9 (``tan,'' ``taupe''), we conducted our analyses on a binary variable thresholded to distinguish ``high specificity'' messages with a depth greater than 7. 
 
 We found a small but reliable increase in the likelihood of ``high specificity'' messages from human speakers in the \cond{split}  ($z = 2.84, p = 0.005$) and \cond{close}  ($z = 2.33, p = 0.02$) contexts, compared to the baseline \cond{far} context. Our pragmatic model showed a similar effect ($z = 2.65, p =0.008$ and $z = 2.1, p =0.036$ respectively).
 
@@ -867,7 +869,7 @@ often cannot rely only on basic color terms.
 \end{tabular}
 \caption{Conditional probability tables used to calculate $\Listener^*$
 for one dev set example. Sample sizes are reduced to save space; here,
-$m = 2$ and $n = 1$ (see \secref{sec:l2}).}
+$m = 2$ and $n = 1$ (see \secref{sec:l2}). \todocheck{rdh: maybe put a note about what the boxes mean? It looks like it's meant to facilitate visual comparison between boxes, but I think it's actually intended to mark the intended referent of the message? If the latter, why is only the first box marked in the $S_1$ row?}}
 \label{fig:rsaExample}
 \end{figure}
 
@@ -909,7 +911,7 @@ ability of the speaker agents to convey the information necessary to identify
 the target. \Tabref{table:speakerVsListener} shows the effectiveness of the
 two speaker models---the base speaker $\Speaker_0$ (\secref{sec:s0}) and the
 pragmatic speaker $\Speaker_1$ \eqref{eq:s1}---at describing the
-target color to the listener models.
+target color to the listener models. \todocheck{rdh: can we make these either both refer to sections or both refer to equations?}
 
 The pragmatic speaker is nearly perfect at communicating
 with the listener models, which is unsurprising, because in the case of
@@ -929,7 +931,7 @@ As noted in \secref{sec:training}, we use an inverse temperature parameter of
 $\alpha = 0.544$ and a base weight of $\beta = -0.15$ for the pragmatic
 listener. Particularly surprising is the fact that the optimal value of $\beta$
 discovered in grid search is \emph{negative}. This has the effect of amplifying
-the difference between $\Listener_0$ and $\Listener^2$: the pragmatic model,
+the difference between $\Listener_0$ and $\Listener^2$ (\todocheck{superscript typo}): the pragmatic model,
 evidently, is not quite pragmatic enough.
 
 The $\alpha$ value of 0.544${}<{}$1 indicates that the pragmatic listener is
@@ -1027,8 +1029,7 @@ more challenging than modeling isolated speakers and listeners; multi-turn dialo
 requires reasoning about previous utterances as context, anticipating
 responses for long-term planning, and (for the listener) deciding when
 to ask for clarification rather than commit to a referent
-\cite{Clark:Wilkes-Gibbs:1986,Clark96}
-\todocheck{(surely there are some more classical citations on this problem)}.
+\cite{Lewis79_Scorekeeping,BrownYule83_Discourse,Clark96,Roberts96_InformationStructureDiscourse}.
 We look forward to examining this problem further, and we release our
 dataset\footnote{\url{http://anonymized/}}
 with the expectation that others may find interest in this aspect as well.
