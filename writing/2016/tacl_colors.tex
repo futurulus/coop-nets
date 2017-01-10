@@ -281,21 +281,13 @@ in the hardest cases:
 \section{Task and data collection}\label{sec:corpus}
 
 We evaluate our agents on a task of language understanding in a dyadic reference
-game \cite{Rosenberg:Cohen:1964,KraussWeinheimer64_ReferencePhrases,Paetzel-etal:2014}. Unlike traditional tasks, where participants provide impartial judgements of language in isolation, reference games embed language use in a more natural, goal-oriented communicative context \cite{Clark96,TanenhausBrownSchmidt08_LanguageNatural}. Since they offer the simplest experimental setup where many pragmatic and discourse-level phenomena emerge, these games have been used widely in cognitive science to study common ground and conventionalization \cite{Clark:Wilkes-Gibbs:1986}, referential domains \cite{BrownSchmidtTanenhaus08_TargetedGame}, perspective-taking \cite{HannaTanenhausTrueswell03_CommonGroundPerspective}, and overinformativeness \cite{KoolenGattGoudbeekKrahmer11_Overspecification}.
+game \cite{Rosenberg:Cohen:1964,KraussWeinheimer64_ReferencePhrases,Paetzel-etal:2014}. Unlike traditional language tasks, where participants provide impartial judgements of language in isolation, reference games embed language use in a more natural, goal-oriented communicative context \cite{Clark96,TanenhausBrownSchmidt08_LanguageNatural}. Since they offer the simplest experimental setup where many pragmatic and discourse-level phenomena emerge, these games have been used widely in cognitive science to study topics like common ground and conventionalization \cite{Clark:Wilkes-Gibbs:1986}, referential domains \cite{BrownSchmidtTanenhaus08_TargetedGame}, perspective-taking \cite{HannaTanenhausTrueswell03_CommonGroundPerspective}, and overinformativeness \cite{KoolenGattGoudbeekKrahmer11_Overspecification}.
 
-More formally, in our reference game, a listener agent $\Listener$ is presented with a context set of colors
-$\context = \{\referent_{i}, i=1..\contextlen\}$ and an English
-utterance $\utt$ that describes the target color
-$\referent_{\target} \in \context$. The agent does not know the index
-$\target$ of the target color and must guess it from $\utt$.
-
-To obtain a corpus of natural color reference data across varying
-contexts, we recruited 967 unique participants from Amazon
-Mechanical Turk to play 1,059 games of 50 rounds each, using the open-source framework of
-\newcite{Hawkins15_RealTimeWebExperiments}.  Participants were sorted into dyads,
-randomly assigned the role of speaker or listener, and placed in a game
-environment containing a chat box and an array of three color patches
-(\figref{fig:taskScreenshot}). After non-native English speakers, incomplete games, and extremely long utterances ($>4\sigma$ above the mean) were excluded, we were left with a corpus of 53,365 speaker utterances across 948 games. Participants were allowed to play more than once, but the modal number of games played per participant was one (75\%).
+%More formally, in our reference game, a listener agent $\Listener$ is presented with a context set of colors
+%$\context = \{\referent_{i}, i=1..\contextlen\}$ and an English
+%utterance $\utt$ that describes the target color
+%$\referent_{\target} \in \context$. The agent does not know the index
+%$\target$ of the target color and must guess it from $\utt$.
 
 \begin{figure}
 \includegraphics[scale = .2]{figures/speakerView.png}
@@ -303,12 +295,19 @@ environment containing a chat box and an array of three color patches
   perspective. The target color (boxed) was presented among two distractors on a neutral background.}
 \label{fig:taskScreenshot}
 \end{figure}
-
+To obtain a corpus of natural color reference data across varying
+contexts, we recruited 967 unique participants from Amazon
+Mechanical Turk to play 1,059 games of 50 rounds each, using the open-source framework of
+\newcite{Hawkins15_RealTimeWebExperiments}.  
+Participants were sorted into dyads, randomly assigned the role of speaker or listener,
+and placed in a game environment containing a chat box and an array of three color patches
+(\figref{fig:taskScreenshot}). 
 On each round, one of the three colors was chosen to be the target and
 highlighted for the speaker. They were instructed to communicate this
 information to the listener, who could then click on one of the colors
 to advance to the next trial. Both participants were free to use the
 chat box at any point.
+
 
 \newcommand{\Lex}{\mathcal{L}}
 \newcommand{\Costs}{\kappa}
@@ -394,10 +393,9 @@ number of trials from three different conditions:
   another. Colors were rejection sampled uniformly from RGB (red,
   green, blue) space to meet these constraints.
 \end{enumerate*}
-\todocheck{Let's include here the number of each type of trial in the
-final corpus. Presumably, it's about 1/3 each, but it would be good
-to be explicit.}
 
+After non-native English speakers, incomplete games, and extremely long utterances were excluded, we were left with a corpus of 53,365 speaker utterances across 46,994 rounds in 948 unique games. The three conditions are equally represented, with 15,519 \emph{close} trials, 15,693 \emph{split} trials, and 15,782 \emph{far} trials. Participants were allowed to play more than once, but the modal number of games played per participant was one (75\%). The modal number of messages sent per round was also one (90\%). We release the raw, pre-filter data from these experiments alongside the filtered corpus we used throughout our analyses (see Footnote
+\ref{foot:release}).
 
 \section{Models}
 
@@ -578,7 +576,7 @@ network as the representation of an input image and provide this representation
 to the RNN as an initial state or first word (we represent the context using
 a second RNN and concatenate the context representation onto each input word vector).
 
-\subsection{Pragmatic listener}\label{sec:l2}
+\subsection{Pragmatic agents}\label{sec:l2}
 
 Using the above base agents, we define a pragmatic speaker
 $\Speaker_{1}$ and a pragmatic listener
@@ -642,15 +640,17 @@ to yield a ``hyperpragmatic'' model.
 
 \subsection{Training} \label{sec:training}
 
-We split our corpus into equal train/dev/test splits (16,635 contexts per split)
-and preprocess the data by (1) lowercasing; (2) tokenizing
+We split our corpus into approximately equal train/dev/test sets
+(15,665 train trials, 15,670 dev, 15,659 test), ensuring that trials from
+the same dyad are present in only one split.
+We preprocess the data by (1) lowercasing; (2) tokenizing
 by splitting off punctuation as well as the endings \word{\mbox{-er}}, \word{\mbox{-est}}, and
 \word{\mbox{-ish}};\footnote{We
 only apply this heuristic ending segmentation for the listener; the speaker is trained to produce
 words with these endings unsegmented.} and
 (3) replacing tokens that appear once or not at all
 in the training split with \texttt{<unk>}. We also remove
-listener utterances and concatenate speaker utterances on the same context.
+listener utterances and concatenate speaker utterances on the same context. \todocheck{[rdh: listener utterances are not already removed from the filtered corpus; we could concatenate speaker utterances too?]}
 We leave handling of interactive dialogue to future work (\secref{sec:conclusion}).
 
 We use ADADELTA
@@ -668,45 +668,39 @@ Our final model uses
 $\alpha = 0.544$ and $\beta = -0.15$; see \secref{sec:alpha_beta} for more
 discussion of these values.
 
-% latex table generated in R 3.3.0 by xtable 1.8-2 package
-% Sat Dec 24 02:29:59 2016
+% latex table generated in R 3.3.2 by xtable 1.8-2 package
+% Mon Jan  9 13:58:36 2017
 \begin{table*}[ht]
 \centering
 \begin{tabular}{lrrr@{\hspace{40pt}}rrr@{\hspace{40pt}}rrr}
   \toprule
-  & \multicolumn{3}{c}{human}& \multicolumn{3}{c}{literal}& \multicolumn{3}{c}{pragmatic}\\
-  & far& split& close& far& split& close& far& split& close\\ \midrule
-\# Chars & 8.1 & 12.6 & 15.1 & 9.0 & 12.8 & 16.6 & 9.0 & 12.8 & 16.4 \\ 
-  \# Words & 1.8 & 2.8 & 3.3 & 2.0 & 2.8 & 3.7 & 2.0 & 2.8 & 3.7 \\ 
-  \% Comparatives & 1.8 & 14.5 & 12.9 & 3.6 & 8.8 & 13.1 & 4.2 & 9.0 & 13.7 \\ 
-  \% Superlatives & 2.0 & 5.8 & 16.0 & 4.7 & 9.7 & 17.2 & 4.8 & 10.3 & 16.6 \\   
-  \% Negatives & 2.8 & 9.5 & 12.1 & 4.8 & 8.9 & 13.3 & 4.4 & 8.5 & 14.1 \\   
-  \% High Specificity & 7.2 & 7.9 & 7.6 & 6.4 & 8.4 & 7.6 & 6.8 & 7.9 & 7.5 \\ 
+  & \multicolumn{3}{c}{human}& \multicolumn{3}{c}{literal}& \multicolumn{3}{c}{pragmatic}\\& far& split& close& far& split& close& far& split& close\\ \midrule
+\# Chars & 7.8 & 12.3 & 14.9 & 9.0 & 12.8 & 16.6 & 9.0 & 12.8 & 16.4 \\ 
+  \# Words & 1.7 & 2.7 & 3.3 & 2.0 & 2.8 & 3.7 & 2.0 & 2.8 & 3.7 \\ 
+  \% Comparatives & 1.7 & 14.2 & 12.8 & 3.6 & 8.8 & 13.1 & 4.2 & 9.0 & 13.7 \\ 
+  \% High Specificity & 7.0 & 7.6 & 7.4 & 6.4 & 8.4 & 7.6 & 6.8 & 7.9 & 7.5 \\ 
+  \% Negatives & 2.8 & 10.0 & 12.9 & 4.8 & 8.9 & 13.3 & 4.4 & 8.5 & 14.1 \\ 
+  \% Superlatives & 2.2 & 6.1 & 16.7 & 4.7 & 9.7 & 17.2 & 4.8 & 10.3 & 16.6 \\ 
    \bottomrule
 \end{tabular}
 \caption{Corpus statistics and statistics of samples from $\Speaker_1$
   (rates per utterance). The human and artificial speakers show
-  the same correlations between language use and context type. \todocheck{todo: put errors in?}} 
+  the same correlations between language use and context type.} 
 \label{table:metrics}
 \end{table*}
 
-
 \section{Behavioral results}
 
-Our corpus was developed, not only to facilitate the development of
+Our corpus was developed not only to facilitate the development of
 models for grounded language understanding, but also to provide a
 richer picture of human pragmatic communication. The collection effort
 was thus structured like a large-scale behavioral experiment, closely
 following experimental designs like those of
 \newcite{Clark:Wilkes-Gibbs:1986}. This paves the way to assessing our
-computational model not only in its terms, but also in terms of how
-its behavior compares to that of our human participants. Thus, the
-current section briefly reviews some findings from the human
+model not solely based on the listener's classification accuracy, but also in terms of how
+sophisticated qualitative features of the speaker's production compare to that of our human participants. 
+Thus, the current section briefly reviews some novel findings from the human
 corpus that we use to inform our model assessment.
-
-\todocheck{Robert could perhaps expand or improve this paragraph. Also,
-are we doing enough with these humans results when we move to our model.
-I fear we aren't!}
 
 \begin{figure}
 \includegraphics[scale = .5]{figures/listenerAccuracy}
@@ -723,21 +717,19 @@ Since color reference is a difficult task even for humans, we compared listener 
 For ease of comparison to computational results, we focus on five
 metrics capturing different aspects of the rich pragmatic behavior
 displayed by both human and artificial speakers in our task
-(\tabref{table:metrics}).
+(\tabref{table:metrics}). As can be seen, our pragmatic speaker model did not differ qualitatively from our literal speaker on any of the metrics, hence we only present results for humans and the pragmatic model. In all cases, we report test statistics from a mixed-effects regression including condition as a fixed effect and game ID as a random effect; except where noted, all test statistics reported correspond to $p$-values${}<10^{-4}$ and have been omitted for readability.
 
 \paragraph{Words and characters}
-We expect human speakers to be verbose in \cond{close} contexts; even if
-they do know enough basic color terms to distinguish all the colors
+We expect human speakers to be more verbose in \cond{split} and \cond{close} 
+contexts than \cond{far} contexts; the shortest, simplest color terms for the target 
+may also apply to one or both distractors, thus incentivizing the speaker to use more
+lengthy modifier phrases to fully distinguish it. Indeed, even if they \emph{know} 
+enough simple color terms to distinguish all the colors
 lexically, they might be unsure that their listeners will and so
-resort to lengthy modifier phrases anyway. To assess this hypothesis,
-we counted the average number of words and characters per message,
-after removing stop words and punctuation. We found that participants
-used longer messages when distractors were closer to the target in
-color space. \todocheck{Could this be substantiated with a linear
-  regression?} As \tabref{table:metrics} shows, our $\Speaker_{1}$ agent
-shows exactly the same positive association between utterance length
-and the \cond{far}, \cond{split}, and \cond{close} contexts. \todocheck{Regression
-  for this too?}
+resort to modifiers anyway. To assess this hypothesis,
+we counted the average number of words and characters per message. 
+Compared to the baseline \cond{far} context, participants used significantly longer messages both in the \cond{split} context ($t =  45.85$) and the \cond{close} context ($t = 73.06$). Similar results hold for the character metric. As \tabref{table:metrics} shows, our $\Speaker_{1}$  agent
+shows the same increase in utterance length in the \cond{split} ($t = 18.07$) and \cond{close} ($t = 35.77$) contexts.
 
 \paragraph{Comparatives and superlatives}
 As noted in \secref{sec:intro} comparative morphology implicitly
@@ -748,35 +740,30 @@ another (lighter) blue in the context. Similarly, superlatives like
 the colors can be compared along a specific semantic dimension. We
 thus expect to see this morphology more often where two or more of the
 colors are comparable in this way. To test this, we used the Stanford
-CoreNLP part-of-speech tagger \cite{Toutanova2003} to count the number
-of comparatives (JJR or RBR) and superlatives (JJS or RBS) per
-message. We found that participants were more likely to use these
-constructions when one or more distractors were close to the target.
-Additionally, we found evidence of an asymmetry in the use of these
-constructions across the \cond{split} and \cond{close} conditions.
-Comparatives were used somewhat more often in the \cond{split} condition,
-where only one distractor was close to the target, while superlatives
-were much more likely to be used in the \cond{close} condition.
-\todocheck{Could this be substantiated with a linear regression?}
+CoreNLP part-of-speech tagger \cite{Toutanova2003} to mark the presence or absence of comparatives (JJR or RBR) and superlatives (JJS or RBS) for each message. 
 
-Importantly, our pragmatic speaker shows these same patterns,
-producing more comparatives and superlatives in `close` conditions
-than in the others \todocheck{regression for this too?}, suggesting
-that it is simulating the human strategy at some level.
+We found two related patterns across conditions. First, participants were significantly 
+more likely to use both comparatives ($z = 37.39$) and superlatives ($z = 31.32$) 
+when one or more distractors were close to the target. Second, we found evidence of 
+an asymmetry in  the use of these constructions across the \cond{split} and 
+\cond{close} contexts. Comparatives were used signfiicantly more often in the 
+\cond{split} context ($z = 4.4$), where only one distractor was close to the target, 
+while superlatives were much more likely to be used in the \cond{close} condition 
+($z = 32.72$).\footnote{We used Helmert coding to examine this pair of orthogonal 
+contrasts, compared to dummy coding in the analysis.}
+
+Importantly, our pragmatic speaker shows the first of these two patterns
+producing significantly more comparatives ($z = 14.45$) and superlatives ($z = 16$) in the \cond{split} or \cond{close} conditions than in the baseline \cond{far} condition. It does not, however, capture the second asymmetric pattern where comparatives use peaks in the \emph{split} condition. This suggests that our model is simulating the human strategy at some level, but that more subtle patterns require further attention.
 
 \paragraph{Negatives}
 In our referential contexts, negation is likely to play a role similar
 to that of comparatives: a phrase like \word{not the red or blue one}
 singles out the third color, and \word{blue but not bright blue}
 achieves a more nuanced kind of comparison. Thus, as with
-comparatives, we expect negation to be more likely where two or more
+comparatives, we expect negation to be more likely where one or more
 distractors are close to the target. To test this, we counted
 occurrences of the string `not' (by far the most frequent negation in
-the corpus). We found that participants were more likely to use
-negative constructions when one or more distractors were close to the
-target. \todocheck{Could this be substantiated with a linear
-  regression?} Our pragmatic speaker's use of negation shows the 
-same relationship to the context \todocheck{regression summary?}.
+the corpus). Compared to the baseline \cond{far} context, we found that participants were more likely to use negative constructions when one ($z = 27.36$) or both ($z = 34.32$) distractors were close to the target. Our pragmatic speaker's use of negation shows the  same relationship to the context ($z = 8.55$ and $z= 16.61$ respectively).
 
 \paragraph{WordNet specificity}
 We expect speakers to prefer basic color terms wherever they suffice
@@ -788,8 +775,12 @@ thus the risk of specific terms becomes worthwhile (though lengthy
 descriptions might be a safer strategy, as discussed above). To
 evaluate this idea, we use WordNet \cite{Fellbaum1998} to derive a
 specificity hierarchy for color terms, and we hypothesized that
-\cond{close} conditions will tend to lead speakers to go lower in this
-hierarchy. \todocheck{To do... and include comparison with our $\Speaker_{1}$.}
+\cond{split} or \cond{close} conditions will tend to lead speakers to go lower in this
+hierarchy. 
+
+For each message, we transformed adjectives into their closest noun forms (e.g. `reddish' $\rightarrow$ `red'), filtered to include only nouns with `color' in their hypernym paths, calculated the depth of the hypernym path of each color word, and took the maximum depth occurring in a message. For instance, the message ``deep magenta, purple with some pink'' received a score of 9. It has three color terms: ``purple'' and ``pink,'' which have the basic-level depth of 7, and ``magenta,'' which is a highly specific color term with a depth of 9. Finally, because there weren't meaningful differences between words at depths of 8 (``rose'', ``teal'') and 9 (``tan,'' ``taupe''), we conducted our analyses on a binary variable thresholded to distinguish ``high specificity'' messages with a depth greater than 7. 
+
+We found a small but reliable increase in the likelihood of ``high specificity'' messages from human speakers in the \cond{split}  ($z = 2.84, p = 0.005$) and \cond{close}  ($z = 2.33, p = 0.02$) contexts, compared to the baseline \cond{far} context. Our pragmatic model showed a similar effect ($z = 2.65, p =0.008$ and $z = 2.1, p =0.036$ respectively).
 
 \begin{table}[t]
 \centering
@@ -801,7 +792,7 @@ hierarchy. \todocheck{To do... and include comparison with our $\Speaker_{1}$.}
   $\Listener_0$ & 83.39 & 83.66 & \oracle{99.75} & 1.69 & 1.71 & \oracle{1.03} \\
   $\Listener^*$ & \best{84.11} & \best{84.82} & \oracle{99.93} & \best{1.49} & \best{1.45} & \oracle{1.08}
   \\[0.5ex]
-  $\Listener_h$ & 89.87 \\
+  $\Listener_h$ & 90.03 \\
    \bottomrule
 \end{tabular}
 \caption{Overall accuracy and perplexity of the base and pragmatic listeners
@@ -833,6 +824,8 @@ the primary gain from the pragmatic model is in the \cond{close} condition, when
 model has to distinguish three colors that are all nearby in color space and
 often cannot rely only on basic color terms.
 
+\newcommand{\intended}{\framebox}
+
 \begin{figure}[t!]
 \centering
 \begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
@@ -842,24 +835,24 @@ often cannot rely only on basic color terms.
     \midrule
     \textbf{blue} &             9\% & \best{   91} & $<$1 
     \\[1ex]
-    true blue     & \framebox{\gz{}11} & \best{     89} & $<$1 \\
-    light blue    & \framebox{\zz{}$<$1} & \best{$>$99} & $<$1 \\
-    brightest     & $<$1 & \framebox{\best{\z{}$>$99}} & $<$1 \\
-    bright blue   & $<$1 & \framebox{\best{\z{}$>$99}} & $<$1 \\
-    red           & $<$1 &     1 & \framebox{\best{\gz{}99}} \\
-    purple        & $<$1 &     2 & \framebox{\best{\gz{}98}} \\
+    true blue     & \intended{\gz{}11} & \best{     89} & $<$1 \\
+    light blue    & \intended{\zz{}$<$1} & \best{$>$99} & $<$1 \\
+    brightest     & $<$1 & \intended{\best{\z{}$>$99}} & $<$1 \\
+    bright blue   & $<$1 & \intended{\best{\z{}$>$99}} & $<$1 \\
+    red           & $<$1 &     1 & \intended{\best{\gz{}99}} \\
+    purple        & $<$1 &     2 & \intended{\best{\gz{}98}} \\
     \midrule
 %   & \multicolumn{3}{c}{$\Speaker_1$} \\
     $\Speaker_1$ & \colorContext{3884C7}{02F9FD}{9E6461}{}  \\
     \midrule
     \textbf{blue} &             41  &    19 & $<$1
     \\[1ex]
-    true blue     & \framebox{\best{\gz{}47}} &    19 & $<$1 \\
-    light blue    & \framebox{\gzz{}5} & \best{   20} & $<$1 \\
-    brightest     & $<$1 & \framebox{\best{\gz{}20}} & $<$1 \\
-    bright blue   &    2 & \framebox{\best{\gz{}20}} & $<$1 \\
-    red           &    1 &     2 & \framebox{\best{\gz{}50}} \\
-    purple        &    5 &     1 & \framebox{\best{\gz{}50}} \\
+    true blue     & \intended{\best{\gz{}47}} &    19 & $<$1 \\
+    light blue    & \intended{\gzz{}5} & \best{   20} & $<$1 \\
+    brightest     & $<$1 & \intended{\best{\gz{}20}} & $<$1 \\
+    bright blue   &    2 & \intended{\best{\gz{}20}} & $<$1 \\
+    red           &    1 &     2 & \intended{\best{\gz{}50}} \\
+    purple        &    5 &     1 & \intended{\best{\gz{}50}} \\
     \midrule
 %    & \multicolumn{3}{c}{$\Listener_1$} \\
     $\Listener_1$ & \colorContext{3884C7}{02F9FD}{9E6461}{} \\
@@ -878,7 +871,11 @@ often cannot rely only on basic color terms.
     \bottomrule
 \end{tabular}
 \caption{Conditional probability tables used to calculate $\Listener^*$
-for one dev set example. Sample sizes are reduced to save space; here,
+for one dev set example. The true target color is boxed, and ``blue'' is
+the human utterance. Boxed cells for alternative
+utterances indicate the intended target; highest-probability referents
+(listeners) and utterances (speaker) are in \textbf{bold}.
+Sample sizes are reduced to save space; here,
 $m = 2$ and $n = 1$ (see \secref{sec:l2}).}
 \label{fig:rsaExample}
 \end{figure}
@@ -920,7 +917,7 @@ We also perform a ``machine communication'' experiment aimed at measuring the
 ability of the speaker agents to convey the information necessary to identify
 the target. \Tabref{table:speakerVsListener} shows the effectiveness of the
 two speaker models---the base speaker $\Speaker_0$ (\secref{sec:s0}) and the
-pragmatic speaker $\Speaker_1$ \eqref{eq:s1}---at describing the
+pragmatic speaker $\Speaker_1$ (\secref{sec:l2})---at describing the
 target color to the listener models.
 
 The pragmatic speaker is nearly perfect at communicating
@@ -941,7 +938,7 @@ As noted in \secref{sec:training}, we use an inverse temperature parameter of
 $\alpha = 0.544$ and a base weight of $\beta = -0.15$ for the pragmatic
 listener. Particularly surprising is the fact that the optimal value of $\beta$
 discovered in grid search is \emph{negative}. This has the effect of amplifying
-the difference between $\Listener_0$ and $\Listener^2$: the pragmatic model,
+the difference between $\Listener_0$ and $\Listener_2$: the pragmatic model,
 evidently, is not quite pragmatic enough.
 
 The $\alpha$ value of 0.544${}<{}$1 indicates that the pragmatic listener is
@@ -1039,10 +1036,9 @@ more challenging than modeling isolated speakers and listeners; multi-turn dialo
 requires reasoning about previous utterances as context, anticipating
 responses for long-term planning, and (for the listener) deciding when
 to ask for clarification rather than commit to a referent
-\cite{Clark:Wilkes-Gibbs:1986,Clark96}
-\todocheck{(surely there are some more classical citations on this problem)}.
+\cite{Lewis79_Scorekeeping,BrownYule83_Discourse,Clark96,Roberts96_InformationStructureDiscourse}.
 We look forward to examining this problem further, and we release our
-dataset\footnote{\url{http://anonymized/}}
+dataset\footnote{\label{foot:release}\url{http://see-supplementary-material/}}
 with the expectation that others may find interest in this aspect as well.
 
 

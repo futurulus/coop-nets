@@ -84,7 +84,8 @@ combined_human <- clks %>%
                                        separate = F))) %>%
   mutate(numCleanChars = character_count(cleanMsg)) %>%
   mutate(numCleanWords = word_count(cleanMsg)) %>%
-  mutate(source = 'human')
+  mutate(source = 'human') %>%
+  select(-strippedContents, -cleanMsg)
 
 write_csv(combined_human, path = "humanOutput/filteredCorpus.csv")
 ```
@@ -136,17 +137,32 @@ paste(c(length(unique((combined_human %>% filter(is.na(workerid_uniq)))$gameid))
         "games where we don't have complete subject info on speaker"), collapse = ' ')
 ```
 
+Check total number of each kind of condition in the final corpus:
+
+```{r}
+combined_human %>% group_by(gameid, roundNum) %>% 
+  filter(row_number()==1) %>% # limit to one row per round
+  group_by(condition) %>% tally()
+```
+
 Speakers sometimes sent more than one message per round... 
 
 ```{r}
-combined_human %>% 
+msgsPerRound <- combined_human %>% 
   filter(role == "speaker") %>% 
   group_by(gameid, roundNum) %>% 
   summarize(numMessages = length(contents)) %>% 
   group_by(numMessages) %>% 
   summarize(numRounds = length(roundNum))
 
-paste(c("total of", length((combined_human %>% filter(role == "speaker"))$gameid), "utterances"),
+paste(c("modal number is", 
+         msgsPerRound$numMessages[[which.max(msgsPerRound$numRounds)]],
+         "message, totaling", 
+         round(100 * max(msgsPerRound$numRounds)/sum(msgsPerRound$numRounds)),
+        "% of rounds"), collapse = " ")
+
+paste(c("total of", length((combined_human %>% filter(role == "speaker"))$gameid), "utterances in",
+        sum(msgsPerRound$numRounds), "rounds"),
       collapse = ' ')
 ```
 
@@ -179,7 +195,8 @@ makeModelDF <- function(listenerOutput, speakerOutput, sourceLabel) {
     mutate(numCleanWords = word_count(cleanMsg)) %>%
     mutate(numCleanChars = character_count(cleanMsg)) %>%
     mutate(source = sourceLabel) %>%
-    mutate(workerid_uniq = NA)
+    mutate(workerid_uniq = NA) %>%
+    select(-strippedContents, -cleanMsg)
   
   return(combined_model)
 }
@@ -205,6 +222,10 @@ combined = rbind(combined_human, literalModel, pragmaticModel)
 
 # Listener analysis: Do people make more mistakes on harder trials?
 
+### Setup 
+
+Define some helper functions...
+
 ```{r}
 library(bootstrap)
 
@@ -221,6 +242,14 @@ listener_df = combined %>%
   filter(row_number()==1) %>% # limit to one row per round
   ungroup()
 ```
+
+### Compute overall human error rate 
+
+```{r}
+listener_df %>% filter(source == "human") %>% summarize(errorRate = mean(numOutcome))
+```
+
+### Look at model differences across conditions
 
 ```{r}
 pdf("../writing/2016/figures/changedByCondition.pdf", width=6,height=3,paper='special')
@@ -256,17 +285,6 @@ listener_df %>%
 dev.off()
 ```
 
-
-### Run mixed model:
-
-```{r}
-# conditionMod = glmer(numOutcome ~ condition*source + (1 | gameid), family = "binomial", 
-#                      data = listener_df);
-# summary(conditionMod)
-```
-
-We find main effects of difficulty and of model; also interaction where humans are *much* better at "easy" condition while computers are only moderately better...
-
 ### Make human vs. model table
 
 ```{r}
@@ -274,7 +292,7 @@ listenerSummary <- listener_df %>% group_by(condition, source) %>%
   summarize(percentCorrect = mean(numOutcome), 
             low = ci.low(numOutcome),
             high = ci.high(numOutcome)) 
-
+print(listenerSummary)
 listenerSummary %>%
   select(-low, -high) %>%
   spread(condition, percentCorrect)
@@ -305,23 +323,28 @@ Note that taggedColorMsgs2.csv is created in tagPOS.ipynb & informativities.csv 
 We're going to run both human and model output through a pipeline to get a table with the different conditions as columns and different metrics as rows... 
 
 ```{r}
-taggedDF = read_csv("taggedColorMsgs2.csv") %>% 
-  rename(role = sender) %>% 
-  mutate(contents = trimws(as.character(contents)))
+taggedDF = read_csv("taggedColorMsgs.csv") %>% 
+  mutate(contents = trimws(as.character(contents))) %>%
+  select(gameid, roundNum, source, contents, numSuper, numComp)
 
 informativityDF = read_csv("informativities.csv") %>%
-  rename(role = sender) %>% 
-  mutate(contents = trimws(as.character(contents)))
+  mutate(contents = trimws(as.character(contents))) %>%
+  select(gameid, roundNum, source, contents, specificity)
 
 # TODO: present se in table (e.g. in parens after mean)
-resultTable = combined %>% 
+speakerStats = combined %>% 
   left_join(taggedDF) %>%
   left_join(informativityDF) %>%
   filter(numRawWords > 0) %>% # Get rid of NAs from empty strings
+  mutate(condition = relevel(condition, ref = 'far')) %>%
   mutate(comparativesIndicator = numComp > 0) %>%
   mutate(superlativesIndicator = numSuper > 0) %>%
   mutate(negativesIndicator = str_count(contents, fixed("not ")) > 0) %>%
   mutate(specificityIndicator = specificity > 7) %>%
+  select(gameid, roundNum, condition, source, numRawWords, numRawChars,
+         comparativesIndicator, superlativesIndicator, negativesIndicator, specificityIndicator)
+
+resultTable = speakerStats %>%
    group_by(gameid, condition, source) %>%
    summarise(numWordsPerMessage = mean(numRawWords),
              numCharsPerMessage = mean(numRawChars),
@@ -374,19 +397,75 @@ print(xtable(resultTable, label = "table:metrics", align = "llrrr|rrr|rrr",
 
 ```
 
+# Regressions
+
+## Listener 
+
+```{r}
+conditionMod = glmer(numOutcome ~ condition*source + (1 | gameid), family = "binomial",
+                     data = listener_df);
+summary(conditionMod)
+```
+
+We find main effects of difficulty and of model; also interaction where humans are *much* better at "easy" condition while computers are only moderately better...
+
+## Speaker
+
+### Words
+
+```{r}
+summary(lmer(numRawWords ~ condition + (1|gameid), data = speakerStats %>% filter(source == 'human')))
+```
+
+### Characters
+
+```{r}
+summary(lmer(numRawChars ~ condition + (1|gameid), data = speakerStats %>% filter(source == 'human')))
+```
+
+```{r}
+summary(lmer(numRawWords ~ condition + (1|gameid), data = speakerStats %>% filter(source == 'pragmatic')))
+```
+
+### Comparatives
+
+```{r}
+speakerStats$conditionHelmert <- speakerStats$condition
+contrasts(speakerStats$conditionHelmert) <- matrix(c(2,-1, -1, 
+                                                     0, 1, -1), 
+                                                   ncol = 2)
+contrasts(speakerStats$conditionHelmert)
+summary(glmer(comparativesIndicator ~ conditionHelmert + (1|gameid), 
+              family = 'binomial', data = speakerStats %>% filter(source == 'human')))
+```
+
+```{r}
+summary(glmer(comparativesIndicator ~ conditionHelmert + (1|gameid), 
+              family = 'binomial', data = speakerStats %>% filter(source == 'pragmatic')))
+```
+
+### Negatives
+
+```{r}
+summary(glmer(negativesIndicator ~ condition + (1|gameid), 
+              family = 'binomial', data = speakerStats %>% filter(source == 'human')))
+```
+
+```{r}
+summary(glmer(negativesIndicator ~ condition + (1|gameid), 
+              family = 'binomial', data = speakerStats %>% filter(source == 'pragmatic')))
+```
+
+### High specificity
+
 Statistically more or less of different things?
 
 ```{r}
-specificityDF = combined %>% 
-  filter(source %in% c("human")) %>%
-  left_join(informativityDF) %>%
-  mutate(specificityIndicator = specificity > 7)
-
 summary(glmer(specificityIndicator ~ condition + (1 | gameid), 
-             data = specificityDF,
-             family = 'binomial',
-             contrasts = list(condition =  contr.treatment(3, base=which(levels(specificityDF$condition) == 'far')))))
+             family = 'binomial', data = speakerStats %>% filter(source == 'human')))
+```
 
-ggplot(specificityDF, aes(x = condition)) +
-  geom_bar()
+```{r}
+summary(glmer(specificityIndicator ~ condition + (1 | gameid), 
+             family = 'binomial', data = speakerStats %>% filter(source == 'pragmatic')))
 ```
