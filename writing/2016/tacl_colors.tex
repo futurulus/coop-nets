@@ -394,7 +394,8 @@ number of trials from three different conditions:
   green, blue) space to meet these constraints.
 \end{enumerate*}
 
-After non-native English speakers, incomplete games, and extremely long utterances were excluded, we were left with a corpus of 53,365 speaker utterances across 46,994 rounds in 948 unique games. The three conditions are equally represented, with 15,519 \emph{close} trials, 15,693 \emph{split} trials, and 15,782 \emph{far} trials. Participants were allowed to play more than once, but the modal number of games played per participant was one (75\%). The modal number of messages sent per round was also one (90\%). We have released the raw, pre-filtered data from these experiments alongside the filtered corpus we used throughout our analyses (\todocheck{put URL}). 
+After non-native English speakers, incomplete games, and extremely long utterances were excluded, we were left with a corpus of 53,365 speaker utterances across 46,994 rounds in 948 unique games. The three conditions are equally represented, with 15,519 \emph{close} trials, 15,693 \emph{split} trials, and 15,782 \emph{far} trials. Participants were allowed to play more than once, but the modal number of games played per participant was one (75\%). The modal number of messages sent per round was also one (90\%). We release the raw, pre-filter data from these experiments alongside the filtered corpus we used throughout our analyses (see Footnote
+\ref{foot:release}).
 
 \section{Models}
 
@@ -575,9 +576,7 @@ network as the representation of an input image and provide this representation
 to the RNN as an initial state or first word (we represent the context using
 a second RNN and concatenate the context representation onto each input word vector).
 
-\subsection{Pragmatic listener}\label{sec:l2}
-
-\todocheck{Maybe call this section ``pragmatic agents'' since we also define the prag speaker here, which we refer back to later?}
+\subsection{Pragmatic agents}\label{sec:l2}
 
 Using the above base agents, we define a pragmatic speaker
 $\Speaker_{1}$ and a pragmatic listener
@@ -641,15 +640,17 @@ to yield a ``hyperpragmatic'' model.
 
 \subsection{Training} \label{sec:training}
 
-We split our corpus into equal train/dev/test splits (\todocheck{16,635} contexts per split)
-and preprocess the data by (1) lowercasing; (2) tokenizing
+We split our corpus into approximately equal train/dev/test sets
+(15,665 train trials, 15,670 dev, 15,659 test), ensuring that trials from
+the same dyad are present in only one split.
+We preprocess the data by (1) lowercasing; (2) tokenizing
 by splitting off punctuation as well as the endings \word{\mbox{-er}}, \word{\mbox{-est}}, and
 \word{\mbox{-ish}};\footnote{We
 only apply this heuristic ending segmentation for the listener; the speaker is trained to produce
 words with these endings unsegmented.} and
 (3) replacing tokens that appear once or not at all
 in the training split with \texttt{<unk>}. We also remove
-listener utterances and concatenate speaker utterances on the same context. \todocheck{[rdh: listener utterances are not already removed from the filtered corpus; we could concatenate speaker utterances too?]}.
+listener utterances and concatenate speaker utterances on the same context. \todocheck{[rdh: listener utterances are not already removed from the filtered corpus; we could concatenate speaker utterances too?]}
 We leave handling of interactive dialogue to future work (\secref{sec:conclusion}).
 
 We use ADADELTA
@@ -716,7 +717,7 @@ Since color reference is a difficult task even for humans, we compared listener 
 For ease of comparison to computational results, we focus on five
 metrics capturing different aspects of the rich pragmatic behavior
 displayed by both human and artificial speakers in our task
-(\tabref{table:metrics}). As can be seen, our pragmatic speaker model did not differ qualitatively from our literal speaker on any of the metrics, hence we only present results for humans and the pragmatic model. In all cases, we report test statistics from a mixed-effects regression including condition as a fixed effect and game ID as a random effect; except where noted, all test statistics reported correspond to $p$-values $<~10^{-4}$ and have been omitted for readability.
+(\tabref{table:metrics}). As can be seen, our pragmatic speaker model did not differ qualitatively from our literal speaker on any of the metrics, hence we only present results for humans and the pragmatic model. In all cases, we report test statistics from a mixed-effects regression including condition as a fixed effect and game ID as a random effect; except where noted, all test statistics reported correspond to $p$-values${}<10^{-4}$ and have been omitted for readability.
 
 \paragraph{Words and characters}
 We expect human speakers to be more verbose in \cond{split} and \cond{close} 
@@ -748,8 +749,8 @@ an asymmetry in  the use of these constructions across the \cond{split} and
 \cond{close} contexts. Comparatives were used signfiicantly more often in the 
 \cond{split} context ($z = 4.4$), where only one distractor was close to the target, 
 while superlatives were much more likely to be used in the \cond{close} condition 
-($z = 32.72$)\footnote{We used Helmert coding to examine this pair of orthogonal 
-contrasts, compared to dummy coding in the analysis}.
+($z = 32.72$).\footnote{We used Helmert coding to examine this pair of orthogonal 
+contrasts, compared to dummy coding in the analysis.}
 
 Importantly, our pragmatic speaker shows the first of these two patterns
 producing significantly more comparatives ($z = 14.45$) and superlatives ($z = 16$) in the \cond{split} or \cond{close} conditions than in the baseline \cond{far} condition. It does not, however, capture the second asymmetric pattern where comparatives use peaks in the \emph{split} condition. This suggests that our model is simulating the human strategy at some level, but that more subtle patterns require further attention.
@@ -823,6 +824,8 @@ the primary gain from the pragmatic model is in the \cond{close} condition, when
 model has to distinguish three colors that are all nearby in color space and
 often cannot rely only on basic color terms.
 
+\newcommand{\intended}{\framebox}
+
 \begin{figure}[t!]
 \centering
 \begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
@@ -832,24 +835,24 @@ often cannot rely only on basic color terms.
     \midrule
     \textbf{blue} &             9\% & \best{   91} & $<$1 
     \\[1ex]
-    true blue     & \framebox{\gz{}11} & \best{     89} & $<$1 \\
-    light blue    & \framebox{\zz{}$<$1} & \best{$>$99} & $<$1 \\
-    brightest     & $<$1 & \framebox{\best{\z{}$>$99}} & $<$1 \\
-    bright blue   & $<$1 & \framebox{\best{\z{}$>$99}} & $<$1 \\
-    red           & $<$1 &     1 & \framebox{\best{\gz{}99}} \\
-    purple        & $<$1 &     2 & \framebox{\best{\gz{}98}} \\
+    true blue     & \intended{\gz{}11} & \best{     89} & $<$1 \\
+    light blue    & \intended{\zz{}$<$1} & \best{$>$99} & $<$1 \\
+    brightest     & $<$1 & \intended{\best{\z{}$>$99}} & $<$1 \\
+    bright blue   & $<$1 & \intended{\best{\z{}$>$99}} & $<$1 \\
+    red           & $<$1 &     1 & \intended{\best{\gz{}99}} \\
+    purple        & $<$1 &     2 & \intended{\best{\gz{}98}} \\
     \midrule
 %   & \multicolumn{3}{c}{$\Speaker_1$} \\
     $\Speaker_1$ & \colorContext{3884C7}{02F9FD}{9E6461}{}  \\
     \midrule
     \textbf{blue} &             41  &    19 & $<$1
     \\[1ex]
-    true blue     & \framebox{\best{\gz{}47}} &    19 & $<$1 \\
-    light blue    & \framebox{\gzz{}5} & \best{   20} & $<$1 \\
-    brightest     & $<$1 & \framebox{\best{\gz{}20}} & $<$1 \\
-    bright blue   &    2 & \framebox{\best{\gz{}20}} & $<$1 \\
-    red           &    1 &     2 & \framebox{\best{\gz{}50}} \\
-    purple        &    5 &     1 & \framebox{\best{\gz{}50}} \\
+    true blue     & \intended{\best{\gz{}47}} &    19 & $<$1 \\
+    light blue    & \intended{\gzz{}5} & \best{   20} & $<$1 \\
+    brightest     & $<$1 & \intended{\best{\gz{}20}} & $<$1 \\
+    bright blue   &    2 & \intended{\best{\gz{}20}} & $<$1 \\
+    red           &    1 &     2 & \intended{\best{\gz{}50}} \\
+    purple        &    5 &     1 & \intended{\best{\gz{}50}} \\
     \midrule
 %    & \multicolumn{3}{c}{$\Listener_1$} \\
     $\Listener_1$ & \colorContext{3884C7}{02F9FD}{9E6461}{} \\
@@ -868,8 +871,12 @@ often cannot rely only on basic color terms.
     \bottomrule
 \end{tabular}
 \caption{Conditional probability tables used to calculate $\Listener^*$
-for one dev set example. Sample sizes are reduced to save space; here,
-$m = 2$ and $n = 1$ (see \secref{sec:l2}). \todocheck{rdh: maybe put a note about what the boxes mean? It looks like it's meant to facilitate visual comparison between boxes, but I think it's actually intended to mark the intended referent of the message? If the latter, why is only the first box marked in the $S_1$ row?}}
+for one dev set example. The true target color is boxed, and ``blue'' is
+the human utterance. Boxed cells for alternative
+utterances indicate the intended target; highest-probability referents
+(listeners) and utterances (speaker) are in \textbf{bold}.
+Sample sizes are reduced to save space; here,
+$m = 2$ and $n = 1$ (see \secref{sec:l2}).}
 \label{fig:rsaExample}
 \end{figure}
 
@@ -910,8 +917,8 @@ We also perform a ``machine communication'' experiment aimed at measuring the
 ability of the speaker agents to convey the information necessary to identify
 the target. \Tabref{table:speakerVsListener} shows the effectiveness of the
 two speaker models---the base speaker $\Speaker_0$ (\secref{sec:s0}) and the
-pragmatic speaker $\Speaker_1$ \eqref{eq:s1}---at describing the
-target color to the listener models. \todocheck{rdh: can we make these either both refer to sections or both refer to equations?}
+pragmatic speaker $\Speaker_1$ (\secref{sec:l2})---at describing the
+target color to the listener models.
 
 The pragmatic speaker is nearly perfect at communicating
 with the listener models, which is unsurprising, because in the case of
@@ -931,7 +938,7 @@ As noted in \secref{sec:training}, we use an inverse temperature parameter of
 $\alpha = 0.544$ and a base weight of $\beta = -0.15$ for the pragmatic
 listener. Particularly surprising is the fact that the optimal value of $\beta$
 discovered in grid search is \emph{negative}. This has the effect of amplifying
-the difference between $\Listener_0$ and $\Listener^2$ (\todocheck{superscript typo}): the pragmatic model,
+the difference between $\Listener_0$ and $\Listener_2$: the pragmatic model,
 evidently, is not quite pragmatic enough.
 
 The $\alpha$ value of 0.544${}<{}$1 indicates that the pragmatic listener is
@@ -1031,7 +1038,7 @@ responses for long-term planning, and (for the listener) deciding when
 to ask for clarification rather than commit to a referent
 \cite{Lewis79_Scorekeeping,BrownYule83_Discourse,Clark96,Roberts96_InformationStructureDiscourse}.
 We look forward to examining this problem further, and we release our
-dataset\footnote{\url{http://anonymized/}}
+dataset\footnote{\label{foot:release}\url{http://see-supplementary-material/}}
 with the expectation that others may find interest in this aspect as well.
 
 
