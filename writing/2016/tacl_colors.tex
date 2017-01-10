@@ -420,7 +420,7 @@ where $\target$ is a color in the context
 set $\context$, $\utt$ is a message drawn from a set of possible
 utterances $\Messages$, $\targetPrior$ is a prior over colors,
 and $\Lex(\utt, \target)$ is a semantic interpretation function that
-takes the value $1$ if $\utt$ is true of $\target$, else $0$.
+takes the value $1$ if $\utt$ is true of $\target$, else $0$. \ndg{don't we allow intermediate values? also fig 2 doesn't match: there we use percentages?}
 \Figref{fig:basic-rsa:l0} summarizes a literal listener defined for 
 a very simple context in which $\Messages=\set{\word{blue},
   \word{teal}, \word{dull}}$, $\context =
@@ -621,6 +621,8 @@ listener a variety of informative alternative utterances to consider when
 interpreting the true input description. In practice, we have found that $\numsamples$
 can be quite small; in our experiments, it is set to $8$.
 
+\ndg{it's worth a comment here about why we sample: doing beam search to get K best seems like a reasonable alternative that would avoid noise...}
+
 To reduce the noise
 resulting from the stochastically chosen alternative utterance sets, we also perform
 this alternative-set sampling $n$ times and average the resulting probabilities in
@@ -649,14 +651,15 @@ to yield a ``hyperpragmatic'' model.
 
 We split our corpus into approximately equal train/dev/test sets
 (15,665 train trials, 15,670 dev, 15,659 test), ensuring that trials from
-the same dyad are present in only one split.
+the same dyad are present in only one split. 
+\ndg{note: it's not obvious that this is the right choice.... it means we might see no training data relevant to a dyad that has an unusual convention. (not worth worrying about for now.)}
 We preprocess the data by (1) lowercasing; (2) tokenizing
 by splitting off punctuation as well as the endings \word{\mbox{-er}}, \word{\mbox{-est}}, and
 \word{\mbox{-ish}};\footnote{We
 only apply this heuristic ending segmentation for the listener; the speaker is trained to produce
-words with these endings unsegmented.} and
+words with these endings unsegmented. \ndg{why?}} and
 (3) replacing tokens that appear once or not at all
-in the training split with \texttt{<unk>}. We also remove
+in the training split with \texttt{<unk>}. \ndg{how many unks do we end up with?} We also remove
 listener utterances and concatenate speaker utterances on the same context. \todocheck{[rdh: listener utterances are not already removed from the filtered corpus; we could concatenate speaker utterances too?]}
 We leave handling of interactive dialogue to future work (\secref{sec:conclusion}).
 
@@ -818,6 +821,8 @@ $\Listener^*$ when interpreting the utterances of human speakers. We find that t
 pragmatic model improves significantly\footnote{$p <{}$0.001, approximate
 permutation test \cite{Pado2006}, 10,000 samples} over the base model on both metrics.
 
+\ndg{did we check the $L(S_0)$ model? if S0 and S1 are really not distinguishable, then this should do as well as L1...}
+
 \begin{figure}
 \centering
 \includegraphics[scale = .45]{figures/changedByCondition.pdf}
@@ -927,6 +932,8 @@ two speaker models---the base speaker $\Speaker_0$ (\secref{sec:s0}) and the
 pragmatic speaker $\Speaker_1$ (\secref{sec:l2})---at describing the
 target color to the listener models.
 
+\ndg{can we break down according to condition as we did for human data in fig 4?}
+
 The pragmatic speaker is nearly perfect at communicating
 with the listener models, which is unsurprising, because in the case of
 $\Listener_0$, the speaker has access to the listener's thought process, and in
@@ -939,13 +946,15 @@ utterances better than humans'. This is surprising, because $\Listener_0$ does n
 contain an embedded model of either speaker, and $\Listener^*$ uses $\Speaker_0$
 only indirectly, as a source of alternative utterances to consider.
 
+\ndg{this will leave people confused.}
+
 \subsection{Tuning the pragmatic parameters} \label{sec:alpha_beta}
 
 As noted in \secref{sec:training}, we use an inverse temperature parameter of
 $\alpha = 0.544$ and a base weight of $\beta = -0.15$ for the pragmatic
 listener. Particularly surprising is the fact that the optimal value of $\beta$
 discovered in grid search is \emph{negative}. This has the effect of amplifying
-the difference between $\Listener_0$ and $\Listener_2$: the pragmatic model,
+the difference between $\Listener_0$ and $\Listener_2$ \ndg{L1?}: the pragmatic model,
 evidently, is not quite pragmatic enough.
 
 The $\alpha$ value of 0.544${}<{}$1 indicates that the pragmatic listener is
@@ -969,6 +978,8 @@ a curve with $\alpha$ decreasing as $\beta$ increased; however, negative $\beta$
 very small $\alpha$ was catastrophic to perplexity.\footnote{We tuned the
 parameters on perplexity rather than accuracy because accuracy was noisy and had
 many local and global minima.}
+
+\ndg{this section could be cut or shortened...}
 
 \section{Related work}
 
