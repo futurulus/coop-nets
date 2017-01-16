@@ -652,15 +652,15 @@ to yield a ``hyperpragmatic'' model.
 We split our corpus into approximately equal train/dev/test sets
 (15,665 train trials, 15,670 dev, 15,659 test), ensuring that trials from
 the same dyad are present in only one split. 
-\ndg{note: it's not obvious that this is the right choice.... it means we might see no training data relevant to a dyad that has an unusual convention. (not worth worrying about for now.)}
 We preprocess the data by (1) lowercasing; (2) tokenizing
 by splitting off punctuation as well as the endings \word{\mbox{-er}}, \word{\mbox{-est}}, and
 \word{\mbox{-ish}};\footnote{We
 only apply this heuristic ending segmentation for the listener; the speaker is trained to produce
 words with these endings unsegmented. \ndg{why?}} and
 (3) replacing tokens that appear once or not at all
-in the training split with \texttt{<unk>}. \ndg{how many unks do we end up with?} We also remove
-listener utterances and concatenate speaker utterances on the same context. \todocheck{[rdh: listener utterances are not already removed from the filtered corpus; we could concatenate speaker utterances too?]}
+in the training split\footnote{1.13\% of training tokens, 1.99\% of dev/test.} with \texttt{<unk>}. We also remove
+listener utterances and concatenate speaker utterances on the same context. 
+% \todocheck{[rdh: listener utterances are not already removed from the filtered corpus; we could concatenate speaker utterances too?]}
 We leave handling of interactive dialogue to future work (\secref{sec:conclusion}).
 
 We use ADADELTA
@@ -954,7 +954,7 @@ As noted in \secref{sec:training}, we use an inverse temperature parameter of
 $\alpha = 0.544$ and a base weight of $\beta = -0.15$ for the pragmatic
 listener. Particularly surprising is the fact that the optimal value of $\beta$
 discovered in grid search is \emph{negative}. This has the effect of amplifying
-the difference between $\Listener_0$ and $\Listener_2$ \ndg{L1?}: the pragmatic model,
+the difference between $\Listener_0$ and $\Listener_1$: the pragmatic model,
 evidently, is not quite pragmatic enough.
 
 The $\alpha$ value of 0.544${}<{}$1 indicates that the pragmatic listener is
