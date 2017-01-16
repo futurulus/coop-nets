@@ -118,6 +118,9 @@
 \newcommand{\colorContextGame}[3]{
   \negthickspace\colorPatch{#1} & \colorPatch{#2} & \colorPatch{#3}}
 
+\newcommand{\colorContextCompact}[3]{
+  \colorPatch[xx]{#1} & \colorPatch[xx]{#2} & \colorPatch[xx]{#3}}
+
 \newcommand{\colorContextNarrow}[3]{
   \colorPatch[xx]{#1}, \colorPatch[xx]{#2}, \colorPatch[xx]{#3}}
 
@@ -127,7 +130,8 @@
 \newcommand{\gz}{\phantom{$<$0}}
 \newcommand{\zz}{\phantom{00}}
 \newcommand{\z}{\phantom{0}}
-\newcommand{\p}{\phantom{\%}}
+%\newcommand{\p}{\phantom{\%}}
+\newcommand{\p}{}
 
  \definecolor{Green}{RGB}{10,200,100}
 \newcommand{\ndg}[1]{\textcolor{Green}{[ndg: #1]}}  
@@ -420,18 +424,37 @@ the corpus). Compared to the baseline \cond{far} context, we found that particip
 \begin{figure*}[t]
   \centering
   %
-  \begin{subfigure}[t]{0.3\textwidth}
+  \begin{subfigure}[t]{0.23\textwidth}
     \centering
     \begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
     \toprule
-     & \colorContextGame{3884C7}{02F9FD}{9E6461}{} \\
+     & \colorContextCompact{3884C7}{02F9FD}{9E6461}{} \\
+    \midrule
+    blue & \best{1}\p & \best{1}\p & 0\p \\
+    teal & 0\p & \best{1}\p & 0\p \\
+    dull & \best{1}\p & 0\p & \best{1}\p \\
+    \bottomrule
+    \end{tabular}
+    \caption{The lexicon $\Lex$ defines utterances' truth-value semantics.
+    Our neural listener skips the lexicon and models
+    $l_0$'s probability distributions directly.}
+    \label{fig:basic-rsa:lex}
+  \end{subfigure}
+  %
+  \hfill
+  %
+  \begin{subfigure}[t]{0.23\textwidth}
+    \centering
+    \begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
+    \toprule
+     & \colorContextCompact{3884C7}{02F9FD}{9E6461}{} \\
     \midrule
     blue & \best{50}\% & \best{50}\p & 0\p \\
     teal & 0\p & \best{100}\p & 0\p \\
     dull & \best{50}\p & 0\p & \best{50}\p \\
     \bottomrule
     \end{tabular}
-    \caption{The literal listener $l_{0}$ chooses colors that match the
+    \caption{The literal listener $l_{0}$ chooses colors compatible with the
              literal semantics of the utterance; other than that, it
              guesses randomly.}
     \label{fig:basic-rsa:l0}
@@ -439,11 +462,11 @@ the corpus). Compared to the baseline \cond{far} context, we found that particip
   %
   \hfill
   %
-  \begin{subfigure}[t]{0.3\textwidth}
+  \begin{subfigure}[t]{0.23\textwidth}
     \centering
     \begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
     \toprule
-     & \colorContextGame{3884C7}{02F9FD}{9E6461}{} \\
+     & \colorContextCompact{3884C7}{02F9FD}{9E6461}{} \\
     \midrule
     blue & \best{50}\p & 33\p & 0\p \\
     teal & 0\p & \best{67}\p & 0\p \\
@@ -458,11 +481,11 @@ the corpus). Compared to the baseline \cond{far} context, we found that particip
   %
   \hfill
   %
-  \begin{subfigure}[t]{0.3\textwidth}
+  \begin{subfigure}[t]{0.23\textwidth}
     \centering
     \begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
     \toprule
-     & \colorContextGame{3884C7}{02F9FD}{9E6461}{} \\
+     & \colorContextCompact{3884C7}{02F9FD}{9E6461}{} \\
     \midrule
     blue & \best{60}\p & 40\p & 0\p \\
     teal & 0\p & \best{100}\p & 0\p \\
@@ -511,13 +534,15 @@ where $\target$ is a color in the context
 set $\context$, $\utt$ is a message drawn from a set of possible
 utterances $\Messages$, $\targetPrior$ is a prior over colors,
 and $\Lex(\utt, \target)$ is a semantic interpretation function that
-takes the value $1$ if $\utt$ is true of $\target$, else $0$. \ndg{don't we allow intermediate values? also fig 2 doesn't match: there we use percentages?}
-\Figref{fig:basic-rsa:l0} summarizes a literal listener defined for 
+takes the value $1$ if $\utt$ is true of $\target$, else $0$.
+\Figref{fig:basic-rsa:lex} shows the values of $\Lex$ defined for
 a very simple context in which $\Messages=\set{\word{blue},
-  \word{teal}, \word{dull}}$, $\context =
-\set{\colorContextNarrow{3884C7}{02F9FD}{9E6461}{}}$, 
-and the prior $\targetPrior$ over these context elements is flat.
-
+  \word{teal}, \word{dull}}$, and $\context =
+\set{\colorContextNarrow{3884C7}{02F9FD}{9E6461}{}}$;
+\figref{fig:basic-rsa:l0} shows the corresponding literal listener
+$l_0$ if the prior $\targetPrior$ over these context elements is flat.
+(In our scalable extension, we will substitute a neural network model for $l_0$,
+bypassing $\Lex$ and allowing for non-binary semantic judgments.)
 
 To derive a model of a \term{pragmatic speaker} (\figref{fig:basic-rsa:s1}), 
 RSA postulates that
@@ -706,13 +731,18 @@ maximum utterance length and might not even be finite.
 As mentioned in \secref{sec:s0}, we limit this search by
 taking $\numsamples$ samples from $\Speaker_0(\utt \| i, \context; \phi)$ for
 each possible target index $i$, adding the actual utterance from the testing example,
-and taking the resulting set as the universe of possible utterances. Taking a number
+and taking the resulting multiset as the universe of possible utterances,
+weighted towards frequently-sampled utterances.\footnote{An alternative would
+be to enforce uniqueness within the alternative set, keeping it a true set as in the
+basic RSA formulation; this could be done with rejection sampling or beam search
+for the highest-scoring speaker utterances. We found that doing so with
+rejection sampling hurt model performance somewhat, so we did not
+pursue the more complex beam search approach.} Taking a number
 of samples from $\Speaker_0$ for each referent in the context gives the pragmatic
 listener a variety of informative alternative utterances to consider when
-interpreting the true input description. In practice, we have found that $\numsamples$
+interpreting the true input description.
+In practice, we have found that $\numsamples$
 can be quite small; in our experiments, it is set to $8$.
-
-\ndg{it's worth a comment here about why we sample: doing beam search to get K best seems like a reasonable alternative that would avoid noise...}
 
 To reduce the noise
 resulting from the stochastically chosen alternative utterance sets, we also perform
@@ -881,8 +911,6 @@ Sample sizes are reduced to save space; here,
 $m = 2$ and $n = 1$ (see \secref{sec:l2}).}
 \label{fig:rsaExample}
 \end{figure}
-
-\ndg{did we check the $L(S_0)$ model? if S0 and S1 are really not distinguishable, then this should do as well as L1...}
 
 Breaking out the number of examples changed by condition
 (\figref{fig:changedByCondition}) reveals that
