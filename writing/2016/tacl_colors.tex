@@ -209,7 +209,7 @@ shades of blue, because the interlocutors assume about each other that
 they find the target color a more prototypical representative of blue
 and would prefer other descriptions (\word{teal}, \word{cyan}) for the middle color.
 The fact that \word{blue} is the utterance of choice in three of these
-four cases re-enforces the context dependence of color descriptions.
+four cases highlights the context dependence of color descriptions.
 
 \begin{table}
   \centering
@@ -272,15 +272,17 @@ colors in context elicits much greater variety in language use,
 including negations, comparatives and superlatives, and increased use
 of metaphor and shared associations.
 
-We focus on the effectiveness of
-our listener agents for simplicity.\footnote{In our model, listeners depend on
-speakers, so this implicitly evaluates our speakers as well.} Experiments on this data show that our pragmatic model improves accuracy
+In this paper we focus on the effectiveness of
+our listener agents.\footnote{Since the listeners are derived from
+speaker models, this indirectly evaluates our speakers as well.
+However, we directly assess the speakers only qualitatively.}
+Experiments on this data show that our pragmatic model improves accuracy
 in interpreting human-produced descriptions over the RNN base agent
 alone. Moreover, the improvements from pragmatic reasoning come primarily
 in the hardest cases:
 %
 \begin{enumerate*}[label=(\arabic*)]
-\item contexts featuring colors that are very similar, thus requiring
+\item contexts with colors that are very similar, thus requiring
   the interpretation of descriptions that convey fine distinctions;
   and
 \item target colors that most referring expressions fail to identify,
@@ -292,7 +294,7 @@ in the hardest cases:
 \section{Task and data collection}\label{sec:corpus}
 
 We evaluate our agents on a task of language understanding in a dyadic reference
-game \cite{Rosenberg:Cohen:1964,KraussWeinheimer64_ReferencePhrases,Paetzel-etal:2014}. Unlike traditional language tasks, where participants provide impartial judgements of language in isolation, reference games embed language use in a more natural, goal-oriented communicative context \cite{Clark96,TanenhausBrownSchmidt08_LanguageNatural}. Since they offer the simplest experimental setup where many pragmatic and discourse-level phenomena emerge, these games have been used widely in cognitive science to study topics like common ground and conventionalization \cite{Clark:Wilkes-Gibbs:1986}, referential domains \cite{BrownSchmidtTanenhaus08_TargetedGame}, perspective-taking \cite{HannaTanenhausTrueswell03_CommonGroundPerspective}, and overinformativeness \cite{KoolenGattGoudbeekKrahmer11_Overspecification}.
+game \cite{Rosenberg:Cohen:1964,KraussWeinheimer64_ReferencePhrases,Paetzel-etal:2014}. Unlike traditional natural language processing tasks, in which participants provide impartial judgements of language in isolation, reference games embed language use in a goal-oriented communicative context \cite{Clark96,TanenhausBrownSchmidt08_LanguageNatural}. Since they offer the simplest experimental setup where many pragmatic and discourse-level phenomena emerge, these games have been used widely in cognitive science to study topics like common ground and conventionalization \cite{Clark:Wilkes-Gibbs:1986}, referential domains \cite{BrownSchmidtTanenhaus08_TargetedGame}, perspective-taking \cite{HannaTanenhausTrueswell03_CommonGroundPerspective}, and overinformativeness \cite{KoolenGattGoudbeekKrahmer11_Overspecification}.
 
 %More formally, in our reference game, a listener agent $\Listener$ is presented with a context set of colors
 %$\context = \{\referent_{i}, i=1..\contextlen\}$ and an English
@@ -332,7 +334,7 @@ number of trials from three different conditions:
     $\epsilon = 5$ to ensure perceptible differences, and we used a
     threshold value of $\theta = 20$ to create conditions.} 
 \item \cond{split}, where one distractor was within a distance of
-  $\theta$ of the target, but the other distractor was further than
+  $\theta$ of the target, but the other distractor was farther than
   $\theta$, and
 \item \cond{far}, where all colors were farther than $\theta$ from one
   another. Colors were rejection sampled uniformly from RGB (red,
@@ -351,7 +353,7 @@ was thus structured like a large-scale behavioral experiment, closely
 following experimental designs like those of
 \newcite{Clark:Wilkes-Gibbs:1986}. This paves the way to assessing our
 model not solely based on the listener's classification accuracy, but also in terms of how
-sophisticated qualitative features of the speaker's production compare to that of our human participants. 
+qualitative features of the speaker's production compare to that of our human participants. 
 Thus, the current section briefly reviews some novel findings from the human
 corpus that we use to inform our model assessment.
 
@@ -390,7 +392,7 @@ Since color reference is a difficult task even for humans, we compared listener 
 \subsection{Speaker behavior}
 
 For ease of comparison to computational results, we focus on five
-metrics capturing different aspects of the rich pragmatic behavior
+metrics capturing different aspects of pragmatic behavior
 displayed by both human and artificial speakers in our task
 (\tabref{table:metrics}). As can be seen, our pragmatic speaker model did not differ qualitatively from our literal speaker on any of the metrics, hence we only present results for humans and the pragmatic model. In all cases, we report test statistics from a mixed-effects regression including condition as a fixed effect and game ID as a random effect; except where noted, all test statistics reported correspond to $p$-values${}<10^{-4}$ and have been omitted for readability.
 
@@ -544,8 +546,8 @@ We found a small but reliable increase in the likelihood of ``high specificity''
 
 \section{Models}
 
-Our model is intended as a scalable version of RSA. We first define the
-basic RSA model as applied to the
+The model we propose for this task is intended as a scalable version of RSA.
+We first define the basic RSA model as applied to the
 color reference games introduced in \secref{sec:corpus}; a worked example
 is shown in \figref{fig:basic-rsa}. The starting point of RSA is a model
 of a \term{literal listener}:
@@ -602,7 +604,7 @@ will take deviations from an optimal utterance as a signal to choose a
 different referent.
 
 The most important feature of this model is that the pragmatic
-listener $l_{2}$ reasons, not about the semantic interpretation
+listener $l_{2}$ reasons not about the semantic interpretation
 function $\Lex$ directly, but rather about a speaker who reasons about
 a listener who reasons about $\Lex$ directly. The back-and-forth
 nature of this interpretive process mirrors the
