@@ -13,6 +13,7 @@
 \usepackage{times}
 \usepackage{latexsym}
 \usepackage{amsmath}
+\usepackage{mathtools}
 \usepackage{amssymb}
 \usepackage{multirow}
 \usepackage{graphicx}
@@ -164,15 +165,16 @@ Grounded Language Understanding}
 
 We present a two-layer pragmatic model of referring expression interpretation:
 a listener modeling a speaker modeling a listener, where the base listener is a
-recurrent neural network classifier. Our model outperforms the
-base listener at a task of color reference understanding, evaluated on a
-newly-collected corpus of human utterances in color reference games.
-Our experiments show that the primary benefits from pragmatic reasoning come
+recurrent neural network classifier. We find that the pragmatic listener
+model outperforms the base listener at a task of color reference understanding,
+with further gains from ensembling with the base model and a neural speaker model.
+Our findings make use of a newly-collected corpus of human utterances in
+color reference games, which exhibit a variety of pragmatic behaviors.
+Experiments show that the primary benefits from pragmatic reasoning come
 in the hardest cases: when the model must distinguish colors that are very
 similar, or when there are few utterances available that adequately express
-the target color.
-
-\ndg{i'd say a bit more about the corpus and bahavioral results here, since they are a main contribution, and set the stage for the model....}
+the target color. We also analyze the behavior of the embedded speaker model,
+showing that it reproduces many pragmatic effects observed in the human data.
 
 \end{abstract}
 
@@ -363,6 +365,28 @@ corpus that we use to inform our model assessment.
 
 Since color reference is a difficult task even for humans, we compared listener accuracy across conditions to calibrate our expectations about model performance. While participants' accuracy was close to ceiling (97\%) on the \cond{far} condition, they made significantly more errors on the \cond{split} (90\%) and \cond{close} (83\%) conditions (see \figref{fig:listenerAccuracy}).
 
+% latex table generated in R 3.3.2 by xtable 1.8-2 package
+% Mon Jan  9 13:58:36 2017
+\begin{table*}[ht]
+\centering
+\begin{tabular}{lrrrr@{\hspace{20pt}}rrrr@{\hspace{20pt}}rrr}
+  \toprule
+  & \multicolumn{3}{c}{human}&& \multicolumn{3}{c}{literal}&& \multicolumn{3}{c}{pragmatic}\\
+  & far& split& close&& far& split& close&& far& split& close\\ \midrule
+  \# Chars            & 7.8 & 12.3 & 14.9 && 9.0 & 12.8 & 16.6 && 9.0 & 12.8 & 16.4 \\ 
+  \# Words            & 1.7 & 2.7 & 3.3   && 2.0 & 2.8 & 3.7   && 2.0 & 2.8 & 3.7   \\ 
+  \% Comparatives     & 1.7 & 14.2 & 12.8 && 3.6 & 8.8 & 13.1  && 4.2 & 9.0 & 13.7  \\ 
+  \% High Specificity & 7.0 & 7.6 & 7.4   && 6.4 & 8.4 & 7.6   && 6.8 & 7.9 & 7.5   \\ 
+  \% Negatives        & 2.8 & 10.0 & 12.9 && 4.8 & 8.9 & 13.3  && 4.4 & 8.5 & 14.1  \\ 
+  \% Superlatives     & 2.2 & 6.1 & 16.7  && 4.7 & 9.7 & 17.2  && 4.8 & 10.3 & 16.6 \\ 
+   \bottomrule
+\end{tabular}
+\caption{Corpus statistics and statistics of samples from $\Speaker_1$
+  (rates per utterance). The human and artificial speakers show
+  the same correlations between language use and context type.} 
+\label{table:metrics}
+\end{table*}
+
 \subsection{Speaker behavior}
 
 For ease of comparison to computational results, we focus on five
@@ -492,9 +516,9 @@ the corpus). Compared to the baseline \cond{far} context, we found that particip
     dull & 33\p & 0\p & \best{67}\p \\
     \bottomrule
     \end{tabular}
-    \caption{The pragmatic listener $l_{1}$ uses Bayes' rule to infer the target
+    \caption{The pragmatic listener $l_{2}$ uses Bayes' rule to infer the target
              using the speaker's utterance as evidence.}
-    \label{fig:basic-rsa:l1}
+    \label{fig:basic-rsa:l2}
   \end{subfigure}
   %
   \caption{An example of RSA applied to a color reference task (literal semantics and alternative utterances simplified for demonstration).}
@@ -562,13 +586,13 @@ the most informative utterance (minus cost)
 consistently, whereas a small $\alpha$ means the
 speaker is modeled as choosing suboptimal utterances frequently.
 
-Finally, a \term{pragmatic listener} (\figref{fig:basic-rsa:l1})
+Finally, a \term{pragmatic listener} (\figref{fig:basic-rsa:l2})
 interprets utterances by reasoning about the behavior of the pragmatic speaker:
 \begin{align}
-  l_{1}(\target \| \utt, \Lex)
+  l_{2}(\target \| \utt, \Lex)
   &\propto
   s_{1}(\utt \| \target, \Lex) \targetPrior(\target)
-  \label{eq:rsa-l1}
+  \label{eq:rsa-l2}
 \end{align}
 
 The $\alpha$ parameter of the speaker indirectly affects the
@@ -578,7 +602,7 @@ will take deviations from an optimal utterance as a signal to choose a
 different referent.
 
 The most important feature of this model is that the pragmatic
-listener $l_{1}$ reasons, not about the semantic interpretation
+listener $l_{2}$ reasons, not about the semantic interpretation
 function $\Lex$ directly, but rather about a speaker who reasons about
 a listener who reasons about $\Lex$ directly. The back-and-forth
 nature of this interpretive process mirrors the
@@ -606,7 +630,7 @@ must sum over all messages.
 
 Over the next few subsections, we overcome these obstacles by
 replacing $l_{0}$ with an RNN-based listener agent, and by defining an
-RNN-based speaker agent (a kind of $s_{0}$ agent) to provide sample
+RNN-based speaker agent to provide sample
 utterances that let us approximate the normalization required for
 defining an $s_{1}$ agent.
 
@@ -703,14 +727,14 @@ a second RNN and concatenate the context representation onto each input word vec
 
 Using the above base agents, we define a pragmatic speaker
 $\Speaker_{1}$ and a pragmatic listener
-$\Listener_{1}$:
+$\Listener_{2}$:
 %
 \begin{align}
 \Speaker_1(\utt \| \target, \context; \theta)
   &= \frac{\Listener_0(\target \| \utt, \context; \theta)^\alpha}{\sum_{\utt'}
     \Listener_0(\target \| \utt', \context; \theta)^\alpha}
     \label{eq:s1} \\
-  \Listener_1(\target \| \utt, \context; \theta)
+  \Listener_2(\target \| \utt, \context; \theta)
   &=
     \frac{
     \Speaker_1(\utt \| \target, \context; \theta)
@@ -719,11 +743,10 @@ $\Listener_{1}$:
     }
 \end{align}
 
-These definitions mirror those in \eq{eq:rsa-s1} and \eq{eq:rsa-l1}
+These definitions mirror those in \eq{eq:rsa-s1} and \eq{eq:rsa-l2}
 above, with $\Lex$ replaced by the learned weights $\theta$. We also
 explicitly represent the context $\context$, because we can now define
 features that explicitly take that information into account.
-\todocheck{Could say more about this if there is room.}
 
 Just as in \eqref{eq:rsa-s1}, the denominator in \eqref{eq:s1} should consist of a sum over
 the entire set of potential utterances, which is exponentially large in the
@@ -747,24 +770,44 @@ can be quite small; in our experiments, it is set to $8$.
 To reduce the noise
 resulting from the stochastically chosen alternative utterance sets, we also perform
 this alternative-set sampling $n$ times and average the resulting probabilities in
-the final $\Listener_1$ output. We again choose $n = 8$ as a satisfactory
+the final $\Listener_2$ output. We again choose $n = 8$ as a satisfactory
 compromise between effectiveness and computation time.
 
-We find we can obtain an additional small improvement in listener accuracy
-by blending the pragmatic listener with the base listener. This blended listener,
-denoted $\Listener^*$, is defined as:
-\begin{multline}
-\Listener^{*}(\target \| \utt, \context; \theta) \propto \\ {\Listener_0}(\target \| \utt, \context; \theta)^{\beta} \cdot {}
-\Listener_1(\target \| \utt, \context; \theta)^{1-\beta}  \label{eq:beta}
-\end{multline}
+An alternative pragmatic listener can be formed in a similar way from the neural
+speaker agent. We denote this $\Listener_1$:
 %
-This allows the model to adjust
-the extent to which it overrides the learned model with the pragmatic
-reasoning. The value of the base weight
-$\beta$ can be any real number; however, we find that good values of $\beta$
-lie in the range [-1, 1]. Setting $\beta = 0$ makes the blended model
-equivalent to the pragmatic model; $\beta = 1$ ignores the
-pragmatic reasoning and uses the base model's outputs; $\beta = -1$
+\begin{align}
+  \Listener_1(\target \| \utt, \context; \theta)
+  &=
+    \frac{
+    \Speaker_0(\utt \| \target, \context; \theta)
+    }{
+    \sum_{\target'} \Speaker_0(\utt \| \target', \context; \theta)
+    }    \label{eq:l1}
+\end{align}
+%
+This agent turns out to be less accurate than either $\Listener_0$ or
+$\Listener_2$, but its assessments are based on a different model,
+so it complements the other listeners well in an ensemble model.
+We consider the following ensembles of neural base models and pragmatic models:
+\begin{align}
+\Listener_a(\target \| \utt, \context; \theta) &\propto {\Listener_0}(\target \| \utt, \context; \theta)^{\beta_a} \cdot {} \nonumber \\
+& &\mathllap{\Listener_1(\target \| \utt, \context; \theta)^{1-\beta_a}}  \label{eq:beta_a} \\
+\Listener_b(\target \| \utt, \context; \theta) &\propto {\Listener_0}(\target \| \utt, \context; \theta)^{\beta_b} \cdot {} \nonumber\\
+& &\mathllap{\Listener_2(\target \| \utt, \context; \theta)^{1-\beta_b}}  \label{eq:beta_b} \\
+\Listener_e(\target \| \utt, \context; \theta) &\propto {\Listener_a}(\target \| \utt, \context; \theta)^{\gamma} \cdot {} \nonumber\\
+& &\mathllap{\Listener_b(\target \| \utt, \context; \theta)^{1-\gamma}}  \label{eq:gamma}
+\end{align}
+%
+The hyperparameters in the exponents allow the models to tune a
+blend of each pair of models---e.g., overriding the neural model with the pragmatic
+reasoning in $\Listener_b$. The value of the weights
+$\beta_a$, $\beta_b$, and $\gamma$ can be any real number; however, we find that
+good values of these weights
+lie in the range [-1, 1]. As an example, setting $\beta_b = 0$ makes the
+blended model $\Listener_b$ equivalent to the pragmatic model $\Listener_2$;
+$\beta_b = 1$ ignores the pragmatic reasoning and uses the base model
+$\Listener_0$'s outputs; and $\beta_b = -1$
 ``subtracts'' the base model from the pragmatic model (in log probability space)
 to yield a ``hyperpragmatic'' model.
 
@@ -794,32 +837,43 @@ on a held-out tuning set consisting of 3,500 contexts.\footnote{For
   $\Speaker_0$: Adam, learning rate $\alpha = {}$0.004.}
 
 We also use a more fine-grained grid search on this tuning set to determine the
-values of the two pragmatic reasoning parameters, $\alpha$ and $\beta$.
-Our final model uses
-$\alpha = 0.544$ and $\beta = -0.15$; see \secref{sec:alpha_beta} for more
-discussion of these values.
+values of the pragmatic reasoning parameters $\alpha$, $\beta$, and $\gamma$.
+In our final ensemble $\Listener_e$, wee use an inverse temperature parameter of
+$\alpha = 0.544$, base weights of $\beta_a = 0.492$, $\beta_b = -0.15$, and
+a final blending weight of $\gamma = 0.491$.
+Particularly surprising is the fact that the optimal value of $\beta_b$
+discovered in grid search is \emph{negative}. This has the effect of amplifying
+the difference between $\Listener_0$ and $\Listener_2$: the listener-based
+pragmatic model, evidently, is not quite pragmatic enough.
 
-% latex table generated in R 3.3.2 by xtable 1.8-2 package
-% Mon Jan  9 13:58:36 2017
-\begin{table*}[ht]
+\begin{table}[t]
 \centering
-\begin{tabular}{lrrr@{\hspace{40pt}}rrr@{\hspace{40pt}}rrr}
+\begin{tabular}{lrr}
   \toprule
-  & \multicolumn{3}{c}{human}& \multicolumn{3}{c}{literal}& \multicolumn{3}{c}{pragmatic}\\& far& split& close& far& split& close& far& split& close\\ \midrule
-\# Chars & 7.8 & 12.3 & 14.9 & 9.0 & 12.8 & 16.6 & 9.0 & 12.8 & 16.4 \\ 
-  \# Words & 1.7 & 2.7 & 3.3 & 2.0 & 2.8 & 3.7 & 2.0 & 2.8 & 3.7 \\ 
-  \% Comparatives & 1.7 & 14.2 & 12.8 & 3.6 & 8.8 & 13.1 & 4.2 & 9.0 & 13.7 \\ 
-  \% High Specificity & 7.0 & 7.6 & 7.4 & 6.4 & 8.4 & 7.6 & 6.8 & 7.9 & 7.5 \\ 
-  \% Negatives & 2.8 & 10.0 & 12.9 & 4.8 & 8.9 & 13.3 & 4.4 & 8.5 & 14.1 \\ 
-  \% Superlatives & 2.2 & 6.1 & 16.7 & 4.7 & 9.7 & 17.2 & 4.8 & 10.3 & 16.6 \\ 
-   \bottomrule
+  model & accuracy (\%) & perplexity \\
+  \midrule
+  $\Listener_0$                                      & 83.30 & 1.73 \\
+  $\Listener_1$ [$\Listener(\Speaker_0)$]            & 80.51 & 1.59 \\
+  $\Listener_2$ [$\Listener(\Speaker(\Listener_0))$] & 83.95 & 1.51 \\
+  $\Listener_a$ [$\Listener_0 \cdot \Listener_1$]    & 84.72 & 1.47 \\
+  $\Listener_b$ [$\Listener_0 \cdot \Listener_2$]    & 83.98 & 1.50 \\
+  $\Listener_e$ [$\Listener_a \cdot \Listener_b$]    & \best{84.84} & \best{1.45}
+  \\[0.5ex]
+  human & \oracle{90.40} \\
+  \midrule
+  $\Listener_0$                                      & 85.08 & 1.62 \\
+  $\Listener_e$                                      & \best{\todocheck{(...)}} & \best{\todocheck{(...)}}
+  \\[0.5ex]
+  human & \oracle{91.08} \\
+  \bottomrule
 \end{tabular}
-\caption{Corpus statistics and statistics of samples from $\Speaker_1$
-  (rates per utterance). The human and artificial speakers show
-  the same correlations between language use and context type.} 
-\label{table:metrics}
-\end{table*}
+\caption{Overall accuracy and perplexity of the base and pragmatic listeners and
+various ensembles ($A \cdot B$ denotes an ensemble of $A$ and $B$).
+Top: dev set; bottom: test set.}
+\label{table:modelAccuracy}
+\end{table}
 
+\begin{comment}
 \begin{table}[t]
 \centering
 \begin{tabular}{lrrrrrr}
@@ -828,7 +882,7 @@ discussion of these values.
    & $\Speaker_h$ & $\Speaker_0$ & $\Speaker_1$ & $\Speaker_h$ & $\Speaker_0$ & $\Speaker_1$ \\
   \midrule
   $\Listener_0$ & 83.39 & 83.66 & \oracle{99.75} & 1.69 & 1.71 & \oracle{1.03} \\
-  $\Listener^*$ & \best{84.11} & \best{84.82} & \oracle{99.93} & \best{1.49} & \best{1.45} & \oracle{1.08}
+  $\Listener_b$ & \best{84.11} & \best{84.82} & \oracle{99.93} & \best{1.49} & \best{1.45} & \oracle{1.08}
   \\[0.5ex]
   $\Listener_h$ & 90.03 \\
    \bottomrule
@@ -838,11 +892,12 @@ on inputs from various speakers, plus human accuracy. $\Speaker_h$ and $\Listene
 represent human agents. \oracle{Italics}: ``oracle'' results (see \secref{sec:speaker_eff}).}
 \label{table:speakerVsListener}
 \end{table}
+\end{comment}
 
 \begin{figure}
 \centering
 \includegraphics[scale = .45]{figures/changedByCondition.pdf}
-\caption{Fraction of examples improved and declined, $\Listener^*$ over $\Listener_0$.}
+\caption{Fraction of examples improved and declined, $\Listener_e$ over $\Listener_0$. \todocheck{(switch to $\Listener_e$)}}
 \label{fig:changedByCondition}
 \end{figure}
 
@@ -850,11 +905,13 @@ represent human agents. \oracle{Italics}: ``oracle'' results (see \secref{sec:sp
 
 \subsection{Listener accuracy}
 
-The columns labeled $\Speaker_h$ in \tabref{table:speakerVsListener} show the accuracy
-and perplexity of the base listener $\Listener_0$ and the pragmatic listener
-$\Listener^*$ when interpreting the utterances of human speakers. We find that the
-pragmatic model improves significantly\footnote{$p <{}$0.001, approximate
-permutation test \cite{Pado2006}, 10,000 samples} over the base model on both metrics.
+\Tabref{table:modelAccuracy} shows the accuracy
+and perplexity of the base listener $\Listener_0$, the pragmatic listeners
+$\Listener_1$ and $\Listener_2$, and the ensemble models $\Listener_a$,
+$\Listener_b$, and $\Listener_e$ at resolving the human-written color
+references. \todocheck{The
+final ensemble improves significantly\footnote{$p <{}$0.001, approximate
+permutation test \cite{Pado2006}, 10,000 samples} over the base model on both metrics.}
 
 \newcommand{\intended}{\framebox}
 
@@ -887,7 +944,7 @@ permutation test \cite{Pado2006}, 10,000 samples} over the base model on both me
     purple        &    5 &     1 & \intended{\best{\gz{}50}} \\
     \midrule
 %    & \multicolumn{3}{c}{$\Listener_1$} \\
-    $\Listener_1$ & \colorContext{3884C7}{02F9FD}{9E6461}{} \\
+    $\Listener_2$ & \colorContext{3884C7}{02F9FD}{9E6461}{} \\
     \midrule
     \textbf{blue} & \best{            68}  &    32 & $<$1 \\
     \midrule
@@ -897,12 +954,12 @@ permutation test \cite{Pado2006}, 10,000 samples} over the base model on both me
 %    bright blue   &    7 & \framebox{\best{   93}} & $<$1 \\
 %    red           &    2 &     5 & \framebox{\best{  94}} \\
 %    purple        &    9 &     2 & \framebox{\best{  89}} \\
-    $\Listener^*$ & \colorContext{3884C7}{02F9FD}{9E6461}{} \\
-    \midrule
-    \textbf{blue} & \best{            78}  &    22 & $<$1 \\
-    \bottomrule
+%   $\Listener_b$ & \colorContext{3884C7}{02F9FD}{9E6461}{} \\
+%   \midrule
+%   \textbf{blue} & \best{            78}  &    22 & $<$1 \\
+%   \bottomrule
 \end{tabular}
-\caption{Conditional probability tables used to calculate $\Listener^*$
+\caption{Conditional probability tables used to calculate $\Listener_2$
 for one dev set example. The true target color is boxed, and ``blue'' is
 the human utterance. Boxed cells for alternative
 utterances indicate the intended target; highest-probability referents
@@ -914,14 +971,15 @@ $m = 2$ and $n = 1$ (see \secref{sec:l2}).}
 
 Breaking out the number of examples changed by condition
 (\figref{fig:changedByCondition}) reveals that
-the primary gain from the pragmatic model is in the \cond{close} condition, when the
+the primary gain from including the pragmatic models is in the
+\cond{close} condition, when the
 model has to distinguish three colors that are all nearby in color space and
 often cannot rely only on basic color terms.
 
 Examining the full probability tables for various dev set examples on which
-$\Listener^*$ makes a difference reveals a general pattern. In most of these
-examples, the alternative utterances sampled from $\Speaker_0$ for one of the
-referents $i$ fail to identify
+$\Listener_2$ is superior to $\Listener_0$ reveals a general pattern. In most
+of these examples, the alternative utterances sampled from $\Speaker_0$ for one
+of the referents $i$ fail to identify
 their intended referent to $\Listener_0$. The pragmatic listener interprets
 this to mean that referent $i$ is inherently difficult to refer to,
 and it compensates by increasing referent $i$'s probability. This is beneficial
@@ -949,6 +1007,7 @@ fact that the speaker chose \textit{blue} is interpreted as evidence for the
 true target. This perfectly mirrors the back-and-forth reasoning behind the
 definition of conversational implicature \cite{Grice75}.
 
+\begin{comment}
 \subsection{Speaker effectiveness} \label{sec:speaker_eff}
 
 We also perform a ``machine communication'' experiment aimed at measuring the
@@ -1006,6 +1065,7 @@ parameters on perplexity rather than accuracy because accuracy was noisy and had
 many local and global minima.}
 
 \ndg{this section could be cut or shortened...}
+\end{comment}
 
 \section{Related work}
 
@@ -1029,29 +1089,20 @@ pragmatic speaker $\Speaker(\Listener_0)$, with sampling from a neural
 $\Speaker_0$ model to limit the search space and regularize the model toward
 human-like utterances. We show that these techniques prove beneficial in
 understanding (listener) tasks as well. Approaching pragmatics from the listener
-side requires taking the recursive reasoning process one step beyond theirs, to a
-two-level derived pragmatic model $\Listener(\Speaker(\Listener_0))$; i.e., we
-derive a pragmatic listener from their pragmatic speaker by normalizing once more
-over the colors.
+side requires either inverting the pragmatic reasoning (i.e., deriving a
+listener from a speaker), or taking the recursive reasoning process one step
+beyond theirs, to a two-level derived pragmatic model
+$\Listener(\Speaker(\Listener_0))$. We show that both approaches contribute
+to an effective listener model.
 
-Additionally, we replace the multi-layer perceptron models over
+Additionally, we add the $\alpha$ inverse temperature parameter from
+\newcite{Goodman2013}, and we replace the multi-layer perceptron models over
 $n$-gram features used in \newcite{AndreasKlein16_NeuralPragmatics}
 with recurrent models for both the base listener and the base speaker.
 These sequential models can approximate the compositional semantics
-that is so crucial for operators like negation and comparatives. In
-addition, our speaker is more expressive in that it is able to capture
+that is so crucial for operators like negation and comparatives.
+Our speaker is also more expressive in that it is able to capture
 properties of the context when sampling alternative utterances.
-Finally, we add the $\alpha$ inverse temperature parameter from
-\newcite{Goodman2013}, and we use a different strategy for blending
-the pragmatic and base models: their model blends the base speaker and
-base listener ($\Speaker_0^{\beta} \cdot \Listener_0^{1 - \beta}$) and
-normalizes across utterances to implicitly define a different
-pragmatic model, whereas we first compute the full normalized
-pragmatic model ($\Listener(\Speaker(\Listener_0))$) and blend it with
-a base listener by
-$\Listener_0^{\beta} \cdot \Listener(\Speaker(\Listener_0))^{1 -
-  \beta}$. \todocheck{This could be a liability; reviewers are likely
-to ask how the two blending strategies compare on our task.}
 
 \section{Conclusion} \label{sec:conclusion}
 
