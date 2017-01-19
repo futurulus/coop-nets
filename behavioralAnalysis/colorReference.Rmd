@@ -346,6 +346,7 @@ informativityDF = read_csv("informativities.csv") %>%
 
 # TODO: present se in table (e.g. in parens after mean)
 speakerStats = combined %>% 
+  filter(role == 'speaker') %>%
   left_join(taggedDF) %>%
   left_join(informativityDF) %>%
   filter(numRawWords > 0) %>% # Get rid of NAs from empty strings
