@@ -95,6 +95,8 @@ def evaluate_ak_blending():
 
 
 def compute_ak(l0, s0, bw, sw, alpha, gamma):
+    l0 = normalize(np.maximum(l0, -1000.0), axis=3)
+
     ak = normalize((1 - sw) * l0[:, 0, 0, :] + sw * s0[:, 0, 0, :])
 
     s1 = normalize(l0 * alpha, axis=2)
@@ -117,7 +119,8 @@ def compute_additive(l0, s0, bw, sw, alpha_s1, alpha_l1):
     return log_weighted_ave([l0, l1, l2], [bw, sw, 1.0 - bw - sw])
 
 
-def normalize(arr, axis=1):
+def normalize(arr, axis=1, cap=-100.0):
+    arr = np.maximum(arr, cap)
     return arr - logsumexp(arr, axis=axis, keepdims=True)
 
 
