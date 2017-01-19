@@ -357,12 +357,6 @@ qualitative features of the speaker's production compare to that of our human pa
 Thus, the current section briefly reviews some novel findings from the human
 corpus that we use to inform our model assessment.
 
-\begin{figure}
-\includegraphics[scale = .5]{figures/listenerAccuracy}
-\caption{Human reference game performance across conditions.}
-\label{fig:listenerAccuracy}
-\end{figure}
-
 \subsection{Listener behavior}
 
 Since color reference is a difficult task even for humans, we compared listener accuracy across conditions to calibrate our expectations about model performance. While participants' accuracy was close to ceiling (97\%) on the \cond{far} condition, they made significantly more errors on the \cond{split} (90\%) and \cond{close} (83\%) conditions (see \figref{fig:listenerAccuracy}).
@@ -893,10 +887,12 @@ represent human agents. \oracle{Italics}: ``oracle'' results (see \secref{sec:sp
 \end{comment}
 
 \begin{figure}
-\centering
-\includegraphics[scale = .45]{figures/changedByCondition.pdf}
-\caption{Fraction of examples improved and declined, $\Listener_e$ over $\Listener_0$. \todocheck{(switch to $\Listener_e$)}}
-\label{fig:changedByCondition}
+\includegraphics[scale = .5]{figures/listenerAccuracy}
+
+\includegraphics[scale = .5]{figures/changedByCondition.pdf}
+\caption{Human and model reference game performance (top) and fraction of examples improved and
+declined from $\Listener_0$ to $\Listener_e$ (bottom) on the dev set, by condition.}
+\label{fig:listenerAccuracy}
 \end{figure}
 
 \section{Model results}
@@ -998,10 +994,10 @@ $m = 2$ and $n = 1$ (see \secref{sec:l2}).}
 \end{figure}
 
 Breaking out the number of examples changed by condition
-(\figref{fig:changedByCondition}) reveals that
+(\figref{fig:listenerAccuracy}) reveals that
 the primary gain from including the pragmatic models is in the
-\cond{close} condition, when the
-model has to distinguish three colors that are all nearby in color space and
+\cond{close} and \cond{split} conditions, when the
+model has to distinguish colors that are nearby in color space and
 often cannot rely only on basic color terms.
 
 Examining the full probability tables for various dev set examples on which

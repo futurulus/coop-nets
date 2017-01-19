@@ -173,14 +173,12 @@ Template for pulling in listener & speaker
 ```{r}
 makeModelDF <- function(listenerOutput, speakerOutput, sourceLabel) {
   robo_msgs = read.csv(speakerOutput) %>%
-    rename(msgTime = time, role = sender) %>%
+    select(gameid, roundNum, msgTime, role, contents) %>%
     mutate(role = "speaker") %>%
     mutate(contents = trimws(as.character(contents)))
 
   robo_clks = read.csv(listenerOutput) %>%
-    mutate(condition = factor(condition, levels = c("closer", "further", "equal"), 
-                              labels = c("close", "split", "far"))) %>%
-    rename(clkTime = time)
+    select(-msgTime, -role, -contents, -numOutcome)
 
   combined_model <- robo_clks %>% 
     left_join(robo_msgs, by = c("gameid", "roundNum")) %>%
@@ -206,14 +204,14 @@ Next, pull in S2/L2 model output
 
 ```{r}
 literalModel <- makeModelDF(
-  "./modelOutput/listener_big_l0_untuned_clickedObj.csv",
-  "./modelOutput/speaker_big_s0_untuned_sampled_message.csv",
+  "./modelOutput/listener_filtered_l0.csv",
+  "./modelOutput/speaker_filtered_s0.csv",
   "literal"
 )
      
 pragmaticModel <- makeModelDF(
-  "./modelOutput/listener_big_l2_heldout_clickedObj.csv",
-  "./modelOutput/speaker_big_sl_perp_sampled_message.csv",
+  "./modelOutput/listener_filtered_le.csv",
+  "./modelOutput/speaker_filtered_sl_sampled.csv",
   "pragmatic"
 )
 
@@ -252,7 +250,7 @@ listener_df %>% filter(source == "human") %>% summarize(errorRate = mean(numOutc
 ### Look at model differences across conditions
 
 ```{r}
-pdf("../writing/2016/figures/changedByCondition.pdf", width=6,height=3,paper='special')
+cairo_pdf("../writing/2016/figures/changedByCondition.pdf", width=6,height=3)
 dodge <- position_dodge(width=0.9)
 listener_df %>% 
   filter(source != 'human') %>%
@@ -281,7 +279,7 @@ listener_df %>%
     geom_errorbar(aes(ymax = M + H, ymin = M - L),
                   position=dodge, width=0.25) +
     theme_bw() +
-    ylab("% of trials changed, L0 -> L*")
+    ylab("% of trials changed, L??? ??? L???")
 dev.off()
 ```
 
@@ -301,17 +299,22 @@ listenerSummary %>%
 ### Make bar plot
 
 ```{r}
-pdf("../writing/2016/figures/listenerAccuracy.pdf", width = 6, height = 3)
+cairo_pdf("../writing/2016/figures/listenerAccuracy.pdf", width = 6, height = 3)
+
+ordering <- function(source) {
+  match(source, c("literal", "pragmatic", "human"))
+}
 
 dodge <- position_dodge(width=0.9)
 listenerSummary %>%
-  filter(source == "human") %>%
-  ggplot(aes(x = condition, y = percentCorrect * 100.0)) +
-    geom_bar(stat = "identity", position = "dodge", fill = "#0066AA") +
+  mutate(sourceNum = paste(ordering(source), source)) %>%
+  ggplot(aes(x = condition, y = percentCorrect * 100.0, fill = sourceNum)) +
+    geom_bar(stat = "identity", position = "dodge") +
     geom_errorbar(aes(ymax = (percentCorrect + high) * 100.0, ymin = (percentCorrect - low) * 100.0),
                   position=dodge, width=0.25) + 
     coord_cartesian(ylim = c(70.0, 100.0)) +
     ylab("% correct") +
+    scale_fill_discrete("agent", labels=c("literal (L???)", "pragmatic (L???)", "human")) +
     theme_bw()
 dev.off()
 ```
