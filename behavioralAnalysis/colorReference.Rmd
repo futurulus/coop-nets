@@ -18,7 +18,6 @@ library(stringr)
 library(knitr)
 library(xtable)
 library(readr)
-setwd("~/Repos/coop-nets/behavioralAnalysis/")
 ```
 
 # Pre-processing human data
@@ -69,15 +68,16 @@ badGames <- union(incompleteIDs, union(nonNativeSpeakerIDs, confusedIDs))
 Now we join the data frames together and do some pre-computation of some features we're going to use. Note: there's a bunch of additional pre-processing that it'd be nice to do but seems inessential. For instance, it would be nice to strip all the meta-commentary (e.g. "oops" after missing, complaining about task, etc.)
 
 ```{r}
-combined_human <- clks %>%
+prefilter <- clks %>%
   left_join(msgs, by = c("gameid", "roundNum")) %>%
   left_join(workerIds, by = c("gameid", "role")) %>% 
   filter(!(gameid %in% badGames)) %>%
-  filter(role == "speaker") %>% 
   mutate(numOutcome = ifelse(outcome == "true", 1, 0)) %>%
   mutate(numRawWords = word_count(contents)) %>%
   mutate(numRawChars = character_count(contents)) %>%
-  filter(numRawWords > 0) %>% # Get rid of NAs from empty string messages
+  filter(numRawWords > 0) # Get rid of NAs from empty string messages
+
+combined_human <- prefilter %>%
   filter(numRawWords < mean(numRawWords) + 4*sd(numRawWords)) %>%
   mutate(strippedContents = str_replace_all(contents, "[^[:alnum:][:space:]']",' ')) %>%
   do(mutate(., cleanMsg = rm_stopwords(.$strippedContents, tm::stopwords("english"), 
@@ -95,6 +95,16 @@ paste(c(length(unique(combined_human$gameid)),
         "complete games w/ native english speakers out of a total of",
         length(unique(rawAggregated$gameid)),
         "games with at least one message"), collapse = " ")
+```
+
+```{r}
+paste(c("# messages excluded for being too long: ",
+        length(prefilter$contents) - length(combined_human$contents)), collapse = '')
+paste(c("which, in terms of proportion, is : ", round((length(prefilter$contents) - length(combined_human$contents))
+        /length(prefilter$contents), 3)), collapse = '')
+
+paste0(c("examples of long utterance... :" ,
+       head(setdiff(prefilter$contents, combined_human$contents))))
 ```
 
 ## Meta-data analyses
