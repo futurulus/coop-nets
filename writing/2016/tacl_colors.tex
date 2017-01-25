@@ -341,7 +341,7 @@ number of trials from three different conditions:
   green, blue) space to meet these constraints.
 \end{enumerate*}
 
-After excluding extremely long messages\footnote{Specifically, 627 messages with greater than $4\sigma$ of the mean number of words per message; these often included meta-commentary about the game rather than color terms}, incomplete games, and games where participants self-reported as being confused about the instructions or being a non-native English speaker, we were left with a corpus of 53,365 speaker utterances across 46,994 rounds in 948 unique games. The three conditions are equally represented, with 15,519 \emph{close} trials, 15,693 \emph{split} trials, and 15,782 \emph{far} trials. Participants were allowed to play more than once, but the modal number of games played per participant was one (75\%). The modal number of messages sent per round was also one (90\%). We release the raw, pre-filter data from these experiments alongside the filtered corpus we used throughout our analyses (see Footnote
+After excluding extremely long messages,\footnote{Specifically, 627 messages with greater than $4\sigma$ of the mean number of words per message; these often included meta-commentary about the game rather than color terms.} incomplete games, and games whose participants self-reported confusion about the instructions or non-native English proficiency, we were left with a corpus of 53,365 speaker utterances across 46,994 rounds in 948 games. The three conditions are equally represented, with 15,519 \emph{close} trials, 15,693 \emph{split} trials, and 15,782 \emph{far} trials. Participants were allowed to play more than once, but the modal number of games played per participant was one (75\%). The modal number of messages sent per round was also one (90\%). We release the raw, pre-filter data from these experiments alongside the filtered corpus we used throughout our analyses (see Footnote
 \ref{foot:release}).
 
 \section{Behavioral results}
@@ -559,10 +559,9 @@ $l_0$ if the prior $\targetPrior$ over these context elements is flat.
 (In our scalable extension, we will substitute a neural network model for $l_0$,
 bypassing $\Lex$ and allowing for non-binary semantic judgments.)
 
-To derive a model of a \term{pragmatic speaker} (\figref{fig:basic-rsa:s1}), 
-RSA postulates that
-a speaker behaves according to a distribution that soft-maximizes
-a utility function that rewards informativity and penalizes cost:
+RSA postulates a model of a \term{pragmatic speaker} (\figref{fig:basic-rsa:s1}) that
+behaves according to a distribution that soft-maximizes
+a utility function rewarding informativity and penalizing cost:
 \begin{align}
   s_{1}(\utt \| \target, \Lex)
   &\propto
@@ -587,9 +586,9 @@ interprets utterances by reasoning about the behavior of the pragmatic speaker:
 \end{align}
 
 The $\alpha$ parameter of the speaker indirectly affects the
-listener's interpretations: the more reliable the speaker is in
-choosing the optimal utterance for a referent, the more the listener
-will take deviations from an optimal utterance as a signal to choose a
+listener's interpretations: the more reliably the speaker
+chooses the optimal utterance for a referent, the more the listener
+will take deviations from the optimum as a signal to choose a
 different referent.
 
 The most important feature of this model is that the pragmatic
@@ -606,24 +605,6 @@ realistic manner
 and the central Bayesian calculation has proven useful in a variety of
 communicative domains
 \cite{Tellex2014a,Vogel:Potts:Jurafsky:2013}.
-
-The scalability problems of RSA stem from the set of messages
-$\Messages$ and the interpretation function $\Lex$. In most versions of
-RSA, these are specified by hand (but see \citealt{Monroe2015}).  This
-presents a serious practical obstacle to applying RSA to large data
-sets containing realistic utterances. Relatedly, the truth-functional
-nature of $\Lex$ itself forces us to confront challenging issues of
-vagueness and semantic uncertainty at every turn. The set $\Messages$
-also raises a more fundamental issue: if this set is not finite (as
-one would expect from a compositional semantic system), then in general there is
-no exact way to normalize the $s_{1}$ scores, since the denominator
-must sum over all messages.
-
-Over the next few subsections, we overcome these obstacles by
-replacing $l_{0}$ with an RNN-based listener agent, and by defining an
-RNN-based speaker agent to provide sample
-utterances that let us approximate the normalization required for
-defining an $s_{1}$ agent.
 
 \begin{figure*}[t]
   \centering
@@ -655,18 +636,34 @@ defining an $s_{1}$ agent.
   \label{fig:model}
 \end{figure*}
 
+The scalability problems of RSA stem from the set of messages
+$\Messages$ and the interpretation function $\Lex$. In most versions of
+RSA, these are specified by hand (but see \citealt{Monroe2015}).  This
+presents a serious practical obstacle to applying RSA to large data
+sets containing realistic utterances. The set $\Messages$
+also raises a more fundamental issue: if this set is not finite (as
+one would expect from a compositional semantic system), then in general there is
+no exact way to normalize the $s_{1}$ scores, since the denominator
+must sum over all messages.
+
+Over the next few subsections, we overcome these obstacles by
+replacing $l_{0}$ with an RNN-based listener agent and by defining an
+RNN-based speaker agent to provide sample
+utterances for approximating the normalization required for
+the $s_{1}$ agent.
+
 \subsection{Base listener}
 
 Our base listener agent $\Listener_0$ (\figref{fig:model:listener}) is an LSTM encoder model that produces a Gaussian
 distribution over colors in a transformed representation space (\secref{sec:color_repr}).
-The words in the input are embedded in a 100-dimensional vector space. Word embeddings
+The input words are embedded in a 100-dimensional vector space. Word embeddings
 are initialized to random normally-distributed vectors ($\mu = 0$, $\sigma = 0.01$)
-and trained. The sequence of word vectors are
+and trained. The sequence of word vectors is
 used as input to an LSTM with 100-dimensional hidden state, and a linear
 transformation is applied to the output representation to produce a covariance matrix
 and mean vector for a Gaussian distribution in color representation space.
 The Gaussian scores for each of the $\contextlen$ context colors are normalized to
-produce a probability distribution over the context colors. We denote this probability
+produce a probability distribution over the context colors. We denote this
 distribution by $\Listener_0(\target \| \utt, \context; \theta)$, where $\theta$ represents the
 vector of parameters that define the trained model.
 
@@ -690,9 +687,9 @@ of denotations of color language, particularly periodic components.
 
 \subsection{Base speaker}\label{sec:s0}
 
-In order to avoid enumerating the exponentially or infinitely large space of possible utterances,
+In order to avoid enumerating the intractably large space of possible utterances,
 we also employ a probabilistic speaker model
-$\Speaker_0(\utt \| \target, \context; \phi)$ to generate sets of alternative
+$\Speaker_0(\utt \| \target, \context; \phi)$ to generate a set of alternative
 utterances for each context.
 
 The speaker model consists of an LSTM context encoder
@@ -733,11 +730,8 @@ $\Listener_{2}$:
     \sum_{\target'} \Speaker_1(\utt \| \target', \context; \theta)
     }
 \end{align}
-
 These definitions mirror those in \eq{eq:rsa-s1} and \eq{eq:rsa-l2}
-above, with $\Lex$ replaced by the learned weights $\theta$. We also
-explicitly represent the context $\context$, because we can now define
-features that explicitly take that information into account.
+above, with $\Lex$ replaced by the learned weights $\theta$.
 
 Just as in \eqref{eq:rsa-s1}, the denominator in \eqref{eq:s1} should consist of a sum over
 the entire set of potential utterances, which is exponentially large in the
@@ -827,14 +821,13 @@ algorithm and learning rate for each model were tuned with grid search
 on a held-out tuning set consisting of 3,500 contexts.\footnote{For
   $\Listener_0$: ADADELTA, learning rate $\eta = {}$0.2; for
   $\Speaker_0$: Adam, learning rate $\alpha = {}$0.004.}
-
-We also use a more fine-grained grid search on this tuning set to determine the
+We also use a fine-grained grid search on this tuning set to determine the
 values of the pragmatic reasoning parameters $\alpha$, $\beta$, and $\gamma$.
-In our final ensemble $\Listener_e$, wee use an inverse temperature parameter of
-$\alpha = 0.544$, base weights of $\beta_a = 0.492$, $\beta_b = -0.15$, and
-a final blending weight of $\gamma = 0.491$.
+In our final ensemble $\Listener_e$, we use an inverse temperature parameter
+$\alpha = 0.544$, base weights $\beta_a = 0.492$ and $\beta_b = -0.15$, and
+a final blending weight $\gamma = 0.491$.
 Particularly surprising is the fact that the optimal value of $\beta_b$
-discovered in grid search is \emph{negative}. This has the effect of amplifying
+from grid search is \emph{negative}. The effect of this is to amplify
 the difference between $\Listener_0$ and $\Listener_2$: the listener-based
 pragmatic model, evidently, is not quite pragmatic enough.
 
@@ -929,14 +922,6 @@ $z = 2.1, p =0.036$ respectively).
 
 \subsection{Listener accuracy}
 
-\Tabref{table:modelAccuracy} shows the accuracy
-and perplexity of the base listener $\Listener_0$, the pragmatic listeners
-$\Listener_1$ and $\Listener_2$, and the ensemble models $\Listener_a$,
-$\Listener_b$, and $\Listener_e$ at resolving the human-written color
-references. The
-final ensemble improves significantly\footnote{$p <{}$0.001, approximate
-permutation test \cite{Pado2006}, 10,000 samples} over the base model on both metrics.
-
 \newcommand{\intended}{\framebox}
 
 \begin{figure}[t!]
@@ -993,6 +978,13 @@ $m = 2$ and $n = 1$ (see \secref{sec:l2}).}
 \label{fig:rsaExample}
 \end{figure}
 
+\Tabref{table:modelAccuracy} shows the accuracy
+and perplexity of the base listener $\Listener_0$, the pragmatic listeners
+$\Listener_1$ and $\Listener_2$, and the ensemble models $\Listener_a$,
+$\Listener_b$, and $\Listener_e$ at resolving the human-written color
+references. The
+final ensemble improves significantly\footnote{$p <{}$0.001, approximate
+permutation test \cite{Pado2006}, 10,000 samples} over the base model on both metrics.
 Breaking out the number of examples changed by condition
 (\figref{fig:listenerAccuracy}) reveals that
 the primary gain from including the pragmatic models is in the
@@ -1016,8 +1008,8 @@ base listener interprets this as referring to the cyan with 91\% probability,
 perhaps due to the extreme saturation of the cyan maximally activating certain
 parts of the neural network. However, when the pragmatic model takes samples
 from $\Speaker_0$ to probe the space of alternative utterances, it becomes
-apparent that communicating the more ordinary blue to the listener is difficult:
-for the utterances chosen by the speaker intending this referent (\textit{true blue},
+apparent that indicating the more ordinary blue to the listener is difficult:
+for the utterances chosen by $\Speaker_0$ intending this referent (\textit{true blue},
 \textit{light blue}), the listener also
 chooses the cyan with $>$89\% confidence.
 
@@ -1108,16 +1100,16 @@ utterances are as varied as those in our dataset.
 
 The closest work to ours that we are aware of is that of
 \newcite{AndreasKlein16_NeuralPragmatics}, who also combine neural speaker
-and listener models to model pragmatics. They implement and evaluate a
-pragmatic speaker $\Speaker(\Listener_0)$, with sampling from a neural
+and listener models in a reference game setting. They propose a
+pragmatic speaker, $\Speaker(\Listener_0)$, sampling from a neural
 $\Speaker_0$ model to limit the search space and regularize the model toward
-human-like utterances. We show that these techniques prove beneficial in
-understanding (listener) tasks as well. Approaching pragmatics from the listener
+human-like utterances. We show these techniques help in
+listener (understanding) tasks as well. Approaching pragmatics from the listener
 side requires either inverting the pragmatic reasoning (i.e., deriving a
-listener from a speaker), or taking the recursive reasoning process one step
-beyond theirs, to a two-level derived pragmatic model
-$\Listener(\Speaker(\Listener_0))$. We show that both approaches contribute
-to an effective listener model.
+listener from a speaker), or adding another step of recursive reasoning,
+yielding a two-level derived pragmatic model
+$\Listener(\Speaker(\Listener_0))$. We show both approaches contribute
+to an effective listener.
 
 Additionally, we add the $\alpha$ inverse temperature parameter from
 \newcite{Goodman2013}, and we replace the multi-layer perceptron models over
@@ -1131,9 +1123,9 @@ properties of the context when sampling alternative utterances.
 \section{Conclusion} \label{sec:conclusion}
 
 In this paper, we presented a newly-collected corpus of color descriptions from
-reference games, and we showed that combining a model of pragmatic reasoning
-with a neural color description understanding model results in more accurate
-context-dependent description understanding compared with the neural model alone.
+reference games, and we showed that adding a model of pragmatic reasoning
+to a neural color description understanding model results in more accurate
+context-dependent description understanding than the neural model alone.
 
 It is reasonable to expect that a model trained in an end-to-end fashion on
 pragmatic data would be preferable to a pragmatic reasoning scheme applied on
