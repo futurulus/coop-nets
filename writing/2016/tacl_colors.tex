@@ -163,17 +163,23 @@ Grounded Language Understanding}
 \begin{abstract}
 
 
-We present a two-layer pragmatic model of referring expression interpretation:
-a listener modeling a speaker modeling a listener, where the base listener is a
-recurrent neural network classifier. We find that the pragmatic listener
-model outperforms the base listener at a task of color reference understanding,
-with further gains from ensembling with the base model and a neural speaker model.
+People draw on their experiences as speakers and listeners when communicating.
+We present a model of referring expression interpretation that draws upon predictions
+from two recurrent neural network classifiers, one for language production and one for
+understanding, to learn pragmatic behavior in a grounded communication task
+(identifying colors from descriptions). The speaker and listener perspectives
+are unified by a recently-developed framework of recursive pragmatic reasoning: a 
+listener modeling a speaker modeling a listener. Experiments show that this
+combined pragmatic model interprets color descriptions 
+more accurately than the classifiers from which it is built.
+
 Our findings make use of a newly-collected corpus of human utterances in
 color reference games, which exhibit a variety of pragmatic behaviors.
-Experiments show that the primary benefits from pragmatic reasoning come
-in the hardest cases: when the model must distinguish colors that are very
-similar, or when there are few utterances available that adequately express
-the target color. We also analyze the behavior of the embedded speaker model,
+Analysis of the model's interpretations of these utterances reveals that
+pragmatic reasoning helps primarily
+in the hardest cases: when the model must distinguish very similar colors,
+or when few utterances available that adequately express
+the target color. We also analyze the embedded speaker model's behavior,
 showing that it reproduces many pragmatic effects observed in the human data.
 
 \end{abstract}
@@ -195,22 +201,6 @@ in the environment and in
 our mental models of each other, and thus provide a valuable test-bed for
 computational models of production and comprehension.
 
-\Tabref{table:examples} illustrates the situated nature of
-reference understanding with descriptions of colors from a task-oriented
-dialogue corpus we
-introduce in this paper. In these dialogues, the speaker is trying
-to identify their (privately assigned) target color for the
-listener. In context~1, the comparative \word{darker} implicitly
-refers to both the target (boxed) and one of the other colors. In
-contexts 2 and 3, the target color is the same, but the distractors
-led the speaker to choose different basic color terms. In
-context~4, \word{blue} is a pragmatic choice even though two colors are
-shades of blue, because the interlocutors assume about each other that
-they find the target color a more prototypical representative of blue
-and would prefer other descriptions (\word{teal}, \word{cyan}) for the middle color.
-The fact that \word{blue} is the utterance of choice in three of these
-four cases highlights the context dependence of color descriptions.
-
 \begin{table}
   \centering
   \setlength{\tabcolsep}{4pt}
@@ -230,6 +220,22 @@ four cases highlights the context dependence of color descriptions.
     relationships.}
   \label{table:examples}
 \end{table}
+
+\Tabref{table:examples} illustrates the situated nature of
+reference understanding with descriptions of colors from a task-oriented
+dialogue corpus we
+introduce in this paper. In these dialogues, the speaker is trying
+to identify their (privately assigned) target color for the
+listener. In context~1, the comparative \word{darker} implicitly
+refers to both the target (boxed) and one of the other colors. In
+contexts 2 and 3, the target color is the same, but the distractors
+led the speaker to choose different basic color terms. In
+context~4, \word{blue} is a pragmatic choice even though two colors are
+shades of blue, because the interlocutors assume about each other that
+they find the target color a more prototypical representative of blue
+and would prefer other descriptions (\word{teal}, \word{cyan}) for the middle color.
+The fact that \word{blue} is the utterance of choice in three of these
+four cases highlights the context dependence of color descriptions.
 
 In this paper, we present a scalable, learned model of pragmatic
 language understanding. At its core, the model is a version of the
@@ -272,12 +278,14 @@ colors in context elicits much greater variety in language use,
 including negations, comparatives and superlatives, and increased use
 of metaphor and shared associations.
 
-In this paper we focus on the effectiveness of
-our listener agents.\footnote{Since the listeners are derived from
-speaker models, this indirectly evaluates our speakers as well.
-However, we directly assess the speakers only qualitatively.}
-Experiments on this data show that our pragmatic model improves accuracy
-in interpreting human-produced descriptions over the RNN base agent
+In this paper we focus on accuracy in a listener task
+(i.e., at language understanding).
+However, our most successful model integrates speaker and listener perspectives,
+combining predictions made by a system trained to understand color descriptions
+with those of a system trained to produce them.
+Experiments on the data in our corpus show that this combined pragmatic model
+improves accuracy
+in interpreting human-produced descriptions over the basic RNN listener
 alone. Moreover, the improvements from pragmatic reasoning come primarily
 in the hardest cases:
 %
