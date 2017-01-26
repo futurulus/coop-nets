@@ -543,7 +543,6 @@ We found a small but reliable increase in the likelihood of ``high specificity''
 
 \section{Models}
 
-The model we propose for this task is intended as a scalable version of RSA.
 We first define the basic RSA model as applied to the
 color reference games introduced in \secref{sec:corpus}; a worked example
 is shown in \figref{fig:basic-rsa}. The starting point of RSA is a model
@@ -644,7 +643,25 @@ communicative domains
   \label{fig:model}
 \end{figure*}
 
-The scalability problems of RSA stem from the set of messages
+The definitions of $s_1$ \eqref{eq:rsa-s1} and $l_2$ \eqref{eq:rsa-l2}
+give a general method of deriving a speaker from a listener and vice versa.
+This suggests an alternative formulation of a pragmatic listener, starting from
+a literal speaker:
+\begin{align}
+  s_{0}(\utt \| \target, \Lex)
+  &\propto
+  \Lex(\utt \| \target) e^{- \Costs(\utt)}
+  \label{eq:rsa-s0} \\
+  l_{1}(\target \| \utt, \Lex)
+  &\propto
+  s_{0}(\utt \| \target, \Lex) \targetPrior(\target)
+  \label{eq:rsa-l1}
+\end{align}
+Here, it is the speaker that reasons about the semantics, while the listener
+reasons about this speaker.
+
+Both of these versions of RSA unfortunately pose problems with
+scalability, stemming from the set of messages
 $\Messages$ and the interpretation function $\Lex$. In most versions of
 RSA, these are specified by hand (but see \citealt{Monroe2015}).  This
 presents a serious practical obstacle to applying RSA to large data
@@ -652,12 +669,13 @@ sets containing realistic utterances. The set $\Messages$
 also raises a more fundamental issue: if this set is not finite (as
 one would expect from a compositional semantic system), then in general there is
 no exact way to normalize the $s_{1}$ scores, since the denominator
-must sum over all messages.
+must sum over all messages. The same problem applies to $s_{0}$, unless
+$\Lex$ can be factorized in an unrealistically clean way.
 
 Over the next few subsections, we overcome these obstacles by
-replacing $l_{0}$ with an RNN-based listener agent and by defining an
-RNN-based speaker agent to provide sample
-utterances for approximating the normalization required for
+replacing $l_{0}$ and $s_0$ with RNN-based listener agents, using
+the $s_0$ agent to acquire sample
+utterances for approximating the normalization required in defining
 the $s_{1}$ agent.
 
 \subsection{Base listener}
@@ -695,10 +713,11 @@ of denotations of color language, particularly periodic components.
 
 \subsection{Base speaker}\label{sec:s0}
 
-In order to avoid enumerating the intractably large space of possible utterances,
-we also employ a probabilistic speaker model
-$\Speaker_0(\utt \| \target, \context; \phi)$ to generate a set of alternative
-utterances for each context.
+We also employ a LSTM-based speaker model
+$\Speaker_0(\utt \| \target, \context; \phi)$. This speaker serves two purposes:
+1) it is used to define a pragmatic listener akin to $l_1$ in \eqref{eq:rsa-l1},
+and 2) it provides sets of alternative utterances for each context, to avoid
+enumerating the intractably large space of possible utterances.
 
 The speaker model consists of an LSTM context encoder
 and an LSTM description decoder (\figref{fig:model:speaker}). In this model, the colors of the context
@@ -766,8 +785,8 @@ this alternative-set sampling $n$ times and average the resulting probabilities 
 the final $\Listener_2$ output. We again choose $n = 8$ as a satisfactory
 compromise between effectiveness and computation time.
 
-An alternative pragmatic listener can be formed in a similar way from the neural
-speaker agent. We denote this $\Listener_1$:
+A second pragmatic listener  $\Listener_1$ can be formed in a similar way from 
+the neural speaker agent, analogous to $l_{1}$ in \eqref{eq:rsa-l1}:
 %
 \begin{align}
   \Listener_1(\target \| \utt, \context; \theta)
@@ -779,10 +798,25 @@ speaker agent. We denote this $\Listener_1$:
     }    \label{eq:l1}
 \end{align}
 %
-This agent turns out to be less accurate than either $\Listener_0$ or
-$\Listener_2$, but its assessments are based on a different model,
-so it complements the other listeners well in an ensemble model.
-We consider the following ensembles of neural base models and pragmatic models:
+We find $\Listener_1$ to be less accurate than either $\Listener_0$ or
+$\Listener_2$, which is somewhat unsurprising because it is performing
+a listener task using only the outputs of a model trained for a speaker task.
+However, as a result of the difference in how the model was trained, we might
+expect it to have strengths that complement those of the two agents that are
+based on the listener model.
+
+One might also expect that a realistic model of human language interpretation
+might lie somewhere between the ``reflex'' interpretations made
+by the neural base listener and the ``reasoned'' interpretations made by
+one of the pragmatic models. This has an intuitive justification in people's
+natural uncertainty about whether their interlocutors are speaking pragmatically:
+``should I read more into that statement, or take it at face value?''
+
+We therefore also evaluate models defined as
+a weighted average of $\Listener_0$ and each of $\Listener_1$ and $\Listener_2$,
+as well as an ``ensemble'' model that combines all of these agents.
+Specifically, we consider the following blends of neural base models and
+pragmatic models:
 \begin{align}
 \Listener_a(\target \| \utt, \context; \theta) &\propto {\Listener_0}(\target \| \utt, \context; \theta)^{\beta_a} \cdot {} \nonumber \\
 & &\mathllap{\Listener_1(\target \| \utt, \context; \theta)^{1-\beta_a}}  \label{eq:beta_a} \\
@@ -861,7 +895,7 @@ pragmatic model, evidently, is not quite pragmatic enough.
   \bottomrule
 \end{tabular}
 \caption{Overall accuracy and perplexity of the base and pragmatic listeners and
-various ensembles ($A \cdot B$ denotes an ensemble of $A$ and $B$).
+various blends ($A \cdot B$ denotes an weighted average of $A$ and $B$).
 Top: dev set; bottom: test set.}
 \label{table:modelAccuracy}
 \end{table}
@@ -988,12 +1022,25 @@ $m = 2$ and $n = 1$ (see \secref{sec:l2}).}
 
 \Tabref{table:modelAccuracy} shows the accuracy
 and perplexity of the base listener $\Listener_0$, the pragmatic listeners
-$\Listener_1$ and $\Listener_2$, and the ensemble models $\Listener_a$,
+$\Listener_1$ and $\Listener_2$, and the blended models $\Listener_a$,
 $\Listener_b$, and $\Listener_e$ at resolving the human-written color
-references. The
-final ensemble improves significantly\footnote{$p <{}$0.001, approximate
+references. As we expected, the speaker-based $\Listener_1$ alone
+performs the worst of all the models. However, blending it with $\Listener_0$
+doesn't drag down $\Listener_0$'s performance but rather produces a considerable 
+improvement compared to both of the original models, consistent with our
+expectation that the listener-based and speaker-based models have complementary
+strengths.
+
+We also observe that
+$\Listener_2$ substantially outperforms its own base model $\Listener_0$,
+showing that pragmatic reasoning on its own contributes positively. Blending the
+pragmatic models with the listener also improves over both individually. Finally, the
+most effective listener combines both pragmatic models with the base listener.
+
+On the test set, the final ensemble improves
+significantly\footnote{$p <{}$0.001, approximate
 permutation test \cite{Pado2006}, 10,000 samples} over the base model on both metrics.
-Breaking out the number of examples changed by condition
+Breaking out the number of examples changed by condition on the dev set
 (\figref{fig:listenerAccuracy}) reveals that
 the primary gain from including the pragmatic models is in the
 \cond{close} and \cond{split} conditions, when the
@@ -1131,13 +1178,15 @@ properties of the context when sampling alternative utterances.
 \section{Conclusion} \label{sec:conclusion}
 
 In this paper, we presented a newly-collected corpus of color descriptions from
-reference games, and we showed that adding a model of pragmatic reasoning
-to a neural color description understanding model results in more accurate
-context-dependent description understanding than the neural model alone.
+reference games, and we showed that a pragmatic reasoning agent
+incorporating neural models of color description understanding and production
+is more accurate at
+context-dependent description understanding than the neural understanding
+model alone.
 
 It is reasonable to expect that a model trained in an end-to-end fashion on
 pragmatic data would be preferable to a pragmatic reasoning scheme applied on
-top of a pre-trained base model.
+top of pre-trained base models.
 Indeed, the probabilistic pragmatic work in the cognitive science literature
 on which this work is based assumes the base listener represents literal semantics
 and is not pragmatic at all; this suggests that our model relies on the base
