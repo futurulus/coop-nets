@@ -272,15 +272,15 @@ in general, including not just the context dependence and cognitive
 complexity discussed above, but also compositionality, vagueness, and
 ambiguity. While many previous data sets feature descriptions of
 individual colors \cite{Cook2005,Munroe2010,Kawakami2016}, situating
-colors in context elicits much greater variety in language use,
-including negations, comparatives and superlatives, and increased use
-of metaphor and shared associations.
+colors in context elicits greater variety in language use,
+including negations, comparatives, superlatives,
+metaphor, and shared associations.
 
 In this paper we focus on accuracy in a listener task
 (i.e., at language understanding).
 However, our most successful model integrates speaker and listener perspectives,
 combining predictions made by a system trained to understand color descriptions
-with those of a system trained to produce them.
+and one trained to produce them.
 Experiments on the data in our corpus show that this combined pragmatic model
 improves accuracy
 in interpreting human-produced descriptions over the basic RNN listener
@@ -560,7 +560,7 @@ a very simple context in which $\Messages=\set{\word{blue},
   \word{teal}, \word{dull}}$, and $\context =
 \set{\colorContextNarrow{3884C7}{02F9FD}{9E6461}{}}$;
 \figref{fig:basic-rsa:l0} shows the corresponding literal listener
-$l_0$ if the prior $\targetPrior$ over these context elements is flat.
+$l_0$ if the prior $\targetPrior$ over colors is flat.
 (In our scalable extension, we will substitute a neural network model for $l_0$,
 bypassing $\Lex$ and allowing for non-binary semantic judgments.)
 
@@ -576,9 +576,9 @@ a utility function rewarding informativity and penalizing cost:
 Here, $\Costs$ is a real-valued cost function on utterances, and
 $\alpha \in [0,\infty)$ is an inverse temperature parameter governing
 the ``rationality'' of the speaker model.
-A large $\alpha$ means that the pragmatic speaker is expected to choose
+A large $\alpha$ means the pragmatic speaker is expected to choose
 the most informative utterance (minus cost)
-consistently, whereas a small $\alpha$ means the
+consistently; a small $\alpha$ means the
 speaker is modeled as choosing suboptimal utterances frequently.
 
 Finally, a \term{pragmatic listener} (\figref{fig:basic-rsa:l2})
@@ -658,17 +658,17 @@ a literal speaker:
 Here, it is the speaker that reasons about the semantics, while the listener
 reasons about this speaker.
 
-Both of these versions of RSA unfortunately pose problems with
+Both of these versions of RSA pose problems with
 scalability, stemming from the set of messages
 $\Messages$ and the interpretation function $\Lex$. In most versions of
 RSA, these are specified by hand (but see \citealt{Monroe2015}).  This
 presents a serious practical obstacle to applying RSA to large data
 sets containing realistic utterances. The set $\Messages$
 also raises a more fundamental issue: if this set is not finite (as
-one would expect from a compositional semantic system), then in general there is
+one would expect from a compositional grammar), then in general there is
 no exact way to normalize the $s_{1}$ scores, since the denominator
 must sum over all messages. The same problem applies to $s_{0}$, unless
-$\Lex$ can be factorized in an unrealistically clean way.
+$\Lex$ factorizes in an unrealistically clean way.
 
 Over the next few subsections, we overcome these obstacles by
 replacing $l_{0}$ and $s_0$ with RNN-based listener agents, using
@@ -892,8 +892,8 @@ pragmatic model, evidently, is not quite pragmatic enough.
   human & \oracle{91.08} \\
   \bottomrule
 \end{tabular}
-\caption{Overall accuracy and perplexity of the base and pragmatic listeners and
-various blends ($A \cdot B$ denotes an weighted average of $A$ and $B$).
+\caption{Accuracy and perplexity of the base and pragmatic listeners and
+various blends (weighted averages, denoted $A \cdot B$).
 Top: dev set; bottom: test set.}
 \label{table:modelAccuracy}
 \end{table}
@@ -1029,21 +1029,21 @@ improvement compared to both of the original models, consistent with our
 expectation that the listener-based and speaker-based models have complementary
 strengths.
 
-We also observe that
+We observe that
 $\Listener_2$ substantially outperforms its own base model $\Listener_0$,
 showing that pragmatic reasoning on its own contributes positively. Blending the
-pragmatic models with the listener also improves over both individually. Finally, the
+pragmatic models with the base listener also improves over both individually.
+Finally, the
 most effective listener combines both pragmatic models with the base listener.
-
-On the test set, the final ensemble improves
-significantly\footnote{$p <{}$0.001, approximate
-permutation test \cite{Pado2006}, 10,000 samples} over the base model on both metrics.
-Breaking out the number of examples changed by condition on the dev set
+Plotting the number of examples changed by condition on the dev set
 (\figref{fig:listenerAccuracy}) reveals that
 the primary gain from including the pragmatic models is in the
 \cond{close} and \cond{split} conditions, when the
-model has to distinguish colors that are nearby in color space and
+model has to distinguish highly similar colors and
 often cannot rely only on basic color terms.
+On the test set, the final ensemble improves
+significantly\footnote{$p <{}$0.001, approximate
+permutation test \cite{Pado2006}, 10,000 samples} over the base model on both metrics.
 
 Examining the full probability tables for various dev set examples on which
 $\Listener_2$ is superior to $\Listener_0$ reveals a general pattern. In most
