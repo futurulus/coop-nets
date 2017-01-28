@@ -192,7 +192,7 @@ We also show that the embedded speaker model reproduces many of these
 % language understanding \cite{Jaeger2012,Frank2012}.
 
 Human communication is \emph{situated}. In using language, we are sensitive
-to context and our interlocutors' expectations, when choosing our
+to context and our interlocutors' expectations, both when choosing our
 utterances (as speakers) and when interpreting the utterances we hear (as listeners).
 Visual referring tasks exercise this complex process of grounding,
 in the environment and in
@@ -233,7 +233,7 @@ shades of blue, because the interlocutors assume about each other that
 they find the target color a more prototypical representative of blue
 and would prefer other descriptions (\word{teal}, \word{cyan}) for the middle color.
 The fact that \word{blue} appears in three of these
-four cases highlights the context dependence of color descriptions.
+four cases highlights the flexibility and context dependence of color descriptions.
 
 In this paper, we present a scalable, learned model of pragmatic
 language understanding. At its core, the model is a version of the
@@ -265,14 +265,14 @@ speaker's behavior.
 
 We evaluate this model with a new, psycholinguistically motivated corpus of real-time, dyadic reference games in which
 the referents are patches of color.
-The corpus includes 942 complete games with 47,100 utterances produced by
+The corpus includes 948 complete games with 53,365 utterances produced by
 human participants paired into dyads on the web. The linguistic
 behavior of the players exhibits many of the intricacies of language
 in general, including not just the context dependence and cognitive
 complexity discussed above, but also compositionality, vagueness, and
 ambiguity. While many previous data sets feature descriptions of
 individual colors \cite{Cook2005,Munroe2010,Kawakami2016}, situating
-colors in context elicits greater variety in language use,
+colors in a communicative context elicits greater variety in language use,
 including negations, comparatives, superlatives,
 metaphor, and shared associations.
 
@@ -347,7 +347,7 @@ number of trials from three different conditions:
   green, blue) space to meet these constraints.
 \end{enumerate*}
 
-After excluding extremely long messages,\footnote{Specifically, 627 messages with greater than $4\sigma$ of the mean number of words per message; these often included meta-commentary about the game rather than color terms.} incomplete games, and games whose participants self-reported confusion about the instructions or non-native English proficiency, we were left with a corpus of 53,365 speaker utterances across 46,994 rounds in 948 games. The three conditions are equally represented, with 15,519 \emph{close} trials, 15,693 \emph{split} trials, and 15,782 \emph{far} trials. Participants were allowed to play more than once, but the modal number of games played per participant was one (75\%). The modal number of messages sent per round was also one (90\%). We release the raw, pre-filter data from these experiments alongside the filtered corpus we used throughout our analyses (see Footnote
+After excluding extremely long messages,\footnote{Specifically, 627 messages with greater than $4\sigma$ of the mean number of words per message; these often included meta-commentary about the game rather than color terms.} incomplete games, and games whose participants self-reported confusion about the instructions or non-native English proficiency, we were left with a corpus of 53,365 speaker utterances across 46,994 rounds in 948 games. The three conditions are equally represented, with 15,519 \emph{close} trials, 15,693 \emph{split} trials, and 15,782 \emph{far} trials. Participants were allowed to play more than once, but the modal number of games played per participant was one (75\%). The modal number of messages sent per round was also one (90\%). We release the filtered corpus we used throughout our analyses alongside the raw, pre-filter data collected from these experiments (see Footnote
 \ref{foot:release}).
 
 \section{Behavioral results}
@@ -427,7 +427,7 @@ an asymmetry in  the use of these constructions across the \cond{split} and
 \cond{split} context ($z = 4.4$), where only one distractor was close to the target,
 while superlatives were much more likely to be used in the \cond{close} condition
 ($z = 32.72$).\footnote{We used Helmert coding to examine this pair of orthogonal
-contrasts, compared to dummy coding in the analysis.}
+contrasts, compared to dummy coding in the other analyses.}
 
 \paragraph{Negatives}
 In our referential contexts, negation is likely to play a role similar
@@ -585,6 +585,7 @@ speaker is modeled as choosing suboptimal utterances frequently.
 
 Finally, a \term{pragmatic listener} (\figref{fig:basic-rsa:l2})
 interprets utterances by reasoning about the behavior of the pragmatic speaker:
+\textcolor{red}{rdh: recent RSA papers have switched to using $l_1$ as notation for the pragmatic listener that reasons about $s_1$ instead of going up a number with every recursion, although I can also see how it's useful to distinguish between this $l_1$ and the $l_1$ that reasons about a literal speaker later\dots}
 \begin{align}
   l_{2}(\target \| \utt, \Lex)
   &\propto
@@ -648,6 +649,7 @@ The definitions of $s_1$ \eqref{eq:rsa-s1} and $l_2$ \eqref{eq:rsa-l2}
 give a general method of deriving a speaker from a listener and vice versa.
 This suggests an alternative formulation of a pragmatic listener, starting from
 a literal speaker:
+\textcolor{red}{rdh: notation for lexicon is different here than earlier; should it be $\Lex(\utt, \target)$ instead of suggesting conditional probability?}
 \begin{align}
   s_{0}(\utt \| \target, \Lex)
   &\propto
@@ -680,6 +682,8 @@ utterances for approximating the normalization required in defining
 the $s_{1}$ agent.
 
 \subsection{Base listener}
+
+\textcolor{red}{rdh: if this shift in notation from lower-case to capital letters is intentional, maybe put a sentence that explicitly signposts this at the end of the previous section?}
 
 Our base listener agent $\Listener_0$ (\figref{fig:model:listener}) is an LSTM encoder model that produces a Gaussian
 distribution over colors in a transformed representation space (\secref{sec:color_repr}).
@@ -714,7 +718,7 @@ of denotations of color language, particularly periodic components.
 
 \subsection{Base speaker}\label{sec:s0}
 
-We also employ a LSTM-based speaker model
+We also employ an LSTM-based speaker model
 $\Speaker_0(\utt \| \target, \context; \phi)$. This speaker serves two purposes:
 1) it is used to define a pragmatic listener akin to $l_1$ in \eqref{eq:rsa-l1},
 and 2) it provides sets of alternative utterances for each context, to avoid
