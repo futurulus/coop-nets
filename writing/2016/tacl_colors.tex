@@ -374,7 +374,7 @@ Since color reference is a difficult task even for humans, we compared listener 
 \renewcommand{\arraystretch}{0.9}
 \begin{tabular}{lrrrr@{\hspace{20pt}}rrrr@{\hspace{20pt}}rrr}
   \toprule
-  & \multicolumn{3}{c}{human}&& \multicolumn{3}{c}{$\Speaker_0$}&& \multicolumn{3}{c}{$\Listener_0$}\\
+  & \multicolumn{3}{c}{human}&& \multicolumn{3}{c}{$\Speaker_0$}&& \multicolumn{3}{c}{$\Speaker_1$}\\
   & far& split& close&& far& split& close&& far& split& close\\ \midrule
   \# Chars            & 7.8 & 12.3 & 14.9 && 9.0 & 12.8 & 16.6 && 9.0 & 12.8 & 16.4 \\
   \# Words            & 1.7 & 2.7 & 3.3   && 2.0 & 2.8 & 3.7   && 2.0 & 2.8 & 3.7   \\
@@ -384,9 +384,9 @@ Since color reference is a difficult task even for humans, we compared listener 
   \% Superlatives     & 2.2 & 6.1 & 16.7  && 4.7 & 9.7 & 17.2  && 4.8 & 10.3 & 16.6 \\
    \bottomrule
 \end{tabular}
-\caption{Corpus statistics and statistics of samples from $\Speaker_1$
-  (rates per utterance). The human and artificial speakers show
-  the same correlations between language use and context type.}
+\caption{Corpus statistics and statistics of samples from artificial speakers defined
+  in \secref{sec:l2} (rates per utterance). The human and artificial speakers show
+  many of the same correlations between language use and context type.}
 \label{table:metrics}
 \end{table*}
 
@@ -797,14 +797,12 @@ A second pragmatic listener  $\Listener_1$ can be formed in a similar way, analo
     \sum_{\target'} \Speaker_0(\utt \| \target', \context; \theta)
     }    \label{eq:l1}
 \end{align}
-%
-We find $\Listener_1$ to be less accurate than  $\Listener_0$ or
-$\Listener_2$, which is unsurprising because it is performing
-a listener task using only the outputs of a model trained for a speaker task.
-However, as a result of the difference in how the model was trained, we might
-expect it to have strengths that complement those of the two agents that are
-based on the listener model.
 
+We expect $\Listener_1$ to be less accurate than  $\Listener_0$ or
+$\Listener_2$, because it is performing
+a listener task using only the outputs of a model trained for a speaker task.
+However, this difference in training objective can also give the model
+strengths that complement those of the two listener-based agents.
 One might also expect a realistic model of human language interpretation
 to lie somewhere between the ``reflex'' interpretations of the neural base listener and the ``reasoned'' interpretations of
 one of the pragmatic models. This has an intuitive justification in people's
@@ -834,7 +832,7 @@ $\Listener_i(\target \| \utt, \context; \theta)$ for convenience:
 % & &\mathllap{\Listener_b(\target \| \utt, \context; \theta)^{1-\gamma}}  \label{eq:gamma}
 % \end{align}
 %
-The hyperparameters in the exponents allow the models to tune a
+The hyperparameters in the exponents allow tuning the
 blend of each pair of models---e.g., overriding the neural model with the pragmatic
 reasoning in $\Listener_b$. The value of the weights
 $\beta_a$, $\beta_b$, and $\gamma$ can be any real number; however, we find that
@@ -881,6 +879,59 @@ from grid search is \emph{negative}. The effect of this is to amplify
 the difference between $\Listener_0$ and $\Listener_2$: the listener-based
 pragmatic model, evidently, is not quite pragmatic enough.
 
+\begin{comment}
+\begin{table}[t]
+\centering
+\begin{tabular}{lrrrrrr}
+  \toprule
+   & \multicolumn{3}{c}{accuracy} & \multicolumn{3}{c}{perplexity} \\
+   & $\Speaker_h$ & $\Speaker_0$ & $\Speaker_1$ & $\Speaker_h$ & $\Speaker_0$ & $\Speaker_1$ \\
+  \midrule
+  $\Listener_0$ & 83.39 & 83.66 & \oracle{99.75} & 1.69 & 1.71 & \oracle{1.03} \\
+  $\Listener_b$ & \best{84.11} & \best{84.82} & \oracle{99.93} & \best{1.49} & \best{1.45} & \oracle{1.08}
+  \\[0.5ex]
+  $\Listener_h$ & 90.03 \\
+   \bottomrule
+\end{tabular}
+\caption{Overall accuracy and perplexity of the base and pragmatic listeners
+on inputs from various speakers, plus human accuracy. $\Speaker_h$ and $\Listener_h$
+represent human agents. \oracle{Italics}: ``oracle'' results (see \secref{sec:speaker_eff}).}
+\label{table:speakerVsListener}
+\end{table}
+\end{comment}
+
+\section{Model results}
+
+\subsection{Speaker behavior}
+
+To compare human behavior with the behavior of our embedded speaker models,
+we performed the same behavorial analysis done in \secref{sec:speaker_behavior}.
+Results from this analysis are included alongside the human results in
+\Tabref{table:metrics}.
+Our pragmatic speaker model $\Speaker_1$ did not differ
+qualitatively from our base speaker $\Speaker_0$ on any of the metrics,
+so we only summarize results for humans and the pragmatic model.
+
+\paragraph{Words and characters} We found human speakers to be more verbose when
+colors were closer together, in both number of words and number of characters.
+As \tabref{table:metrics} shows, our $\Speaker_{1}$  agent
+shows the same increase in utterance length in the \cond{split} ($t = 18.07$) and \cond{close} ($t = 35.77$) contexts compared to the \cond{far} contexts.
+
+\paragraph{Comparatives and superlatives} Humans used more comparatives and
+superlatives when colors were closer together; however, comparatives were
+preferred in the  \cond{split} contexts, superlatives in
+the \cond{close}
+ contexts. Our pragmatic speaker shows the first of these two patterns,
+producing  more comparatives ($z = 14.45$) and superlatives ($z = 16$) in the \cond{split} or \cond{close} conditions than in the baseline \cond{far} condition. It does not, however, capture the peak in comparative use in the \emph{split} condition. This suggests that our model is simulating the human strategy at some level, but that more subtle patterns require further attention.
+
+\paragraph{Negations} Humans used more negations when the colors were closer
+together. Our pragmatic speaker's use of negation shows the  same relationship to the context ($z = 8.55$ and $z= 16.61$ respectively).
+
+\paragraph{WordNet specificity} Humans used more ``high specificity'' words
+(by WordNet hypernymy depth) when the colors were closer together.
+Our pragmatic speaker showed a similar effect ($z = 2.65, p =0.008$ and
+$z = 2.1, p =0.036$ respectively).
+
 \begin{table}[t]
 \centering
 \begin{tabular}{lrr}
@@ -908,27 +959,6 @@ Top: dev set; bottom: test set.}
 \label{table:modelAccuracy}
 \end{table}
 
-\begin{comment}
-\begin{table}[t]
-\centering
-\begin{tabular}{lrrrrrr}
-  \toprule
-   & \multicolumn{3}{c}{accuracy} & \multicolumn{3}{c}{perplexity} \\
-   & $\Speaker_h$ & $\Speaker_0$ & $\Speaker_1$ & $\Speaker_h$ & $\Speaker_0$ & $\Speaker_1$ \\
-  \midrule
-  $\Listener_0$ & 83.39 & 83.66 & \oracle{99.75} & 1.69 & 1.71 & \oracle{1.03} \\
-  $\Listener_b$ & \best{84.11} & \best{84.82} & \oracle{99.93} & \best{1.49} & \best{1.45} & \oracle{1.08}
-  \\[0.5ex]
-  $\Listener_h$ & 90.03 \\
-   \bottomrule
-\end{tabular}
-\caption{Overall accuracy and perplexity of the base and pragmatic listeners
-on inputs from various speakers, plus human accuracy. $\Speaker_h$ and $\Listener_h$
-represent human agents. \oracle{Italics}: ``oracle'' results (see \secref{sec:speaker_eff}).}
-\label{table:speakerVsListener}
-\end{table}
-\end{comment}
-
 \begin{figure}
 \centering
 \includegraphics[scale = .5]{figures/listenerAccuracy}
@@ -938,38 +968,6 @@ represent human agents. \oracle{Italics}: ``oracle'' results (see \secref{sec:sp
 declined from $\Listener_0$ to $\Listener_e$ (bottom) on the dev set, by condition.}
 \label{fig:listenerAccuracy}
 \end{figure}
-
-\section{Model results}
-
-\subsection{Speaker behavior}
-
-To compare human behavior with the behavior of our embedded speaker models,
-we performed the same behavorial analysis done in \secref{sec:speaker_behavior}.
-Results from this analysis are included alongside the human results in
-\Tabref{table:metrics}.
-Our pragmatic speaker model $\Speaker_1$ did not differ
-qualitatively from our base speaker $\Speaker_0$ on any of the metrics,
-so we only summarize results for humans and the pragmatic model.
-
-\paragraph{Words and characters} We found human speakers to be more verbose when
-colors were closer together, in both number of words and number of characters.
-As \tabref{table:metrics} shows, our $\Speaker_{1}$  agent
-shows the same increase in utterance length in the \cond{split} ($t = 18.07$) and \cond{close} ($t = 35.77$) contexts compared to the \cond{far} contexts.
-
-\paragraph{Comparatives and superlatives} Humans used more comparatives and
-superlatives when colors were closer together; however, comparatives were
-preferred in the  \cond{split} context, superlatives in
-the \cond{close}
- contexts. Our pragmatic speaker shows the first of these two patterns,
-producing  more comparatives ($z = 14.45$) and superlatives ($z = 16$) in the \cond{split} or \cond{close} conditions than in the baseline \cond{far} condition. It does not, however, capture the second asymmetric pattern, where comparatives use peaks in the \emph{split} condition. This suggests that our model is simulating the human strategy at some level, but that more subtle patterns require further attention.
-
-\paragraph{Negations} Humans used more negations when the colors were closer
-together. Our pragmatic speaker's use of negation shows the  same relationship to the context ($z = 8.55$ and $z= 16.61$ respectively).
-
-\paragraph{WordNet specificity} Humans used more ``high specificity'' words
-(by WordNet hypernymy depth) when the colors were closer together.
-Our pragmatic speaker showed a similar effect ($z = 2.65, p =0.008$ and
-$z = 2.1, p =0.036$ respectively).
 
 \subsection{Listener accuracy}
 
@@ -1078,14 +1076,15 @@ for the utterances chosen by $\Speaker_0$ intending this referent (\textit{true 
 \textit{light blue}), the listener also
 chooses the cyan with $>$89\% confidence.
 
-Pragmatic reasoning overcomes this difficulty. Only two of the utterances in the
+Pragmatic reasoning overcomes this difficulty. Only two utterances in the
 alternative set (the actual utterance \textit{blue} and the sampled alternative
 \textit{true blue}) result in any appreciable probability mass on the true target,
 so the pragmatic listener's model of the speaker predicts that the speaker
-would choose between those utterances most of the time. However, if the target
-were the cyan, the speaker would have a number of good options. Therefore, the
+would usually choose one of these two utterances for the prototypical blue.
+However, if the target
+were the cyan, the speaker would have many good options. Therefore, the
 fact that the speaker chose \textit{blue} is interpreted as evidence for the
-true target. This perfectly mirrors the back-and-forth reasoning behind the
+true target. This mirrors the back-and-forth reasoning behind the
 definition of conversational implicature \cite{Grice75}.
 
 \begin{comment}
@@ -1153,12 +1152,12 @@ many local and global minima.}
 Prior work combining machine learning with probabilistic pragmatic reasoning
 models has largely focused on the speaker side, i.e., generation.
 \newcite{Golland2010} develop a pragmatic speaker model,
-$\Speaker(\Listener)$, that reasons about log-linear listeners trained on human
+$\Speaker(\Listener_0)$, that reasons about log-linear listeners trained on human
 utterances containing spatial references in virtual-world environments.
 \newcite{Tellex2014a} apply a similar technique, under the name
 \term{inverse semantics}, to create a robot that can informatively ask
 humans for assistance in accomplishing tasks. % \newcite{Monroe2015} implement
-% an end-to-end trained $\Speaker(\Listener(\Speaker))$ model for referring
+% an end-to-end trained $\Speaker(\Listener(\Speaker_0))$ model for referring
 % expression generation in a reference game task; their model requires enumerating
 % the set of possible utterances for each context, which is infeasible when
 % utterances are as varied as those in our dataset.
@@ -1176,6 +1175,7 @@ yielding a two-level derived pragmatic model
 $\Listener(\Speaker(\Listener_0))$. We show both approaches contribute
 to an effective listener.
 
+\begin{comment}
 Additionally, we add the $\alpha$ inverse temperature parameter from
 \newcite{Goodman2013}, and we replace the multi-layer perceptron models over
 $n$-gram features used in \newcite{AndreasKlein16_NeuralPragmatics}
@@ -1184,6 +1184,7 @@ These sequential models can approximate the compositional semantics
 that is so crucial for operators like negation and comparatives.
 Our speaker is also more expressive in that it is able to capture
 properties of the context when sampling alternative utterances.
+\end{comment}
 
 \section{Conclusion} \label{sec:conclusion}
 
@@ -1207,7 +1208,7 @@ at any point, and more than half of dyads
 had at least one two-way interaction. Dialogue agents are more
 challenging to model than isolated speakers and listeners,
 requiring long-term planning, remembering previous utterances, and
-(for the listener) deciding when to keep talking or commit to a referent
+(for the listener) deciding when to ask for clarification or commit to a referent
 \cite{Lewis79_Scorekeeping,BrownYule83_Discourse,Clark96,Roberts96_InformationStructureDiscourse}.
 We release our
 dataset\footnote{\label{foot:release}\url{http://see-supplementary-material/}}
