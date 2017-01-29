@@ -585,7 +585,6 @@ speaker is modeled as choosing suboptimal utterances frequently.
 
 Finally, a \term{pragmatic listener} (\figref{fig:basic-rsa:l2})
 interprets utterances by reasoning about the behavior of the pragmatic speaker:
-\textcolor{red}{rdh: recent RSA papers have switched to using $l_1$ as notation for the pragmatic listener that reasons about $s_1$ instead of going up a number with every recursion, although I can also see how it's useful to distinguish between this $l_1$ and the $l_1$ that reasons about a literal speaker later\dots}
 \begin{align}
   l_{2}(\target \| \utt, \Lex)
   &\propto
@@ -649,11 +648,10 @@ The definitions of $s_1$ \eqref{eq:rsa-s1} and $l_2$ \eqref{eq:rsa-l2}
 give a general method of deriving a speaker from a listener and vice versa.
 This suggests an alternative formulation of a pragmatic listener, starting from
 a literal speaker:
-\textcolor{red}{rdh: notation for lexicon is different here than earlier; should it be $\Lex(\utt, \target)$ instead of suggesting conditional probability?}
 \begin{align}
   s_{0}(\utt \| \target, \Lex)
   &\propto
-  \Lex(\utt \| \target) e^{- \Costs(\utt)}
+  \Lex(\utt, \target) e^{- \Costs(\utt)}
   \label{eq:rsa-s0} \\
   l_{1}(\target \| \utt, \Lex)
   &\propto
@@ -676,14 +674,15 @@ must sum over all messages. The same problem applies to $s_{0}$, unless
 $\Lex$ factorizes in an unrealistically clean way.
 
 Over the next few subsections, we overcome these obstacles by
-replacing $l_{0}$ and $s_0$ with RNN-based listener agents, using
-the $s_0$ agent to acquire sample
+replacing $l_{0}$ and $s_0$ with RNN-based listener agents,
+denoted with
+capital letters: $\Listener_0$, $\Speaker_0$.
+We use the $\Speaker_0$ agent both as a base model for a pragmatic listener
+analogous to $l_1$ in \eqref{eq:rsa-l1} and to acquire sample
 utterances for approximating the normalization required in defining
-the $s_{1}$ agent.
+the $s_{1}$ agent in \eqref{eq:rsa-s1}.
 
 \subsection{Base listener}
-
-\textcolor{red}{rdh: if this shift in notation from lower-case to capital letters is intentional, maybe put a sentence that explicitly signposts this at the end of the previous section?}
 
 Our base listener agent $\Listener_0$ (\figref{fig:model:listener}) is an LSTM encoder model that produces a Gaussian
 distribution over colors in a transformed representation space (\secref{sec:color_repr}).
