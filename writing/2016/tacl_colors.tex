@@ -33,7 +33,7 @@
 \newcommand{\@BIBLABEL}{\@emptybiblabel}
 \newcommand{\@emptybiblabel}[1]{}
 \makeatother
-\usepackage[hidelinks,draft]{hyperref}
+\usepackage[hidelinks]{hyperref}
 \DeclareMathOperator*{\argmax}{arg\,max}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -245,7 +245,7 @@ and stipulated grammars, which is a barrier to experiments in
 linguistically complex domains. In our formulation, the literal
 semantic agents are recurrent neural networks (RNNs) that produce and
 interpret color descriptions in context. These models are learned from
-data and scale easily to large data sets containing novel utterances.
+data and scale easily to large datasets containing diverse utterances.
 The RSA recursion is then defined in terms of these base agents: the
 \emph{pragmatic speaker} produces utterances based on a literal RNN
 listener \cite{AndreasKlein16_NeuralPragmatics}, and the
@@ -384,9 +384,10 @@ Since color reference is a difficult task even for humans, we compared listener 
   \% Superlatives     & 2.2 & 6.1 & 16.7  && 4.7 & 9.7 & 17.2  && 4.8 & 10.3 & 16.6 \\
    \bottomrule
 \end{tabular}
-\caption{Corpus statistics and statistics of samples from artificial speakers defined
-  in \secref{sec:l2} (rates per utterance). The human and artificial speakers show
-  many of the same correlations between language use and context type.}
+\caption{Corpus statistics and statistics of samples from artificial speakers
+  (rates per utterance). $\Speaker_0$: RNN speaker; $\Speaker_1$: pragmatic speaker 
+  derived from RNN listener (see \secref{sec:l2}). The human and artificial speakers
+  show many of the same correlations between language use and context type.}
 \label{table:metrics}
 \end{table*}
 
@@ -942,11 +943,11 @@ $z = 2.1, p =0.036$ respectively).
   model & accuracy (\%) & perplexity \\
   \midrule
   $\Listener_0$                                      & 83.30 & 1.73 \\
-  $\Listener_1$ [$\Listener(\Speaker_0)$]            & 80.51 & 1.59 \\
-  $\Listener_2$ [$\Listener(\Speaker(\Listener_0))$] & 83.95 & 1.51 \\
-  $\Listener_a$ [$\Listener_0 \cdot \Listener_1$]    & 84.72 & 1.47 \\
-  $\Listener_b$ [$\Listener_0 \cdot \Listener_2$]    & 83.98 & 1.50 \\
-  $\Listener_e$ [$\Listener_a \cdot \Listener_b$]    & \best{84.84} & \best{1.45}
+  $\Listener_1 = \Listener(\Speaker_0)$              & 80.51 & 1.59 \\
+  $\Listener_2 = \Listener(\Speaker(\Listener_0))$   & 83.95 & 1.51 \\
+  $\Listener_a = \Listener_0 \cdot \Listener_1$      & 84.72 & 1.47 \\
+  $\Listener_b = \Listener_0 \cdot \Listener_2$      & 83.98 & 1.50 \\
+  $\Listener_e = \Listener_a \cdot \Listener_b$      & \best{84.84} & \best{1.45}
   \\[0.5ex]
   human & \oracle{90.40} \\
   \midrule
