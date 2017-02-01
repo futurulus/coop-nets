@@ -685,15 +685,20 @@ the $s_{1}$ agent in \eqref{eq:rsa-s1}.
 
 \subsection{Base listener}
 
-Our base listener agent $\Listener_0$ (\figref{fig:model:listener}) is an LSTM encoder model that produces a Gaussian
-distribution over colors in a transformed representation space (\secref{sec:color_repr}).
+Our base listener agent $\Listener_0$ (\figref{fig:model:listener}) is an LSTM encoder model that predicts a Gaussian
+distribution over colors in a transformed representation space.
 The input words are embedded in a 100-dimensional vector space. Word embeddings
 are initialized to random normally-distributed vectors ($\mu = 0$, $\sigma = 0.01$)
 and trained. The sequence of word vectors is
 used as input to an LSTM with 100-dimensional hidden state, and a linear
-transformation is applied to the output representation to produce a covariance matrix
-and mean vector for a Gaussian distribution in color representation space.
-The Gaussian scores for each of the $\contextlen$ context colors are normalized to
+transformation is applied to the output representation to produce the parameters
+$\mu$ and $\Sigma$ of a quadratic form\footnote{The quadratic form is not guaranteed 
+to be negative definite and thus define a Gaussian; however, it is for $>95$\% of
+inputs. The distribution over context colors is well-defined regardless.}
+\[\operatorname{score}(\feat) = -(\feat - \mu)^T \Sigma (\feat - \mu)\]
+where $\feat$ is a color in Fourier representation space (\secref{sec:color_repr}).
+The values of $\operatorname{score}(\feat)$ for each of the $\contextlen$
+context colors are normalized in log space to
 produce a probability distribution over the context colors. We denote this
 distribution by $\Listener_0(\target \| \utt, \context; \theta)$, where $\theta$ represents the
 vector of parameters that define the trained model.
