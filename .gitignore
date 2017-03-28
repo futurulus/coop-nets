@@ -41,3 +41,4 @@ nosetests.json
 .RData
 .Rhistory
 *-converted-to.pdf
+arxiv_submission/

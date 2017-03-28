@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+mkdir -p arxiv_submission/figures
+
+cp -r \
+    *.bbl \
+    *.cls \
+    *.eps \
+    *.sty \
+    arxiv_submission/
+cp figures/*.eps \
+    figures/*.png \
+    figures/*.pdf \
+    arxiv_submission/figures/
+for pdf in *-eps-converted-to.pdf; do
+    cp "$pdf" arxiv_submission/"${pdf/-eps-converted-to/}"
+done
+for pdf in figures/*-eps-converted-to.pdf; do
+    base="$(basename "$pdf")"
+    cp "$pdf" arxiv_submission/figures/"${base/-eps-converted-to/}"
+done
+for tex in *.tex; do
+    perl -pe 's/(^|[^\\])%.*/\1%/' < "$tex" > arxiv_submission/"$tex"
+done
+cd arxiv_submission
+zip -r ../arxiv_submission.zip *
