@@ -705,23 +705,9 @@ produce a probability distribution over the context colors. We denote this
 distribution by $\Listener_0(\target \| \utt, \context; \theta)$, where $\theta$ represents the
 vector of parameters that define the trained model.
 
-\subsection{Representing colors} \label{sec:color_repr}
-
 Each color is represented in its simplest form as a three-dimensional vector in
 RGB space; we transform this to HSV (hue, saturation,
 value) as a preprocessing step. These HSV vectors are then Fourier-transformed as in \newcite{MonroeGoodmanPotts16_Color} before being fed as input to the models.
-The Fourier transformation maps a color
-$(h, s, v)$ to a higher-dimensional\footnote{For the listener, we restrict $j,k$ to $\{0, 1\}$ and $\ell$ to 0, as we
-found this improved performance slightly.} vector $\feat$:
-\begin{align*}
-\hat{\feat}_{jk\ell} &= \exp \left[-2\pi i \left(jh^* + ks^* + \ell v^*\right)\right] \\
-\feat &= \begin{bmatrix}
-  \Re{\hat{\feat}} & \Im{\hat{\feat}}
-\end{bmatrix}\qquad j,k,\ell \in \{0,1,2\}
-\end{align*}
-where $(h^*, s^*, v^*) = (h / 360, s / 200, v/200)$.
-The Fourier transformation is meant to help the models identify non-convex components
-of denotations of color language, particularly periodic components.
 
 \subsection{Base speaker}\label{sec:s0}
 
