@@ -621,10 +621,11 @@ communicative domains
    \begin{subfigure}[b]{0.48\textwidth}
     \centering
     \input{input-neural-listener}
-    \caption{The $\Listener_{0}$ agent processes a color description
+    \caption{The $\Listener_{0}$ agent processes tokens $\utt_i$ of a
+      color description $\utt$
       sequentially. The final representation is transformed into a
       Gaussian distribution in color space, which is used to score the
-      context colors.}
+      context colors $c_1 \dots c_3$.}
     \label{fig:model:listener}
   \end{subfigure}
   %
@@ -634,9 +635,9 @@ communicative domains
     \centering
     \input{input-neural-speaker}
     \caption{The $\Speaker_{0}$ agent processes the target color
-      $c_{T}$ in context and produces a color description
+      $c_{t}$ in context and produces tokens $\utt_i$ of a color description
       sequentially. Each step in production is conditioned by the
-      final contextual representation $h$ and the previous word
+      context representation $h$ and the previous word
       produced.}
     \label{fig:model:speaker}
   \end{subfigure}
