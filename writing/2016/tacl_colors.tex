@@ -1210,7 +1210,16 @@ interprets color descriptions in context better than the listener alone.
 % Doing so would require a more integrated solution to the
 % problem of the intractable alternative utterance space.
 
-An important next step is to pursue
+The separation of referent and utterance representation in our base speaker and
+listener models in principle allows easy substitution of referents other than colors
+(for example, images), although the performance of the listener agents could be
+limited by the representation of utterance semantics as a Gaussian distribution in
+referent representation space. Our pragmatic agents also rely on the ability to 
+enumerate the set of possible referents. Avoiding this enumeration, as would be 
+necessary in tasks with intractably large referent spaces, is a challenging 
+theoretical problem for RSA-like models.
+
+Another important next step is to pursue
 %Another area of investigation we did not pursue is
 multi-turn dialogue. As noted in \secref{sec:corpus},
 both participants in our reference game task could use the chat window
