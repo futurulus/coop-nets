@@ -14,9 +14,8 @@ parser = config.get_options_parser()
 parser.add_argument('--listener', type=config.boolean, default=False,
                     help='If True, create a listener "clickedObj" csv file. Otherwise '
                          'create a speaker "message" csv file.')
-parser.add_argument('--suffix', type=str, default='',
-                    help='Append this to the end of filenames (before the ".csv") when '
-                         'locating the Hawkins data.')
+parser.add_argument('--limit_sample_sets', type=int, default=0,
+                    help='If positive, show at most this number of sample sets.')
 
 ID_COLUMNS = (0, 2)
 SPEAKER_REPLACE_COLUMN = 4
@@ -38,7 +37,8 @@ def generate_html(run_dir=None):
     with open(out_path, 'w') as outfile, gzip.open(in_path, 'r') as infile:
         outfile.write(header(output))
         for example in read_grids(infile, output, options.only_differing_preds):
-            outfile.write(grid_output(example, options.only_differing_preds))
+            outfile.write(grid_output(example, options.only_differing_preds,
+                                      options.limit_sample_sets))
         outfile.write(footer())
 
 
@@ -74,7 +74,9 @@ def prob_diff(example):
     return exp(l0_log_prob) - exp(final_log_prob)
 
 
-def grid_output(example, only_differing_preds):
+def grid_output(example, only_differing_preds, limit_sample_sets):
+    if limit_sample_sets <= 0:
+        limit_sample_sets = None
     inst_num, shown_num, inst, grids = example
     lines = [
         '<h3>Example {}{} {}</h3>'.format(
@@ -87,7 +89,7 @@ def grid_output(example, only_differing_preds):
         '<tr><td><b>{}</b></td>{}</tr>'.format(escape(grids['sets'][0]['utts'][0]),
                                                probs_row(grids['final'], bold=True))
     ]
-    for i, ss in enumerate(grids['sets']):
+    for i, ss in enumerate(grids['sets'][:limit_sample_sets]):
         lines.append('<tr> <th></th>'
                      '<th>L2</th> <th></th> <th></th> <th></th>'
                      '<th>S1</th> <th></th> <th></th> <th></th>'
