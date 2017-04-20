@@ -889,27 +889,6 @@ from grid search is \emph{negative}. The effect of this is to amplify
 the difference between $\Listener_0$ and $\Listener_2$: the listener-based
 pragmatic model, evidently, is not quite pragmatic enough.
 
-\begin{comment}
-\begin{table}[t]
-\centering
-\begin{tabular}{lrrrrrr}
-  \toprule
-   & \multicolumn{3}{c}{accuracy} & \multicolumn{3}{c}{perplexity} \\
-   & $\Speaker_h$ & $\Speaker_0$ & $\Speaker_1$ & $\Speaker_h$ & $\Speaker_0$ & $\Speaker_1$ \\
-  \midrule
-  $\Listener_0$ & 83.39 & 83.66 & \oracle{99.75} & 1.69 & 1.71 & \oracle{1.03} \\
-  $\Listener_b$ & \best{84.11} & \best{84.82} & \oracle{99.93} & \best{1.49} & \best{1.45} & \oracle{1.08}
-  \\[0.5ex]
-  $\Listener_h$ & 90.03 \\
-   \bottomrule
-\end{tabular}
-\caption{Overall accuracy and perplexity of the base and pragmatic listeners
-on inputs from various speakers, plus human accuracy. $\Speaker_h$ and $\Listener_h$
-represent human agents. \oracle{Italics}: ``oracle'' results (see \secref{sec:speaker_eff}).}
-\label{table:speakerVsListener}
-\end{table}
-\end{comment}
-
 \section{Model results}
 
 \subsection{Speaker behavior}
@@ -1036,102 +1015,7 @@ declined from $\Listener_0$ to $\Listener_e$ (bottom) on the dev set, by conditi
     $\Listener_e$  & \best{59} & 41 & $<$1 \\
    \bottomrule
 \end{tabular}
-\begin{comment}
 \qquad
-\begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
-    \toprule
-    $\Listener_0$ & \colorContext{B84783}{7C8383}{A35C88}{} \\
-    \midrule
-    \textbf{pink purple} &           \best{86} &   $<$1  &  14
-    \\[1ex]
-    pink           & \intended{\best{\gz{}99}} &   $<$1  &   1 \\
-    the pinker one & \intended{\best{\gz{}99}} &   $<$1  &   1 \\
-    grey           & $<$1 & \intended{\best{\z{}$>$99}} & $<$1 \\
-    gray           & $<$1 & \intended{\best{\z{}$>$99}} & $<$1 \\
-    middle pink    & \best{90} & $<$1 & \intended{\gz{}10} \\
-    dark pink      & \best{96} & $<$1 & \intended{\gzz{}4} \\
-    \midrule
-    $\Speaker_1$ & \colorContext{B84783}{7C8383}{A35C88}{}  \\
-    \midrule
-    \textbf{pink purple} &          19  &             $<$1 & \best{35}
-    \\[1ex]
-    pink           & \intended{\best{\gz{}21}} & $<$1 & 8 \\
-    the pinker one & \intended{\best{\gz{}21}} & $<$1 & 9 \\
-    grey           & $<$1 & \intended{\best{\gz{}50}} & $<$1 \\
-    gray           & $<$1 & \intended{\best{\gz{}50}} & $<$1 \\
-    middle pink    &    20 &  $<$1 & \intended{\gz{}30} \\
-    dark pink      &    20 &  $<$1 & \intended{\gz{}19} \\
-    \midrule
-    $\Listener_2$  & \colorContext{B84783}{7C8383}{A35C88}{} \\
-    \midrule
-    \textbf{pink purple} & 36  & $<$1 & \best{64} \\
-    \midrule
-    $\Speaker_0$   & \speakerpct{0.19} & \speakerpct{$<$0.01} & \speakerpct{\best{0.27}} \\
-    $\Listener_1$  & 41  & $<$1 & \best{59} \\
-    \midrule
-    $\Listener_a$  & \best{62} & $<$1 & 38 \\
-    $\Listener_b$  & 44 & $<$1 & \best{56} \\
-    $\Listener_e$  & \best{53} & $<$1 & 47 \\
-   \bottomrule
-\end{tabular}
-\qquad
-\begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
-    \toprule
-    $\Listener_0$ & \colorContext{1150EE}{23DC92}{0B0BF4}{} \\
-    \midrule
-    \textbf{duller blue / lighter shade} &  14 &           \best{86} &   $<$1  
-    \\[1ex]
-    darker blue    & \intended{\gz{}\best{73}} & $<$1 & 27 \\
-    dark blue      & \intended{\gz{}\best{59}} & $<$1 & 41 \\
-    green          &  $<$1 & \intended{\best{\z{}$>$99}} &   $<$1  \\
-    light green    &  $<$1 & \intended{\best{\z{}$>$99}} &   $<$1  \\
-    blue           & \best{94} & $<$1 & \intended{\gzz{6}} \\
-    deep blue      & \best{92} & $<$1 & \intended{\gzz{8}} \\
-    \midrule
-    $\Speaker_1$ & \colorContext{1150EE}{23DC92}{0B0BF4}{}  \\
-    \midrule
-    \textbf{duller blue / lighter shade} & $<$1  & \best{33} & $<$1
-    \\[1ex]
-    green          & \intended{\gz{}24} & $<$1 & 31 \\
-    light green    & \intended{\gz{}21} & $<$1 & \best{39} \\
-    blue           & $<$1 & \intended{\best{\gz{}33}} & $<$1 \\
-    deep blue      & $<$1 & \intended{\best{\gz{}33}} & $<$1 \\
-    darker blue    & \best{28} &  $<$1 & \intended{\gz{}14} \\
-    dark blue      &    27 &  $<$1 & \intended{\gz{}17} \\
-    \midrule
-    $\Listener_2$  & \colorContext{1150EE}{23DC92}{0B0BF4}{} \\
-    \midrule
-    \textbf{duller blue / lighter shade} & $<$1  & $>$99 & $<$1 \\
-    \midrule
-    $\Speaker_0$ ($\times 10^{-10}$)   & \speakerpct{\best{15.65}} & \speakerpct{$<$0.01} & \speakerpct{4.06} \\
-    $\Listener_1$  & 79  & $<$1 & 21 \\
-    \midrule
-    $\Listener_a$  & \best{62} & $<$1 & 38 \\
-    $\Listener_b$  & 44 & $<$1 & \best{56} \\
-    $\Listener_e$  & \best{53} & $<$1 & 47 \\
-   \bottomrule
-\end{tabular}
-\end{comment}
-\qquad
-\begin{comment}
-Copy-and-paste L0 and S0 from s0_grids, as a dict {"L0": [[...]], "S0": [[...]]}. 
-Press ^D when done.
-{"S0": [[-21.685722082853317, -1.5821806192398071, -1.5821806192398071, -4.462130904197693, -12.111773368436843, -1.5821806192398071, -16.2315708771348, -19.991363763809204, -17.687833309173584, -20.705875754356384, -81.97131448984146, -32.735456854104996, -6.327269732952118, -13.929853960871696, -11.660283255856484, -26.183953166007996, -1.5821806192398071, -35.142383217811584, -28.24677288532257, -41.83310157060623, -6.441553115844727, -46.109247386455536, -59.13887119293213, -11.461986660957336, -11.461986660957336], [-18.95612369477749, -3.759357988834381, -3.759357988834381, -6.197554111480713, -12.288649465888739, -3.759357988834381, -20.200858734548092, -24.845553696155548, -21.726249754428864, -14.91227412223816, -78.45044577121735, -36.75810444355011, -3.0117474794387817, -12.108346462249756, -7.097265041433275, -22.32451343536377, -3.759357988834381, -32.88509440422058, -25.46446019411087, -43.90726912021637, -5.995083689689636, -44.91176646947861, -59.080008029937744, -11.40073823928833, -11.40073823928833], [-29.755542993545532, -7.354843884706497, -7.354843884706497, -11.310943603515625, -21.465588061138988, -7.354843884706497, -31.454736173152924, -29.59233731031418, -29.984037458896637, -21.13900698721409, -82.25372296571732, -42.525024712085724, -10.521392852067947, -18.893547765910625, -20.04436239413917, -35.51399207115173, -7.354843884706497, -21.58792908489704, -19.460504293441772, -35.707183718681335, -1.411353811621666, -36.93245093524456, -59.222323417663574, -1.8773183226585388, -1.8773183226585388]], "L0": [[-9.49595365368693, -0.003044123664862487, -0.003044123664862487, -0.0002358669996571875, -0.02003171769752081, -0.003044123664862487, -0.22902183184463062, -3.556692326942198e-05, -0.0005243533273973783, -5.6906099481591745, -18.457000751502747, -0.017212307451470583, -3.2782125559522, -0.2751041664659508, -4.752409392822127, -1.0000142793994464, -0.003044123664862487, -18.35541155032302, -6.599043848777197, -23.352535247983788, -4.26005647782533, -3.890759184891695, -0.7814618395016424, -30.03760910034921, -30.03760910034921], [-6.578865621918132, -5.796096757889158, -5.796096757889158, -8.352362616348485, -3.920437735597034, -5.796096757889158, -1.5862643564685015, -10.244227451288406, -7.553681962749157, -0.009560440116541257, -18.47856904984259, -4.070724998040302, -0.038424511708149374, -1.4250065102159508, -0.00867710620496736, -0.4586668353419817, -5.796096757889158, -15.207717916289814, -6.717844965720556, -22.940391540708397, -3.2474148095056283, -4.314312890107149, -2.036464755360865, -25.63996315003183, -25.63996315003183], [-0.001465653399256266, -16.11908717536963, -16.11908717536963, -21.37370680122397, -19.252241057435413, -16.11908717536963, -33.23752973923523, -19.31306080242366, -17.051859014293345, -5.093361870766596, -1.9080870257185546e-08, -18.418870959801776, -16.342067727155815, -16.14704513688679, -11.652899676788191, -23.15591046622806, -16.11908717536963, -2.5920060957871703e-07, -0.0025741207338939188, -1.8105295039343119e-10, -0.05445204753725388, -0.0343901886887491, -0.8872796343014471, -7.41340322460454e-12, -7.41340322460454e-12]]}
-Enter rows of the table to select utts from, separated by comma:
-0,12,13,1,3,20,23
-Enter order of cols of the table separated by comma:
-1,0,2
-L2:
-[[ 0.046  0.005  0.948]
- [ 0.915  0.085  0.   ]
- [ 0.497  0.502  0.   ]
- [ 0.073  0.926  0.   ]
- [ 0.019  0.981  0.   ]
- [ 0.22   0.069  0.712]
- [ 0.     0.     1.   ]]
-S0:
-[  5.85409925e-09   3.81953561e-10   1.19490085e-13]
-\end{comment}
 \begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
     \toprule
     $\Listener_0$ & \colorContext{718E82}{62909D}{AAC639}{} \\
@@ -1275,66 +1159,6 @@ gives high probability to the brightest green (which could nevertheless be calle
 conditioned on the context; it has successfully learned that \textit{drab}
 would be more likely as a description of the grayish green in this context.
 
-\begin{comment}
-\subsection{Speaker effectiveness} \label{sec:speaker_eff}
-
-We also perform a ``machine communication'' experiment aimed at measuring the
-ability of the speaker agents to convey the information necessary to identify
-the target. \Tabref{table:speakerVsListener} shows the effectiveness of the
-two speaker models---the base speaker $\Speaker_0$ (\secref{sec:s0}) and the
-pragmatic speaker $\Speaker_1$ (\secref{sec:l2})---at describing the
-target color to the listener models.
-
-\ndg{can we break down according to condition as we did for human data in fig 4?}
-
-The pragmatic speaker is nearly perfect at communicating
-with the listener models, which is unsurprising, because in the case of
-$\Listener_0$, the speaker has access to the listener's thought process, and in
-the case of $\Listener^*$, the listener has access to the speaker's thought process.
-This gives the model the opportunity to optimize its output for test set
-accuracy; hence, we label results on these pairs as \textit{oracle} accuracies.
-
-Additionally, however, the listeners are able to understand even $\Speaker_0$'s
-utterances better than humans'. This is surprising, because $\Listener_0$ does not
-contain an embedded model of either speaker, and $\Listener^*$ uses $\Speaker_0$
-only indirectly, as a source of alternative utterances to consider.
-
-\ndg{this will leave people confused.}
-
-\subsection{Tuning the pragmatic parameters} \label{sec:alpha_beta}
-
-As noted in \secref{sec:training}, we use an inverse temperature parameter of
-$\alpha = 0.544$ and a base weight of $\beta = -0.15$ for the pragmatic
-listener. Particularly surprising is the fact that the optimal value of $\beta$
-discovered in grid search is \emph{negative}. This has the effect of amplifying
-the difference between $\Listener_0$ and $\Listener_1$: the pragmatic model,
-evidently, is not quite pragmatic enough.
-
-The $\alpha$ value of 0.544${}<{}$1 indicates that the pragmatic listener is
-modeling a somewhat less reliable speaker than one that uses a straightforward
-softmax choice distribution. Empirical values of $\alpha$ fitting human behavior
-in prior work with RSA-based models have varied from task to task;
-\newcite{Kao-etal:2014} give $\alpha = 0.36$ for predicting
-hyperbole in numeric expressions, while \newcite{Graf2016} find $\alpha = 10.8$ for
-predicting hypernymy level in object references.
-
-\begin{figure}
-\centering
-\includegraphics[width=\columnwidth]{figures/alpha_beta.eps}
-\caption{Perplexity $\pi$ on tuning set as a function of $\alpha$ and $\beta$, plotted as $\log(\pi - \min_{\alpha,\beta} \pi(\alpha, \beta))$.}
-\label{fig:alpha_beta}
-\end{figure}
-
-Grid search over values of $\alpha$ and $\beta$ revealed that the optimal values of
-the two parameters are related (\figref{fig:alpha_beta}). Good combinations lay on
-a curve with $\alpha$ decreasing as $\beta$ increased; however, negative $\beta$ and
-very small $\alpha$ was catastrophic to perplexity.\footnote{We tuned the
-parameters on perplexity rather than accuracy because accuracy was noisy and had
-many local and global minima.}
-
-\ndg{this section could be cut or shortened...}
-\end{comment}
-
 \section{Related work}
 
 Prior work combining machine learning with probabilistic pragmatic reasoning
@@ -1362,17 +1186,6 @@ listener from a speaker), or adding another step of recursive reasoning,
 yielding a two-level derived pragmatic model
 $\Listener(\Speaker(\Listener_0))$. We show both approaches contribute
 to an effective listener.
-
-\begin{comment}
-Additionally, we add the $\alpha$ inverse temperature parameter from
-\newcite{Goodman2013}, and we replace the multi-layer perceptron models over
-$n$-gram features used in \newcite{AndreasKlein16_NeuralPragmatics}
-with recurrent models for both the base listener and the base speaker.
-These sequential models can approximate the compositional semantics
-that is so crucial for operators like negation and comparatives.
-Our speaker is also more expressive in that it is able to capture
-properties of the context when sampling alternative utterances.
-\end{comment}
 
 \section{Conclusion} \label{sec:conclusion}
 
