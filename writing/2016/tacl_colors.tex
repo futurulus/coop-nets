@@ -171,7 +171,9 @@ from two recurrent neural network classifiers, a speaker and a listener,
 unified by a recursive pragmatic reasoning framework.
 Experiments show that this
 combined pragmatic model interprets color descriptions
-more accurately than the classifiers from which it is built.
+more accurately than the classifiers from which it is built, and that
+much of this improvement results from combining the speaker and listener
+perspectives.
 We observe that pragmatic reasoning helps primarily
 in the hardest cases: when the model must distinguish very similar colors,
 or when few utterances adequately express
@@ -237,7 +239,7 @@ The fact that \word{blue} appears in three of these
 four cases highlights the flexibility and context dependence of color descriptions.
 
 In this paper, we present a scalable, learned model of pragmatic
-language understanding. At its core, the model is a version of the
+language understanding. The model is built around a version of the
 Rational Speech Acts (RSA) model \cite{Frank2012,GoodmanFrank16_RSATiCS}, in which agents
 reason recursively about each other's expectations and intentions to
 communicate more effectively than literal semantic agents could. In
@@ -264,10 +266,18 @@ speaker's behavior.
 % but also linguistic context in the form of the speaker's goals and constraints in
 % describing the target.
 
+We focus on accuracy in a listener task
+(i.e., at language understanding).
+However, our most successful model integrates speaker and listener perspectives,
+combining predictions made by a system trained to understand color descriptions
+and one trained to produce them.
+
 We evaluate this model with a new, psycholinguistically motivated corpus of real-time, dyadic reference games in which
 the referents are patches of color.
-The corpus includes 948 complete games with 53,365 utterances produced by
-human participants paired into dyads on the web. The linguistic
+Our task is fundamentally the same as that of
+\newcite{Baumgaertner2012}, but the corpus we release is larger by several
+orders of magnitude, consisting of 948 complete games with 53,365 utterances 
+produced by human participants paired into dyads on the web. The linguistic
 behavior of the players exhibits many of the intricacies of language
 in general, including not just the context dependence and cognitive
 complexity discussed above, but also compositionality, vagueness, and
@@ -277,16 +287,14 @@ colors in a communicative context elicits greater variety in language use,
 including negations, comparatives, superlatives,
 metaphor, and shared associations.
 
-We focus on accuracy in a listener task
-(i.e., at language understanding).
-However, our most successful model integrates speaker and listener perspectives,
-combining predictions made by a system trained to understand color descriptions
-and one trained to produce them.
 Experiments on the data in our corpus show that this combined pragmatic model
 improves accuracy
 in interpreting human-produced descriptions over the basic RNN listener
-alone. Moreover, the improvements from pragmatic reasoning come primarily
-in the hardest cases:
+alone. We find that the largest improvement over the single RNN comes from
+blending it with an RNN trained to perform the speaker task, despite the fact
+that a model based only on this speaker RNN performs poorly on its own.
+Pragmatic reasoning on top of the listener RNN alone also yields improvements,
+which moreover come primarily in the hardest cases:
 %
 \begin{enumerate*}[label=(\arabic*)]
 \item contexts with colors that are very similar, thus requiring
@@ -547,8 +555,10 @@ We found a small but reliable increase in the likelihood of ``high specificity''
 
 We first define the basic RSA model as applied to the
 color reference games introduced in \secref{sec:corpus}; a worked example
-is shown in \figref{fig:basic-rsa}. The starting point of RSA is a model
-of a \term{literal listener}:
+is shown in \figref{fig:basic-rsa}.
+
+\paragraph{Listener-based listener}
+The starting point of RSA is a model of a \term{literal listener}:
 \begin{align}
   l_{0}(\target \| \utt, \Lex)
   &\propto
@@ -647,6 +657,7 @@ communicative domains
   \label{fig:model}
 \end{figure*}
 
+\paragraph{Speaker-based listener}
 The definitions of $s_1$ \eqref{eq:rsa-s1} and $l_2$ \eqref{eq:rsa-l2}
 give a general method of deriving a speaker from a listener and vice versa.
 This suggests an alternative formulation of a pragmatic listener, starting from
@@ -698,16 +709,16 @@ $\mu$ and $\Sigma$ of a quadratic form\footnote{The quadratic form is not guaran
 to be negative definite and thus define a Gaussian; however, it is for $>95$\% of
 inputs. The distribution over context colors is well-defined regardless.}
 \[\operatorname{score}(\feat) = -(\feat - \mu)^T \Sigma (\feat - \mu)\]
-where $\feat$ is a color in Fourier representation space (\secref{sec:color_repr}).
+where $\feat$ is a vector representation of a color. Each color is represented in
+its simplest form as a three-dimensional vector in
+RGB space; we transform this to HSV (hue, saturation,
+value) as a preprocessing step. These HSV vectors are then Fourier-transformed as in \newcite{MonroeGoodmanPotts16_Color} to obtain the representation $\feat$.
+
 The values of $\operatorname{score}(\feat)$ for each of the $\contextlen$
 context colors are normalized in log space to
 produce a probability distribution over the context colors. We denote this
 distribution by $\Listener_0(\target \| \utt, \context; \theta)$, where $\theta$ represents the
 vector of parameters that define the trained model.
-
-Each color is represented in its simplest form as a three-dimensional vector in
-RGB space; we transform this to HSV (hue, saturation,
-value) as a preprocessing step. These HSV vectors are then Fourier-transformed as in \newcite{MonroeGoodmanPotts16_Color} before being fed as input to the models.
 
 \subsection{Base speaker}\label{sec:s0}
 
@@ -783,15 +794,17 @@ this alternative-set sampling $n$ times and average the resulting probabilities 
 the final $\Listener_2$ output. We again choose $n = 8$ as a satisfactory
 compromise between effectiveness and computation time.
 
-A second pragmatic listener  $\Listener_1$ can be formed in a similar way, analogous to $l_{1}$ in \eqref{eq:rsa-l1}:
+\paragraph{Blending with a speaker-based agent} A second pragmatic listener
+$\Listener_1$ can be formed in a similar way,
+analogous to $l_{1}$ in \eqref{eq:rsa-l1}:
 %
 \begin{align}
-  \Listener_1(\target \| \utt, \context; \theta)
+  \Listener_1(\target \| \utt, \context; \phi)
   &=
     \frac{
-    \Speaker_0(\utt \| \target, \context; \theta)
+    \Speaker_0(\utt \| \target, \context; \phi)
     }{
-    \sum_{\target'} \Speaker_0(\utt \| \target', \context; \theta)
+    \sum_{\target'} \Speaker_0(\utt \| \target', \context; \phi)
     }    \label{eq:l1}
 \end{align}
 
@@ -810,7 +823,7 @@ a weighted average of $\Listener_0$ and each of $\Listener_1$ and $\Listener_2$,
 as well as an ``ensemble'' model that combines all of these agents.
 Specifically, we consider the following blends of neural base models and
 pragmatic models, with $\mathbf{L}_{i}$ abbreviating
-$\Listener_i(\target \| \utt, \context; \theta)$ for convenience:
+$\Listener_i(\target \| \utt, \context; \theta, \phi)$ for convenience:
 \begin{align}
 \mathbf{L}_a &\propto {\mathbf{L}_0}^{\beta_a} \cdot
 \mathbf{L}_1^{1-\beta_a}  \label{eq:beta_a} \\
@@ -969,8 +982,9 @@ declined from $\Listener_0$ to $\Listener_e$ (bottom) on the dev set, by conditi
 \subsection{Listener accuracy}
 
 \newcommand{\intended}{\framebox}
+\newcommand{\speakerpct}{\textit}
 
-\begin{figure}[t!]
+\begin{figure*}[t!]
 \centering
 %\renewcommand{\arraystretch}{0.95}
 \begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
@@ -1003,7 +1017,7 @@ declined from $\Listener_0$ to $\Listener_e$ (bottom) on the dev set, by conditi
     $\Listener_2$ & \colorContext{3884C7}{02F9FD}{9E6461}{} \\
     \midrule
     \textbf{blue} & \best{            68}  &    32 & $<$1 \\
-    \midrule
+%    \midrule
 %    true blue     & \framebox{\best{  72}} &    29 & $<$1 \\
 %    light blue    & \framebox{  21} & \best{   79} & $<$1 \\
 %    brightest     & $<$1 & \framebox{\best{$>$99}} & $<$1 \\
@@ -1013,23 +1027,167 @@ declined from $\Listener_0$ to $\Listener_e$ (bottom) on the dev set, by conditi
 %   $\Listener_b$ & \colorContext{3884C7}{02F9FD}{9E6461}{} \\
 %   \midrule
 %   \textbf{blue} & \best{            78}  &    22 & $<$1 \\
-%   \bottomrule
+    \midrule
+    $\Speaker_0$   & \speakerpct{5.71}  & \speakerpct{\best{7.63}} & \speakerpct{0.01} \\
+    $\Listener_1$  & 43  & \best{57} & $<$1 \\
+    \midrule
+    $\Listener_a$  & \best{50} & \best{50} & $<$1 \\
+    $\Listener_b$  & \best{68} & 32 & $<$1 \\
+    $\Listener_e$  & \best{59} & 41 & $<$1 \\
+   \bottomrule
+\end{tabular}
+\begin{comment}
+\qquad
+\begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
+    \toprule
+    $\Listener_0$ & \colorContext{B84783}{7C8383}{A35C88}{} \\
+    \midrule
+    \textbf{pink purple} &           \best{86} &   $<$1  &  14
+    \\[1ex]
+    pink           & \intended{\best{\gz{}99}} &   $<$1  &   1 \\
+    the pinker one & \intended{\best{\gz{}99}} &   $<$1  &   1 \\
+    grey           & $<$1 & \intended{\best{\z{}$>$99}} & $<$1 \\
+    gray           & $<$1 & \intended{\best{\z{}$>$99}} & $<$1 \\
+    middle pink    & \best{90} & $<$1 & \intended{\gz{}10} \\
+    dark pink      & \best{96} & $<$1 & \intended{\gzz{}4} \\
+    \midrule
+    $\Speaker_1$ & \colorContext{B84783}{7C8383}{A35C88}{}  \\
+    \midrule
+    \textbf{pink purple} &          19  &             $<$1 & \best{35}
+    \\[1ex]
+    pink           & \intended{\best{\gz{}21}} & $<$1 & 8 \\
+    the pinker one & \intended{\best{\gz{}21}} & $<$1 & 9 \\
+    grey           & $<$1 & \intended{\best{\gz{}50}} & $<$1 \\
+    gray           & $<$1 & \intended{\best{\gz{}50}} & $<$1 \\
+    middle pink    &    20 &  $<$1 & \intended{\gz{}30} \\
+    dark pink      &    20 &  $<$1 & \intended{\gz{}19} \\
+    \midrule
+    $\Listener_2$  & \colorContext{B84783}{7C8383}{A35C88}{} \\
+    \midrule
+    \textbf{pink purple} & 36  & $<$1 & \best{64} \\
+    \midrule
+    $\Speaker_0$   & \speakerpct{0.19} & \speakerpct{$<$0.01} & \speakerpct{\best{0.27}} \\
+    $\Listener_1$  & 41  & $<$1 & \best{59} \\
+    \midrule
+    $\Listener_a$  & \best{62} & $<$1 & 38 \\
+    $\Listener_b$  & 44 & $<$1 & \best{56} \\
+    $\Listener_e$  & \best{53} & $<$1 & 47 \\
+   \bottomrule
+\end{tabular}
+\qquad
+\begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
+    \toprule
+    $\Listener_0$ & \colorContext{1150EE}{23DC92}{0B0BF4}{} \\
+    \midrule
+    \textbf{duller blue / lighter shade} &  14 &           \best{86} &   $<$1  
+    \\[1ex]
+    darker blue    & \intended{\gz{}\best{73}} & $<$1 & 27 \\
+    dark blue      & \intended{\gz{}\best{59}} & $<$1 & 41 \\
+    green          &  $<$1 & \intended{\best{\z{}$>$99}} &   $<$1  \\
+    light green    &  $<$1 & \intended{\best{\z{}$>$99}} &   $<$1  \\
+    blue           & \best{94} & $<$1 & \intended{\gzz{6}} \\
+    deep blue      & \best{92} & $<$1 & \intended{\gzz{8}} \\
+    \midrule
+    $\Speaker_1$ & \colorContext{1150EE}{23DC92}{0B0BF4}{}  \\
+    \midrule
+    \textbf{duller blue / lighter shade} & $<$1  & \best{33} & $<$1
+    \\[1ex]
+    green          & \intended{\gz{}24} & $<$1 & 31 \\
+    light green    & \intended{\gz{}21} & $<$1 & \best{39} \\
+    blue           & $<$1 & \intended{\best{\gz{}33}} & $<$1 \\
+    deep blue      & $<$1 & \intended{\best{\gz{}33}} & $<$1 \\
+    darker blue    & \best{28} &  $<$1 & \intended{\gz{}14} \\
+    dark blue      &    27 &  $<$1 & \intended{\gz{}17} \\
+    \midrule
+    $\Listener_2$  & \colorContext{1150EE}{23DC92}{0B0BF4}{} \\
+    \midrule
+    \textbf{duller blue / lighter shade} & $<$1  & $>$99 & $<$1 \\
+    \midrule
+    $\Speaker_0$ ($\times 10^{-10}$)   & \speakerpct{\best{15.65}} & \speakerpct{$<$0.01} & \speakerpct{4.06} \\
+    $\Listener_1$  & 79  & $<$1 & 21 \\
+    \midrule
+    $\Listener_a$  & \best{62} & $<$1 & 38 \\
+    $\Listener_b$  & 44 & $<$1 & \best{56} \\
+    $\Listener_e$  & \best{53} & $<$1 & 47 \\
+   \bottomrule
+\end{tabular}
+\end{comment}
+\qquad
+\begin{comment}
+Copy-and-paste L0 and S0 from s0_grids, as a dict {"L0": [[...]], "S0": [[...]]}. 
+Press ^D when done.
+{"S0": [[-21.685722082853317, -1.5821806192398071, -1.5821806192398071, -4.462130904197693, -12.111773368436843, -1.5821806192398071, -16.2315708771348, -19.991363763809204, -17.687833309173584, -20.705875754356384, -81.97131448984146, -32.735456854104996, -6.327269732952118, -13.929853960871696, -11.660283255856484, -26.183953166007996, -1.5821806192398071, -35.142383217811584, -28.24677288532257, -41.83310157060623, -6.441553115844727, -46.109247386455536, -59.13887119293213, -11.461986660957336, -11.461986660957336], [-18.95612369477749, -3.759357988834381, -3.759357988834381, -6.197554111480713, -12.288649465888739, -3.759357988834381, -20.200858734548092, -24.845553696155548, -21.726249754428864, -14.91227412223816, -78.45044577121735, -36.75810444355011, -3.0117474794387817, -12.108346462249756, -7.097265041433275, -22.32451343536377, -3.759357988834381, -32.88509440422058, -25.46446019411087, -43.90726912021637, -5.995083689689636, -44.91176646947861, -59.080008029937744, -11.40073823928833, -11.40073823928833], [-29.755542993545532, -7.354843884706497, -7.354843884706497, -11.310943603515625, -21.465588061138988, -7.354843884706497, -31.454736173152924, -29.59233731031418, -29.984037458896637, -21.13900698721409, -82.25372296571732, -42.525024712085724, -10.521392852067947, -18.893547765910625, -20.04436239413917, -35.51399207115173, -7.354843884706497, -21.58792908489704, -19.460504293441772, -35.707183718681335, -1.411353811621666, -36.93245093524456, -59.222323417663574, -1.8773183226585388, -1.8773183226585388]], "L0": [[-9.49595365368693, -0.003044123664862487, -0.003044123664862487, -0.0002358669996571875, -0.02003171769752081, -0.003044123664862487, -0.22902183184463062, -3.556692326942198e-05, -0.0005243533273973783, -5.6906099481591745, -18.457000751502747, -0.017212307451470583, -3.2782125559522, -0.2751041664659508, -4.752409392822127, -1.0000142793994464, -0.003044123664862487, -18.35541155032302, -6.599043848777197, -23.352535247983788, -4.26005647782533, -3.890759184891695, -0.7814618395016424, -30.03760910034921, -30.03760910034921], [-6.578865621918132, -5.796096757889158, -5.796096757889158, -8.352362616348485, -3.920437735597034, -5.796096757889158, -1.5862643564685015, -10.244227451288406, -7.553681962749157, -0.009560440116541257, -18.47856904984259, -4.070724998040302, -0.038424511708149374, -1.4250065102159508, -0.00867710620496736, -0.4586668353419817, -5.796096757889158, -15.207717916289814, -6.717844965720556, -22.940391540708397, -3.2474148095056283, -4.314312890107149, -2.036464755360865, -25.63996315003183, -25.63996315003183], [-0.001465653399256266, -16.11908717536963, -16.11908717536963, -21.37370680122397, -19.252241057435413, -16.11908717536963, -33.23752973923523, -19.31306080242366, -17.051859014293345, -5.093361870766596, -1.9080870257185546e-08, -18.418870959801776, -16.342067727155815, -16.14704513688679, -11.652899676788191, -23.15591046622806, -16.11908717536963, -2.5920060957871703e-07, -0.0025741207338939188, -1.8105295039343119e-10, -0.05445204753725388, -0.0343901886887491, -0.8872796343014471, -7.41340322460454e-12, -7.41340322460454e-12]]}
+Enter rows of the table to select utts from, separated by comma:
+0,12,13,1,3,20,23
+Enter order of cols of the table separated by comma:
+1,0,2
+L2:
+[[ 0.046  0.005  0.948]
+ [ 0.915  0.085  0.   ]
+ [ 0.497  0.502  0.   ]
+ [ 0.073  0.926  0.   ]
+ [ 0.019  0.981  0.   ]
+ [ 0.22   0.069  0.712]
+ [ 0.     0.     1.   ]]
+S0:
+[  5.85409925e-09   3.81953561e-10   1.19490085e-13]
+\end{comment}
+\begin{tabular}{lr@{\hskip 5pt}r@{\hskip 5pt}r@{}r}
+    \toprule
+    $\Listener_0$ & \colorContext{718E82}{62909D}{AAC639}{} \\
+    \midrule
+    \textbf{drab green not the bluer one} & $<$1 & $<$1 & \best{$>$99}
+    \\[1ex]
+    gray            & \intended{\gz{}\best{96}} &  4 & $<$1 \\
+    blue dull green & \intended{\gz{}24} & \best{76} & $<$1 \\
+    blue            &  $<$1 & \intended{\best{\z{}$>$99}} &   $<$1  \\
+    bluish          &  $<$1 & \intended{\best{\z{}$>$99}} &   $<$1  \\
+    green           & 4 & 1 & \intended{\gz{}\best{95}} \\
+    yellow          & $<$1 & $<$1 & \intended{\best{\z{}$>$99}} \\
+    \midrule
+    $\Speaker_1$ & \colorContext{718E82}{62909D}{AAC639}{}  \\
+    \midrule
+    \textbf{drab green not the bluer one} & 1  & $<$1 & \best{34}
+    \\[1ex]
+    gray            & \intended{\gz{}\best{58}} & 5 & $<$1 \\
+    blue dull green & \intended{\gz{}27} & 28 & $<$1 \\
+    blue            & 2 & \intended{\best{\gz{}32}} &   $<$1  \\
+    bluish          & 1 & \intended{\best{\gz{}32}} &   $<$1  \\
+    green           & 10 & 3 & \intended{\gz{33}} \\
+    yellow          & $<$1 & $<$1 & \intended{\gz{}\best{34}} \\
+    \midrule
+    $\Listener_2$  & \colorContext{718E82}{62909D}{AAC639}{} \\
+    \midrule
+    \textbf{drab green not the bluer one} & $<$1  & $>$99 & $<$1 \\
+    \midrule
+    $\Speaker_0$ ($\times 10^{-9}$)   & \speakerpct{\best{5.85}} & \speakerpct{0.38} & \speakerpct{$<$0.01} \\
+    $\Listener_1$  & \best{94} & 6 & $<$1 \\
+    \midrule
+    $\Listener_a$  & \best{92} & 6 & 2 \\
+    $\Listener_b$  & 8 & 1 & \best{91} \\
+    $\Listener_e$  & \best{63} & 6 & 32 \\
+   \bottomrule
 \end{tabular}
 \caption{Conditional probabilities (\%) used to calculate $\Listener_2$
-for one dev set example. The true target color is boxed, and ``blue'' is
-the human utterance. Boxed cells for alternative
-utterances indicate the intended target; highest-probability referents
+for two dev set examples. The true target color is boxed, and the human
+utterances are ``blue'' (left) and ``pink purple'' (right). Boxed cells for
+alternative utterances indicate the intended target; highest-probability referents
 (listeners) and utterances (speaker) are in \textbf{bold}.
+$\Speaker_0$ probabilities (\speakerpct{italics}) are
+normalized across all utterances.
 Sample sizes are reduced to save space; here,
 $m = 2$ and $n = 1$ (see \secref{sec:l2}).}
 \label{fig:rsaExample}
-\end{figure}
+\end{figure*}
 
 \Tabref{table:modelAccuracy} shows the accuracy
 and perplexity of the base listener $\Listener_0$, the pragmatic listeners
 $\Listener_1$ and $\Listener_2$, and the blended models $\Listener_a$,
 $\Listener_b$, and $\Listener_e$ at resolving the human-written color
-references. As we expected, the speaker-based $\Listener_1$ alone
+references. Accuracy differences are significant\footnote{$p <{}$0.012, approximate
+permutation test \cite{Pado2006} with Bonferroni correction, 10,000 samples}
+for all pairs except $\Listener_2$/$\Listener_b$ and $\Listener_a$/$\Listener_e$.
+As we expected, the speaker-based $\Listener_1$ alone
 performs the worst of all the models. However, blending it with $\Listener_0$
 doesn't drag down $\Listener_0$'s performance but rather produces a considerable
 improvement compared to both of the original models, consistent with our
@@ -1037,9 +1195,10 @@ expectation that the listener-based and speaker-based models have complementary
 strengths.
 
 We observe that
-$\Listener_2$ substantially outperforms its own base model $\Listener_0$,
+$\Listener_2$ significantly outperforms its own base model $\Listener_0$,
 showing that pragmatic reasoning on its own contributes positively. Blending the
-pragmatic models with the base listener also improves over both individually.
+pragmatic models with the base listener also improves over both individually,
+although not significantly in the case of $\Listener_b$ over $\Listener_2$.
 Finally, the
 most effective listener combines both pragmatic models with the base listener.
 Plotting the number of examples changed by condition on the dev set
@@ -1050,19 +1209,26 @@ model has to distinguish highly similar colors and
 often cannot rely only on basic color terms.
 On the test set, the final ensemble improves
 significantly\footnote{$p <{}$0.001, approximate
-permutation test \cite{Pado2006}, 10,000 samples} over the base model on both metrics.
+permutation test, 10,000 samples} over the base model on both metrics.
 
-Examining the full probability tables for various dev set examples on which
-$\Listener_2$ is superior to $\Listener_0$ reveals a general pattern. In most
-of these examples, the alternative utterances sampled from $\Speaker_0$ for one
-of the referents $i$ fail to identify
+\section{Model analysis}
+
+Examining the full probability tables for various dev set examples offers insight
+into the value of each model in isolation and how they complement each other when
+blended together. In particular, we see that the listener-based ($\Listener_2$)
+and speaker-based ($\Listener_1$) pragmatic listeners each overcome a different
+kind of ``blind spot'' in the neural base listener's understanding ability.
+
+First, we inspect examples in which $\Listener_2$ is superior to $\Listener_0$.
+In most of these examples, the alternative utterances sampled from $\Speaker_0$
+for one of the referents $i$ fail to identify
 their intended referent to $\Listener_0$. The pragmatic listener interprets
 this to mean that referent $i$ is inherently difficult to refer to,
-and it compensates by increasing referent $i$'s probability. This is beneficial
-when $i$ is the true target but harmful when $i$ is a distractor.
+and it compensates by increasing referent $i$'s probability.
 
-\Figref{fig:rsaExample}
-shows one such example: a context consisting of a somewhat prototypical blue,
+This is beneficial when $i$ is the true target. The left column of 
+\figref{fig:rsaExample} shows one such example:
+a context consisting of a somewhat prototypical blue,
 a bright cyan, and a purple-tinged brown, with the utterance \textit{blue}. The
 base listener interprets this as referring to the cyan with 91\% probability,
 perhaps due to the extreme saturation of the cyan maximally activating certain
@@ -1083,6 +1249,31 @@ were the cyan, the speaker would have many good options. Therefore, the
 fact that the speaker chose \textit{blue} is interpreted as evidence for the
 true target. This mirrors the back-and-forth reasoning behind the
 definition of conversational implicature \cite{Grice75}.
+
+This reasoning can be harmful when $i$ one of the distractors: the pragmatic
+listener is then in danger of overweighting the distractor and incorrectly
+choosing it. This is a likely reason for the small performance difference
+between $\Listener_0$ and $\Listener_2$. Still, the fact that $\Listener_2$
+is more accurate overall, in addition to the negative value of $\beta_b$
+discovered in grid search, suggests that the pragmatic reasoning provides
+value on its own.
+
+Next, we examine examples in which both listener-based agents $\Listener_0$ and
+$\Listener_2$ give the wrong answer but are overridden by the speaker-based
+$\Listener_1$ to produce the correct referent. The discrepancy between the two
+kinds of models in many of these examples can be explained by the fact that the
+speaker takes the context as input, while the listener does not. The listener is
+thus asked to predict a region of color space from the utterance \term{a priori},
+while the speaker can take into account relationships between the context colors
+in scoring utterances.
+
+The right column of \figref{fig:rsaExample} shows an example of this. The
+$\Listener_0$ listener must choose a region of color space to predict based on
+the utterance \textit{drab green not the bluer one}, and its predicted region
+gives high probability to the brightest green (which could nevertheless be called
+``drab'' in isolation). The speaker $\Speaker_0$, however, produces utterances
+conditioned on the context; it has successfully learned that \textit{drab}
+would be more likely as a description of the grayish green in this context.
 
 \begin{comment}
 \subsection{Speaker effectiveness} \label{sec:speaker_eff}
@@ -1231,7 +1422,7 @@ RXDH was supported by the Stanford Graduate Fellowship and the
 National Science Foundation Graduate Research Fellowship under Grant No.\ DGE-114747.
 NDG was supported by the Alfred P.\ Sloan Foundation Fellowship.
 Any opinions, findings, and conclusions or recommendations 
-expressed in this material are those of the author(s) and do not necessarily
+expressed in this material are those of the authors and do not necessarily
 reflect the views of the National Science Foundation.
 
 %\section{Credits}
