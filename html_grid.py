@@ -1,13 +1,16 @@
 from numpy import argmax, isfinite
 from math import exp
 import gzip
+import itertools
 import json
+import numpy as np
 from numbers import Number
 import os
 from xml.sax.saxutils import escape as html_escape
 
 from stanza.research import config
 from html_report import get_output, format_value
+from blending import normalize, log_average
 
 
 parser = config.get_options_parser()
@@ -16,6 +19,12 @@ parser.add_argument('--listener', type=config.boolean, default=False,
                          'create a speaker "message" csv file.')
 parser.add_argument('--limit_sample_sets', type=int, default=0,
                     help='If positive, show at most this number of sample sets.')
+parser.add_argument('--baseline', choices=['l0', 'l1', 'l2', 'la', 'lb', 'le'], default='l0',
+                    help='The listener model to use as the baseline when reporting '
+                         'improved/declined (+/-).')
+parser.add_argument('--compare', choices=['l0', 'l1', 'l2', 'la', 'lb', 'le'], default='le',
+                    help='The listener model to use as the candidate when reporting '
+                         'improved/declined (+/-).')
 
 ID_COLUMNS = (0, 2)
 SPEAKER_REPLACE_COLUMN = 4
@@ -27,7 +36,12 @@ def generate_html(run_dir=None):
     options = config.options(read=True)
     run_dir = run_dir or options.run_dir
     out_path = os.path.join(run_dir, 'grids.html')
-    in_path = os.path.join(run_dir, 'grids.0.jsons.gz')
+    try:
+        in_path = os.path.join(run_dir, 's0_grids.0.jsons.gz')
+        with open(in_path, 'r'):
+            pass
+    except IOError:
+        in_path = os.path.join(run_dir, 'grids.0.jsons.gz')
     output = get_output(run_dir, 'eval')
     if 'error' in output.data[0]:
         output = get_output(run_dir, 'hawkins_dev')
@@ -35,12 +49,16 @@ def generate_html(run_dir=None):
         output = get_output(run_dir, 'dev')
 
     with open(out_path, 'w') as outfile, gzip.open(in_path, 'r') as infile:
+        write_files(infile, outfile, output, options)
+
+
+def write_files(infile, outfile, output, options):
         outfile.write(header(output))
-        for example in read_grids(infile, output, options.only_differing_preds):
+        grids = read_grids(infile, output, options)
+        for example in grids:
             outfile.write(grid_output(example, options.only_differing_preds,
                                       options.limit_sample_sets))
         outfile.write(footer())
-
 
 def header(output):
     return '''<!doctype html>
@@ -53,25 +71,77 @@ def header(output):
     '''.format(**output.config)
 
 
-def read_grids(infile, output, only_differing_preds=True):
+def read_grids(infile, output, options):
     show = []
     for inst_num, (inst, line) in enumerate(zip(output.data, infile)):
         grid = json.loads(line.strip())
-        l2_pred = argmax(grid['final'])
-        l0_grid = grid['sets'][0]['L0']
-        l0_pred = argmax([l0_grid[i][0] for i in range(len(l0_grid))])
-        if not only_differing_preds or l2_pred != l0_pred:
+        lb_pred = argmax(grid['final'])
+        l0 = np.array([np.array(ss['L0']).T for ss in grid['sets']])
+        l0_pred = l0[0, 0, :].argmax()
+        l2 = np.array([np.array(ss['L2']).T for ss in grid['sets']])
+        l2_pred = l2[0, 0, :].argmax()
+        preds = {'lb': lb_pred, 'l2': l2_pred, 'l0': l0_pred}
+        if 'S0' in grid['sets'][0]:
+            s0 = np.array([np.array(ss['S0']).T for ss in grid['sets']])
+            l1 = normalize(s0[0, 0, :], axis=0)
+            assert l1.shape == (3,), l1.shape
+            grid['L1'] = l1
+            preds['l1'] = l1.argmax()
+
+            sw = 0.608
+            bw = -0.15
+            alpha = 0.544
+            gamma = 0.509
+
+            la = normalize((1 - sw) * l0[0, 0, :] + sw * s0[0, 0, :], axis=0)
+            assert la.shape == (3,), la.shape
+            grid['La'] = la
+            preds['la'] = la.argmax()
+
+            s1 = normalize(l0 * alpha, axis=1)
+            l2 = normalize(s1, axis=2)
+            lb_ss = normalize(bw * l0[:, 0, :] + (1 - bw) * l2[:, 0, :], axis=1)
+            lb = normalize(log_average(lb_ss, axis=0), axis=0)
+            assert lb.shape == (3,), lb.shape
+            grid['Lb'] = lb
+
+            le = normalize((1 - gamma) * la + gamma * lb, axis=0)
+            assert le.shape == (3,), le.shape
+            grid['Le'] = le
+            preds['le'] = le.argmax()
+
+        if not options.only_differing_preds or preds[options.compare] != preds[options.baseline]:
             show.append((inst_num, inst, grid))
-    show.sort(key=prob_diff)
+    show.sort(key=prob_diff(options))
     for shown_num, (inst_num, inst, grid) in enumerate(show):
         yield (inst_num, shown_num, inst, grid)
 
 
-def prob_diff(example):
-    inst_num, inst, grids = example
-    final_log_prob = grids['final'][inst['output']]
-    l0_log_prob = grids['sets'][0]['L0'][inst['output']][0]
-    return exp(l0_log_prob) - exp(final_log_prob)
+def prob_diff(options):
+    def comparator(example):
+        inst_num, inst, grids = example
+        baseline_log_prob = get_log_prob(grids, inst, options.baseline)
+        compare_log_prob = get_log_prob(grids, inst, options.compare)
+        return exp(baseline_log_prob) - exp(compare_log_prob)
+
+    return comparator
+
+
+def get_log_prob(grids, inst, model_name):
+    if model_name == 'l0':
+        return grids['sets'][0]['L0'][inst['output']][0]
+    elif model_name == 'l2':
+        return grids['sets'][0]['L2'][inst['output']][0]
+    elif model_name == 'la':
+        return grids['La'][inst['output']]
+    elif model_name == 'lb':
+        return grids['Lb'][inst['output']]
+    elif model_name == 'le':
+        return grids['Le'][inst['output']]
+    elif model_name == 'final':
+        return grids['final'][inst['output']]
+    else:
+        raise ValueError('unknown model: {}'.format(model_name))
 
 
 def grid_output(example, only_differing_preds, limit_sample_sets):
@@ -85,9 +155,18 @@ def grid_output(example, only_differing_preds, limit_sample_sets):
             correct_status(inst, grids)
         ),
         '<table>',
-        '<tr><td></td>{}</tr>'.format(colors_row(inst)),
+        '<tr><td>Le</td>{}</tr>'.format(colors_row(inst)),
         '<tr><td><b>{}</b></td>{}</tr>'.format(escape(grids['sets'][0]['utts'][0]),
-                                               probs_row(grids['final'], bold=True))
+                                               probs_row(grids['Le'], bold=True)),
+        '<tr><td>La</td>{}</tr>'.format(colors_row(inst)),
+        '<tr><td><b>{}</b></td>{}</tr>'.format(escape(grids['sets'][0]['utts'][0]),
+                                               probs_row(grids['La'], bold=True)),
+        '<tr><td>Lb</td>{}</tr>'.format(colors_row(inst)),
+        '<tr><td><b>{}</b></td>{}</tr>'.format(escape(grids['sets'][0]['utts'][0]),
+                                               probs_row(grids['Lb'], bold=True)),
+        '<tr><td>L1</td>{}</tr>'.format(colors_row(inst)),
+        '<tr><td><b>{}</b></td>{}</tr>'.format(escape(grids['sets'][0]['utts'][0]),
+                                               probs_row(grids['L1'], bold=True)),
     ]
     for i, ss in enumerate(grids['sets'][:limit_sample_sets]):
         lines.append('<tr> <th></th>'
