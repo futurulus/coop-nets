@@ -6,7 +6,7 @@ import warnings
 from collections import Counter
 from lasagne.layers import InputLayer, DropoutLayer, DenseLayer, EmbeddingLayer, NonlinearityLayer
 from lasagne.layers import NINLayer, FeaturePoolLayer, ConcatLayer, SliceLayer, ElemwiseMergeLayer
-from lasagne.layers import dimshuffle, reshape
+from lasagne.layers import dimshuffle, reshape, get_output
 from lasagne.layers.recurrent import Gate
 from lasagne.init import Constant
 from lasagne.objectives import categorical_crossentropy
@@ -244,6 +244,7 @@ class ListenerLearner(NeuralLearner):
             xs, (y,) = self._data_to_arrays(batch, test=True)
 
             probs = self.model.predict(xs)
+            self.on_predict(xs)
             if random:
                 indices = sample(probs)
                 predictions.extend(self.unvectorize(indices, random=True))
@@ -265,6 +266,9 @@ class ListenerLearner(NeuralLearner):
     def bucket_adjustment(self):
         bucket_volume = (256.0 ** 3) / self.color_vec.num_types
         return -np.log(bucket_volume)
+
+    def on_predict(xs):
+        pass
 
     def on_iter_end(self, step, writer):
         most_common = [desc for desc, count in self.word_counts.most_common(10)]
@@ -758,7 +762,25 @@ class GaussianContextListenerLearner(ContextListenerLearner):
             l_scores = reshape(l_unnorm_scores, (-1, multi_utt, self.context_len),
                                name=id_tag + 'scores_reshape')
 
+        self.gaussian_fn = theano.function(input_vars, [get_output(l_pred_mean),
+                                                        get_output(l_pred_covar)],
+                                           name=id_tag + 'gaussian',
+                                           on_unused_input='ignore')
+
         return l_scores, [l_in] + context_inputs
+
+    def on_predict(xs):
+        if self.options.verbosity >= 8:
+            if hasattr(self, 'gaussian_fn'):
+                mean, covar = self.gaussian_fn(*Xs)
+                print('mean: {}'.format(mean.tolist()))
+                print('covar: {}'.format(covar.tolist()))
+
+    def get_gaussian_params(self, utt):
+        inst = instance.Instance(utt, 0, alt_outputs=[(0, 0, 0)] * 3)
+        xs, (_,) = self._data_to_arrays([inst], test=True)
+        mean, covar = self.gaussian_fn(*xs)
+        return mean[0], covar[0]
 
 
 class ContextVecListenerLearner(ContextListenerLearner):
