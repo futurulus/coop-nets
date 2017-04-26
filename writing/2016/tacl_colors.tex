@@ -296,7 +296,7 @@ that a model based only on this speaker RNN performs poorly on its own.
 Pragmatic reasoning on top of the listener RNN alone also yields improvements,
 which moreover come primarily in the hardest cases:
 %
-\begin{enumerate*}[label=(\arabic*)]
+\begin{enumerate*}[label=\arabic*)]
 \item contexts with colors that are very similar, thus requiring
   the interpretation of descriptions that convey fine distinctions;
   and
@@ -340,7 +340,7 @@ chat box at any point.
 To ensure a range of difficulty, we randomly interspersed an equal
 number of trials from three different conditions:
 %
-\begin{enumerate*}[label=(\arabic*)]%
+\begin{enumerate*}[label=\arabic*)]%
 \item \cond{close}, where colors were all within a distance of
   $\theta$ from one another but still perceptible,\footnote{We used the
     most recent CIEDE standard to measure color differences, which is
@@ -614,8 +614,8 @@ The most important feature of this model is that the pragmatic
 listener $l_{2}$ reasons not about the semantic interpretation
 function $\Lex$ directly, but rather about a speaker who reasons about
 a listener who reasons about $\Lex$ directly. The back-and-forth
-nature of this interpretive process mirrors the
-cooperative principle of conversational implicature \cite{Grice75} and
+nature of this interpretive process mirrors
+that of conversational implicature \cite{Grice75} and
 reflects more general ideas from Bayesian cognitive modeling
 \cite{Tenenbaum-etal:2011}. The model and its variants have been shown
 to capture a wide range of pragmatic phenomena in a cognitively
@@ -724,9 +724,12 @@ vector of parameters that define the trained model.
 
 We also employ an LSTM-based speaker model
 $\Speaker_0(\utt \| \target, \context; \phi)$. This speaker serves two purposes:
-1) it is used to define a pragmatic listener akin to $l_1$ in \eqref{eq:rsa-l1},
-and 2) it provides sets of alternative utterances for each context, to avoid
+\begin{enumerate*}[label=\arabic*)]
+\item it is used to define a pragmatic listener akin to $l_1$ in \eqref{eq:rsa-l1},
+and
+\item it provides samples of alternative utterances for each context, to avoid
 enumerating the intractably large space of possible utterances.
+\end{enumerate*}
 
 The speaker model consists of an LSTM context encoder
 and an LSTM description decoder (\figref{fig:model:speaker}). In this model, the colors of the context
@@ -736,8 +739,8 @@ and the sequence of color representations is passed through an LSTM with
 last, minimizing the length of dependence between the most important input color
 and the output \cite{Sutskever2014} and eliminating the need to represent the
 index of the target separately.
-The output of this recurrent neural network is concatenated with a
-100-dimensional embedding for the previous token at each time step in decoding.
+The final cell state of this recurrent neural network is concatenated with a
+100-dimensional embedding for the previous token output at each step of decoding.
 The resulting vector is input along with the previous cell state to the LSTM cell,
 and an affine transformation and softmax function are applied to the output to
 produce a probability distribution predicting the following token of the description.
@@ -859,14 +862,19 @@ to yield a ``hyperpragmatic'' model.
 We split our corpus into approximately equal train/dev/test sets
 (15,665 train trials, 15,670 dev, 15,659 test), ensuring that trials from
 the same dyad are present in only one split.
-We preprocess the data by (1) lowercasing; (2) tokenizing
-by splitting off punctuation as well as the endings \word{\mbox{-er}}, \word{\mbox{-est}}, and
+We preprocess the data by
+\begin{enumerate*}[label=\arabic*)]
+\item lowercasing;
+\item tokenizing by splitting off punctuation as well as the endings
+\word{\mbox{-er}}, \word{\mbox{-est}}, and
 \word{\mbox{-ish}};\footnote{We
 only apply this heuristic ending segmentation for the listener; the speaker is trained to produce
 words with these endings unsegmented, to avoid segmentation inconsistencies
 when passing speaker samples as alternative utterances to the listener.} and
-(3) replacing tokens that appear once or not at all
-in the training split\footnote{1.13\% of training tokens, 1.99\% of dev/test.} with \texttt{<unk>}. We also remove
+\item replacing tokens that appear once or not at all
+in the training split\footnote{1.13\% of training tokens, 1.99\% of dev/test.} with \texttt{<unk>}.
+\end{enumerate*}
+We also remove
 listener utterances and concatenate speaker utterances on the same context.
 % \todocheck{[rdh: listener utterances are not already removed from the filtered corpus; we could concatenate speaker utterances too?]}
 We leave handling of interactive dialogue to future work (\secref{sec:conclusion}).
@@ -914,12 +922,12 @@ the \cond{close}
 producing  more comparatives ($z = 14.45$) and superlatives ($z = 16$) in the \cond{split} or \cond{close} conditions than in the baseline \cond{far} condition. It does not, however, capture the peak in comparative use in the \emph{split} condition. This suggests that our model is simulating the human strategy at some level, but that more subtle patterns require further attention.
 
 \paragraph{Negations} Humans used more negations when the colors were closer
-together. Our pragmatic speaker's use of negation shows the  same relationship to the context ($z = 8.55$ and $z= 16.61$ respectively).
+together. Our pragmatic speaker's use of negation shows the  same relationship to the context ($z = 8.55$ and $z= 16.61$, respectively).
 
 \paragraph{WordNet specificity} Humans used more ``high specificity'' words
 (by WordNet hypernymy depth) when the colors were closer together.
 Our pragmatic speaker showed a similar effect ($z = 2.65, p =0.008$ and
-$z = 2.1, p =0.036$ respectively).
+$z = 2.1, p =0.036$, respectively).
 
 \begin{table}[t]
 \centering
@@ -1052,11 +1060,12 @@ declined from $\Listener_0$ to $\Listener_e$ (bottom) on the dev set, by conditi
     $\Listener_e$  & \best{63} & 6 & 32 \\
    \bottomrule
 \end{tabular}
-\caption{Conditional probabilities (\%) used to calculate $\Listener_2$
-for two dev set examples. The true target color is boxed, and the human
-utterances are ``blue'' (left) and ``pink purple'' (right). Boxed cells for
-alternative utterances indicate the intended target; highest-probability referents
-(listeners) and utterances (speaker) are in \textbf{bold}.
+\caption{Conditional probabilities (\%) of all agents
+for two dev set examples. The target color is boxed, and the human
+utterances (``blue'', ``drab green not the bluer one'') are \textbf{bolded}.
+Boxed cells for
+alternative utterances indicate the intended target;
+largest probabilities are in \textbf{bold}.
 $\Speaker_0$ probabilities (\speakerpct{italics}) are
 normalized across all utterances.
 Sample sizes are reduced to save space; here,
@@ -1069,7 +1078,7 @@ and perplexity of the base listener $\Listener_0$, the pragmatic listeners
 $\Listener_1$ and $\Listener_2$, and the blended models $\Listener_a$,
 $\Listener_b$, and $\Listener_e$ at resolving the human-written color
 references. Accuracy differences are significant\footnote{$p <{}$0.012, approximate
-permutation test \cite{Pado2006} with Bonferroni correction, 10,000 samples}
+permutation test \cite{Pado2006} with Bonferroni correction, 10,000 samples.}
 for all pairs except $\Listener_2$/$\Listener_b$ and $\Listener_a$/$\Listener_e$.
 As we expected, the speaker-based $\Listener_1$ alone
 performs the worst of all the models. However, blending it with $\Listener_0$
@@ -1093,7 +1102,7 @@ model has to distinguish highly similar colors and
 often cannot rely only on basic color terms.
 On the test set, the final ensemble improves
 significantly\footnote{$p <{}$0.001, approximate
-permutation test, 10,000 samples} over the base model on both metrics.
+permutation test, 10,000 samples.} over the base model on both metrics.
 
 \section{Model analysis}
 
@@ -1134,7 +1143,7 @@ fact that the speaker chose \textit{blue} is interpreted as evidence for the
 true target. This mirrors the back-and-forth reasoning behind the
 definition of conversational implicature \cite{Grice75}.
 
-This reasoning can be harmful when $i$ one of the distractors: the pragmatic
+This reasoning can be harmful when $i$ is one of the distractors: the pragmatic
 listener is then in danger of overweighting the distractor and incorrectly
 choosing it. This is a likely reason for the small performance difference
 between $\Listener_0$ and $\Listener_2$. Still, the fact that $\Listener_2$
