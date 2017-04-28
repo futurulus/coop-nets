@@ -1217,11 +1217,16 @@ $\Speaker(\Listener_0)$, that reasons about log-linear listeners trained on huma
 utterances containing spatial references in virtual-world environments.
 \newcite{Tellex2014a} apply a similar technique, under the name
 \term{inverse semantics}, to create a robot that can informatively ask
-humans for assistance in accomplishing tasks. % \newcite{Monroe2015} implement
-% an end-to-end trained $\Speaker(\Listener(\Speaker_0))$ model for referring
-% expression generation in a reference game task; their model requires enumerating
-% the set of possible utterances for each context, which is infeasible when
-% utterances are as varied as those in our dataset.
+humans for assistance in accomplishing tasks.
+\newcite{Meo2014} evaluate a model of color description generation
+\cite{McMahan2015} on the color
+reference data of \newcite{Baumgaertner2012} by creating an $\Listener(\Speaker_0)$
+listener.
+\newcite{Monroe2015} implement
+an end-to-end trained $\Speaker(\Listener(\Speaker_0))$ model for referring
+expression generation in a reference game task. Many of these models require
+enumerating the set of possible utterances for each context, which is infeasible when
+utterances are as varied as those in our dataset.
 
 The closest work to ours that we are aware of is that of
 \newcite{AndreasKlein16_NeuralPragmatics}, who also combine neural speaker
