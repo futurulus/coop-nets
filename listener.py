@@ -267,7 +267,7 @@ class ListenerLearner(NeuralLearner):
         bucket_volume = (256.0 ** 3) / self.color_vec.num_types
         return -np.log(bucket_volume)
 
-    def on_predict(xs):
+    def on_predict(self, xs):
         pass
 
     def on_iter_end(self, step, writer):
@@ -763,23 +763,27 @@ class GaussianContextListenerLearner(ContextListenerLearner):
                                name=id_tag + 'scores_reshape')
 
         self.gaussian_fn = theano.function(input_vars, [get_output(l_pred_mean),
-                                                        get_output(l_pred_covar)],
+                                                        get_output(l_pred_covar),
+                                                        get_output(l_context_points),
+                                                        get_output(l_unnorm_scores)],
                                            name=id_tag + 'gaussian',
                                            on_unused_input='ignore')
 
         return l_scores, [l_in] + context_inputs
 
-    def on_predict(xs):
+    def on_predict(self, xs):
         if self.options.verbosity >= 8:
             if hasattr(self, 'gaussian_fn'):
-                mean, covar = self.gaussian_fn(*Xs)
+                mean, covar, points, scores = self.gaussian_fn(*xs)
                 print('mean: {}'.format(mean.tolist()))
                 print('covar: {}'.format(covar.tolist()))
+                print('points: {}'.format(points.tolist()))
+                print('scores: {}'.format(scores.tolist()))
 
     def get_gaussian_params(self, utt):
         inst = instance.Instance(utt, 0, alt_outputs=[(0, 0, 0)] * 3)
         xs, (_,) = self._data_to_arrays([inst], test=True)
-        mean, covar = self.gaussian_fn(*xs)
+        mean, covar, points, scores = self.gaussian_fn(*xs)
         return mean[0], covar[0]
 
 

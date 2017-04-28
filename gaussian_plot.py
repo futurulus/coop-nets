@@ -1,4 +1,6 @@
 # coding: utf-8
+import json
+from scipy.misc import logsumexp
 import numpy as np
 import os
 import cPickle as pickle
@@ -47,15 +49,31 @@ def make_gaussian_plot():
         'distractor 1': (193.0, 37.6, 61.6),
         'distractor 2': (72.0, 71.2, 77.6),
     }
+
+    print_scores(score_fn, 'drab green not the bluer one', special_points)
     visualize_integrated(score_fn, 'drab green not the bluer one', aspect=1.5,
                          special_points=special_points,
                          save='writing/2016/figures/gaussian.pdf')
 
 
+def print_scores(score_fn, description, context):
+    scores_vec = []
+    scores_map = {}
+    for name, c in context.iteritems():
+        score = score_fn(description, [c])[0]
+        scores_vec.append(score)
+        scores_map[name] = score
+
+    for name in sorted(scores_map.keys()):
+        print('{}: p = {}'.format(name, scores_map[name]))
+
+
 def get_score_fn(model):
     def score_fn(description, colors):
-        mean, covar = model.get_gaussian_params(description)
-        colors_vec = model.color_vec.vectorize_all(colors)
+        # mean, covar = model.get_gaussian_params(description)
+        mean, covar = load_gaussian_params()
+        colors_vec = model.color_vec.vectorize_all(colors, hsv=True)
+        print('points: {}'.format(colors_vec.round(3)))
         diff = colors_vec - mean
 
         BATCH_SIZE = 256
@@ -67,6 +85,12 @@ def get_score_fn(model):
         return scores
 
     return score_fn
+
+
+def load_gaussian_params():
+    with open('runs/l0_gaussian/params.json', 'r') as infile:
+        params = json.loads(infile.read().strip())
+    return np.array(params['mean']), np.array(params['covar'])
 
 
 def get_scores_grid(score_fn, description):
@@ -88,26 +112,23 @@ def get_scores_grid(score_fn, description):
 
 
 def integrated_subplots(aspect=1.):
-    figwidth =  (((100 + 360. / aspect) / 10.) + 1) / 3.
+    figwidth =  (((360. / aspect) / 10.) + 1) / 3.
     figheight = ((100 / 10.) + 2) / 3.
-    gs = gridspec.GridSpec(3, 3,
-                           width_ratios=[1, 10, 36. / aspect],
+    gs = gridspec.GridSpec(3, 2,
+                           width_ratios=[1, 36. / aspect],
                            height_ratios=[10, 1, 1],
                            wspace=0.2 * (figheight / figwidth),
                            hspace=0.12)
     fig = plt.figure(figsize=(figwidth, figheight))
 
-    vax, sv, hv, ignored, sax, hax = [plt.subplot(gs[i]) for i in range(6)]
-    sv.xaxis.set_visible(False)
-    sv.yaxis.set_visible(False)
-    hv.xaxis.set_visible(False)
-    hv.yaxis.set_visible(False)
-    vax.xaxis.set_visible(False)
-    sax.yaxis.set_visible(False)
+    sax, hs, ignored, hax = [plt.subplot(gs[i]) for i in range(4)]
+    hs.xaxis.set_visible(False)
+    hs.yaxis.set_visible(False)
+    sax.xaxis.set_visible(False)
     hax.yaxis.set_visible(False)
     ignored.axis('off')
 
-    return fig, (hv, sv, hax, sax, vax)
+    return fig, (hs, hax, sax)
 
 
 def visualize_integrated(score_fn, description, aspect=1., interpolate=True,
@@ -117,7 +138,7 @@ def visualize_integrated(score_fn, description, aspect=1., interpolate=True,
     hv, hs, sv = get_scores_grid(score_fn, description)
 
     interp = None if interpolate else 'none'
-    fig, (hvax, svax, hax, sax, vax) = integrated_subplots(aspect=aspect)
+    fig, (hsax, hax, sax) = integrated_subplots(aspect=aspect)
 
     cross_size = 40.0
     text_size = 14
@@ -127,45 +148,39 @@ def visualize_integrated(score_fn, description, aspect=1., interpolate=True,
     for k, (h, s, v) in special_points.items():
         rgb = hsv_to_rgb(h / 360.0, s / 100.0, v / 100.0)
 
-        hvax.scatter([h + shadow_offset[0]], [v + shadow_offset[1]],
+        hsax.scatter([h + shadow_offset[0]], [s + shadow_offset[1]],
                      marker='+', s=cross_size, c='black')
-        hvax.scatter([h], [v], marker='+', s=cross_size, c=rgb)
-        hvax.annotate(k, xy=(h, v), color='black', size=text_size,
-                      xytext=(h + text_offset[0] * aspect + shadow_offset[0],
-                              v + text_offset[1] * aspect + shadow_offset[1]))
-        hvax.annotate(k, xy=(h, v), color=rgb, size=text_size,
-                      xytext=(h + text_offset[0] * aspect,
-                              v + text_offset[1] * aspect))
+        hsax.scatter([h], [s], marker='+', s=cross_size, c=rgb)
+        ann_h = h - 5. * (k == 'target')
+        ann_s = 100. + 5. * (k == 'target')
+        arrowprops={'edgecolor': 'black',
+                    'arrowstyle': '->',
+                    'relpos': (0.5, 0)}
+        hsax.annotate(k, xy=(h + shadow_offset[0],
+                             s + shadow_offset[1] + 3.0), color='black', size=text_size,
+                      arrowprops=dict(arrowprops),
+                      xytext=(ann_h + text_offset[0] * aspect + shadow_offset[0],
+                              ann_s + text_offset[1] * aspect + shadow_offset[1]))
+        arrowprops['edgecolor'] = rgb
+        hsax.annotate(k, xy=(h, s + 3.0), color=rgb, size=text_size,
+                      arrowprops=dict(arrowprops),
+                      xytext=(ann_h + text_offset[0] * aspect,
+                              ann_s + text_offset[1] * aspect))
 
-        svax.scatter([s + shadow_offset[0]], [v + shadow_offset[1]],
-                     marker='+', s=cross_size, c='black')
-        svax.scatter([s], [v], marker='+', s=cross_size, c=rgb)
-        svax.annotate(k, xy=(s, v), color='black', size=text_size,
-                      xytext=(s + text_offset[0] + shadow_offset[0],
-                              v + text_offset[1] + shadow_offset[1]))
-        svax.annotate(k, xy=(s, v), color=rgb, size=text_size,
-                      xytext=(s + text_offset[0],
-                              v + text_offset[1]))
-
-    hvax.imshow(hv, cmap='gray', interpolation=interp,
+    hsax.imshow(hs, cmap='gray', interpolation=interp,
                 aspect=aspect, extent=[0, 360, 0, 100])
-    svax.imshow(sv, cmap='gray', interpolation=interp, extent=[0, 100, 0, 100])
 
-    gradient_h = np.arange(0, 1, 1. / hv.shape[0])[np.newaxis, :]
+    gradient_h = np.arange(0, 1, 1. / hs.shape[0])[np.newaxis, :]
     print(gradient_h.shape)
-    gradient_s = np.arange(0, 1, 1. / sv.shape[0])[np.newaxis, :]
+    gradient_s = np.arange(1, 0, -1. / hs.shape[1])[:, np.newaxis]
     print(gradient_s.shape)
-    gradient_v = np.arange(1, 0, -1. / sv.shape[1])[:, np.newaxis]
-    print(gradient_v.shape)
 
     hax.imshow(gradient_h, cmap=COLORMAPS['h'],
                aspect=aspect, extent=[0, 360, 0, 5])
     hax.set_xlabel('Hue', fontsize=18)
     hax.set_xticks(np.arange(0, 360, 60))
-    sax.imshow(gradient_s, cmap=COLORMAPS['s'], extent=[0, 100, 0, 5])
-    sax.set_xlabel('Saturation', fontsize=18)
-    vax.imshow(gradient_v, cmap=COLORMAPS['v'], extent=[0, 5, 0, 100])
-    vax.set_ylabel('Value', fontsize=18)
+    sax.imshow(gradient_s, cmap=COLORMAPS['s'], extent=[0, 5, 0, 100])
+    sax.set_ylabel('Saturation', fontsize=18)
     # plt.suptitle('"%s"' % description, fontsize=24)
     if save is not None:
         plt.savefig(os.path.expanduser(save), format='pdf')

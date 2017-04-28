@@ -711,8 +711,8 @@ inputs. The distribution over context colors is well-defined regardless.}
 \[\operatorname{score}(\feat) = -(\feat - \mu)^T \Sigma (\feat - \mu)\]
 where $\feat$ is a vector representation of a color. Each color is represented in
 its simplest form as a three-dimensional vector in
-RGB space; we transform this to HSV (hue, saturation,
-value) as a preprocessing step. These HSV vectors are then Fourier-transformed as in \newcite{MonroeGoodmanPotts16_Color} to obtain the representation $\feat$.
+RGB space. These RGB vectors are then Fourier-transformed as in
+\newcite{MonroeGoodmanPotts16_Color} to obtain the representation $\feat$.
 
 The values of $\operatorname{score}(\feat)$ for each of the $\contextlen$
 context colors are normalized in log space to
@@ -1087,15 +1087,16 @@ improvement compared to both of the original models, consistent with our
 expectation that the listener-based and speaker-based models have complementary
 strengths.
 
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
-\includegraphics[trim={2cm 0.5cm 2.5cm 0},clip,width = \textwidth]{figures/gaussian}
-\caption{Log marginal probability density of color conditioned on the utterance 
-\word{drab green not the bluer one}, according to $\Listener_0$. Left: marginalizing
-over hue; right: marginalizing over saturation. White regions have
-higher probability.}
+\includegraphics[trim={1cm 0.8cm 2.1cm 0},clip,width = \columnwidth]{figures/gaussian}
+\caption{$\Listener_0$'s log marginal probability density, marginalizing over
+V (value) in HSV space, of color conditioned on the utterance
+\word{drab green not the bluer one}. White regions have higher probability.
+Labeled colors are the three colors from the right column of
+\figref{fig:rsaExample}. }
 \label{fig:gaussian}
-\end{figure*}
+\end{figure}
 
 We observe that
 $\Listener_2$ significantly outperforms its own base model $\Listener_0$,
@@ -1173,18 +1174,30 @@ while the speaker can take into account relationships between the context colors
 in scoring utterances.
 
 The right column of \figref{fig:rsaExample} shows an example of this. The context
-contains a grayish green (the target), a grayish blue-green, and a yellowish green.
+contains a grayish green (the target), a grayish blue-green (``distractor 1''),
+and a yellowish green (``distractor 2'').
 The utterance from the human speaker is \word{drab green not the bluer one},
 presumably intending \word{drab} to exclude the brighter yellowish green. However,
 the $\Listener_0$ listener must choose a region of color space to predict based on
-the utterance alone, without seeing the other context colors. \Figref{fig:gaussian}
-shows its predicted distribution. Higher-saturation colors are more likely
-under this distribution, meaning that the listener hasn't assigned much importance
-to the qualifier \word{drab} (``drab'' colors have low saturation). This gives higher 
-probability to distractor 2, the brighter green. Since the
-target is rather difficult to refer to, the pragmatic listener $\Listener_2$
-increases its probability somewhat, but it still maintains more than a 15-to-1
-preference for distractor 2.
+the utterance alone, without seeing the other context colors.
+
+\Figref{fig:gaussian} shows a visualization of the listener's prediction.
+The figure is a heatmap of the probability density output by the listener,
+as a function of hue and saturation in HSV (hue, saturation, value) space.
+We use HSV here, rather than the RGB coordinate system used by the model,
+because the semantic constraints are more clearly expressed in terms of
+hue and saturation components: the color should be \word{drab} (low-saturation)
+and \word{green} (near 120 on the hue spectrum) but not \word{blue}
+(near 240 in hue). The utterance does not constrain the value
+(roughly, brightness--darkness) component, so we sum over this component to
+summarize the 3-dimensional distribution in 2 dimensions.
+
+The $\Listener_0$ model correctly interprets all of these constraints:
+it gives higher probability to low-saturation colors and greens, while avoiding
+bluer colors. However, the result is a
+probability distribution nearly centered at distractor 2, the brighter green.
+In fact, if we were not comparing it to the other colors in the context,
+distractor 2 would be a very good example of a drab green that is not bluish.
 
 The speaker $\Speaker_0$, however, produces utterances
 conditioned on the context; it has successfully learned that \textit{drab}
