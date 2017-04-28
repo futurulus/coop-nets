@@ -1050,7 +1050,7 @@ declined from $\Listener_0$ to $\Listener_e$ (bottom) on the dev set, by conditi
     \midrule
     $\Listener_2$  & \colorContext{718E82}{62909D}{AAC639}{} \\
     \midrule
-    \textbf{drab green not the bluer one} & $<$1  & $>$99 & $<$1 \\
+    \textbf{drab green not the bluer one} & 5  & $<$1 & \best{95} \\
     \midrule
     $\Speaker_0$ ($\times 10^{-9}$)   & \speakerpct{\best{5.85}} & \speakerpct{0.38} & \speakerpct{$<$0.01} \\
     $\Listener_1$  & \best{94} & 6 & $<$1 \\
@@ -1062,7 +1062,7 @@ declined from $\Listener_0$ to $\Listener_e$ (bottom) on the dev set, by conditi
 \end{tabular}
 \caption{Conditional probabilities (\%) of all agents
 for two dev set examples. The target color is boxed, and the human
-utterances (``blue'', ``drab green not the bluer one'') are \textbf{bolded}.
+utterances (\word{blue}, \word{drab green not the bluer one}) are \textbf{bolded}.
 Boxed cells for
 alternative utterances indicate the intended target;
 largest probabilities are in \textbf{bold}.
@@ -1086,6 +1086,16 @@ doesn't drag down $\Listener_0$'s performance but rather produces a considerable
 improvement compared to both of the original models, consistent with our
 expectation that the listener-based and speaker-based models have complementary
 strengths.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[trim={2cm 0.5cm 2.5cm 0},clip,width = \textwidth]{figures/gaussian}
+\caption{Log marginal probability density of color conditioned on the utterance 
+\word{drab green not the bluer one}, according to $\Listener_0$. Left: marginalizing
+over hue; right: marginalizing over saturation. White regions have
+higher probability.}
+\label{fig:gaussian}
+\end{figure*}
 
 We observe that
 $\Listener_2$ significantly outperforms its own base model $\Listener_0$,
@@ -1151,7 +1161,9 @@ is more accurate overall, in addition to the negative value of $\beta_b$
 discovered in grid search, suggests that the pragmatic reasoning provides
 value on its own.
 
-Next, we examine examples in which both listener-based agents $\Listener_0$ and
+However, the final performance improves greatly when we incorporate both
+listener-based and speaker-based agents. To explain this improvement, we examine
+examples in which both listener-based agents $\Listener_0$ and
 $\Listener_2$ give the wrong answer but are overridden by the speaker-based
 $\Listener_1$ to produce the correct referent. The discrepancy between the two
 kinds of models in many of these examples can be explained by the fact that the
@@ -1160,13 +1172,28 @@ thus asked to predict a region of color space from the utterance \term{a priori}
 while the speaker can take into account relationships between the context colors
 in scoring utterances.
 
-The right column of \figref{fig:rsaExample} shows an example of this. The
-$\Listener_0$ listener must choose a region of color space to predict based on
-the utterance \textit{drab green not the bluer one}, and its predicted region
-gives high probability to the brightest green (which could nevertheless be called
-``drab'' in isolation). The speaker $\Speaker_0$, however, produces utterances
+The right column of \figref{fig:rsaExample} shows an example of this. The context
+contains a grayish green (the target), a grayish blue-green, and a yellowish green.
+The utterance from the human speaker is \word{drab green not the bluer one},
+presumably intending \word{drab} to exclude the brighter yellowish green. However,
+the $\Listener_0$ listener must choose a region of color space to predict based on
+the utterance alone, without seeing the other context colors. \Figref{fig:gaussian}
+shows its predicted distribution. Higher-saturation colors are more likely
+under this distribution, meaning that the listener hasn't assigned much importance
+to the qualifier \word{drab} (``drab'' colors have low saturation). This gives higher 
+probability to distractor 2, the brighter green. Since the
+target is rather difficult to refer to, the pragmatic listener $\Listener_2$
+increases its probability somewhat, but it still maintains more than a 15-to-1
+preference for distractor 2.
+
+The speaker $\Speaker_0$, however, produces utterances
 conditioned on the context; it has successfully learned that \textit{drab}
-would be more likely as a description of the grayish green in this context.
+would be more likely as a description of the grayish green than as a description
+of the yellowish one in this context. The speaker-based listener $\Listener_1$
+therefore predicts the true target, with greater confidence than $\Listener_0$
+or $\Listener_2$. This prediction results in the blends $\Listener_a$ and
+$\Listener_e$ preferring the true target, allowing the speaker's perspective
+to override the listener's.
 
 \section{Related work}
 
