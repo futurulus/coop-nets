@@ -356,7 +356,7 @@ number of trials from three different conditions:
   green, blue) space to meet these constraints.
 \end{enumerate*}
 
-After excluding extremely long messages,\footnote{Specifically, 627 messages with greater than $4\sigma$ of the mean number of words per message; these often included meta-commentary about the game rather than color terms.} incomplete games, and games whose participants self-reported confusion about the instructions or non-native English proficiency, we were left with a corpus of 53,365 speaker utterances across 46,994 rounds in 948 games. The three conditions are equally represented, with 15,519 \emph{close} trials, 15,693 \emph{split} trials, and 15,782 \emph{far} trials. Participants were allowed to play more than once, but the modal number of games played per participant was one (75\%). The modal number of messages sent per round was also one (90\%). We release the filtered corpus we used throughout our analyses alongside the raw, pre-filter data collected from these experiments (see Footnote
+After excluding extremely long messages,\footnote{Specifically, we set a length criterion at $4\sigma$ of the mean number of words per message (about 14 words, in our case), excluding 627 utterances. These often included meta-commentary about the game rather than color terms.} incomplete games, and games whose participants self-reported confusion about the instructions or non-native English proficiency, we were left with a corpus of 53,365 speaker utterances across 46,994 rounds in 948 games. The three conditions are equally represented, with 15,519 \emph{close} trials, 15,693 \emph{split} trials, and 15,782 \emph{far} trials. Participants were allowed to play more than once, but the modal number of games played per participant was one (75\%). The modal number of messages sent per round was also one (90\%). We release the filtered corpus we used throughout our analyses alongside the raw, pre-filter data collected from these experiments (see Footnote
 \ref{foot:release}).
 
 \section{Behavioral results}
@@ -416,7 +416,7 @@ enough simple color terms to distinguish all the colors
 lexically, they might be unsure their listeners will and so
 resort to modifiers anyway. To assess this hypothesis,
 we counted the average number of words and characters per message.
-Compared to the baseline \cond{far} context, participants used significantly longer messages both in the \cond{split} context ($t =  45.85$) and the \cond{close} context ($t = 73.06$). Similar results hold for the character metric.
+Compared to the baseline \cond{far} context, participants used significantly more words both in the \cond{split} context ($t =  45.85$) and the \cond{close} context ($t = 73.06$). Similar results hold for the character metric.
 
 \paragraph{Comparatives and superlatives}
 As noted in \secref{sec:intro}, comparative morphology implicitly
@@ -436,8 +436,7 @@ an asymmetry in  the use of these constructions across the \cond{split} and
 \cond{close} contexts. Comparatives were used significantly more often in the
 \cond{split} context ($z = 4.4$), where only one distractor was close to the target,
 while superlatives were much more likely to be used in the \cond{close} condition
-($z = 32.72$).\footnote{We used Helmert coding to examine this pair of orthogonal
-contrasts, compared to dummy coding in the other analyses.}
+($z = 32.72$).\footnote{We used Helmert coding to test these specific patterns: the first regression coefficient compares the `far' condition to the mean of the other two conditions, and the second regression coefficient compares the `split' condition to the `close' condition.}
 
 \paragraph{Negatives}
 In our referential contexts, negation is likely to play a role similar
