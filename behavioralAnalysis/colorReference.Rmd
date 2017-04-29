@@ -176,6 +176,13 @@ paste(c("total of", length((combined_human %>% filter(role == "speaker"))$gameid
       collapse = ' ')
 ```
 
+Get threshold for excluding long utterances...
+
+```{r}
+combined_human <- prefilter %>%
+  filter(numRawWords < mean(numRawWords) + 4*sd(numRawWords)) %>%
+
+```
 # Preprocessing model data
 
 Template for pulling in listener & speaker
