@@ -3,9 +3,6 @@ Colors in Context
 
 Code and supplementary material
 
-Note that this repo is split off from a larger project still in development:
-https://github.com/futurulus/coop-nets
-
 Dependencies
 ------------
 
