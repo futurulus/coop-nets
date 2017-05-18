@@ -15,7 +15,7 @@
   "direct_base_is_listener": 0,
   "direct_base_learner": "Listener",
   "direct_base_uses_context": false,
-  "direct_min_score": null,
+  "direct_min_score": 9999.0,
   "eval_agent": 0,
   "exhaustive_base_learner": "Listener",
   "exhaustive_base_weight": 0.0,
