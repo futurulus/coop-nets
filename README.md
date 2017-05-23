@@ -67,10 +67,13 @@ hour on GPU):
 Once this is done, the remaining experiments should be very fast to run. They
 use a separate script that loads the grids files from the other runs:
 
-    python blending.py <<<TODO: config files>>>
+    python blending.py --config models/l1.config.json
+    python blending.py --config models/l2.config.json
+    python blending.py --config models/la.config.json
+    python blending.py --config models/le.config.json
 
 The results of the experiment, including predictions and log-likelihood scores,
-will be logged to the directory
+will all be logged to the directory
 
     runs/lb
 
