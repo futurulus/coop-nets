@@ -66,6 +66,6 @@ def substitute_grid(scores, grid, shape):
 
 if __name__ == '__main__':
     options = config.options(read=True)
-    with config.open('model.p', 'r') as infile:
+    with open(options.load, 'rb') as infile:
         model = pickle.load(infile)
     output_grids(model, options.grids_file)

@@ -1,0 +1,10 @@
+{
+  "additive": false,
+  "alpha": 0.544,
+  "alpha_l1": 1.0,
+  "base_weight": 0.0,
+  "blend_name": "l2",
+  "gamma": 1.0,
+  "run_dir": "runs/lb",
+  "speaker_weight": 0.0
+}

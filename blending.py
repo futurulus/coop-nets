@@ -24,18 +24,18 @@ import os
 from stanza.research import config, evaluate, metrics, output, instance
 
 parser = config.get_options_parser()
-parser.add_argument('--blend_name', default='ak',
+parser.add_argument('--blend_name', default='blend',
                     help='Name of blending strategy, to prepend to eval keys and filenames.')
 parser.add_argument('--base_weight', type=float, default=0.099,
-                    help='Weight of L0 model (blending L0 and L2 in L*).')
+                    help='Weight of L0 model (blending L0 and L2 in Lb).')
 parser.add_argument('--speaker_weight', type=float, default=0.297,
-                    help='Weight of L(S0) model (blending L0 and L(S0) in AK).')
+                    help='Weight of L1 model (blending L0 and L1 in La).')
 parser.add_argument('--alpha', type=float, default=0.555,
                     help='Rationality of S1 model (inverse temperature).')
 parser.add_argument('--alpha_l1', type=float, default=1.293,
                     help='Rationality of L1 model (inverse temperature).')
 parser.add_argument('--gamma', type=float, default=0.509,
-                    help='Weight of L* model (blending L* and AK).')
+                    help='Weight of Lb model (blending La and Lb).')
 parser.add_argument('--additive', type=config.boolean, default=True,
                     help='If True, average probabilities instead of log probabilities.')
 
@@ -92,6 +92,11 @@ def evaluate_ak_blending():
                                 write_data=False)
 
     output.output_results(results, split_id)
+
+    options_dump = vars(options)
+    del options_dump['overwrite']
+    del options_dump['config']
+    config.dump_pretty(options_dump, split_id + '_config.json')
 
 
 def compute_ak(l0, s0, bw, sw, alpha, gamma):

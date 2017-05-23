@@ -11,26 +11,26 @@
     "filtered_dev"
   ],
   "detect_nans": false,
-  "device": "gpu1",
+  "device": "cpu",
   "direct_base_is_listener": 0,
   "direct_base_learner": "Listener",
   "direct_base_uses_context": false,
   "direct_min_score": 9999.0,
   "eval_agent": 0,
-  "exhaustive_base_learner": "Listener",
-  "exhaustive_base_weight": 0.0,
-  "exhaustive_inv_temperature": 1.0,
-  "exhaustive_num_sample_sets": 1,
-  "exhaustive_num_samples": 0,
-  "exhaustive_output_all_grids": false,
-  "exhaustive_output_speaker_predictions": false,
-  "exhaustive_output_speaker_samples": false,
+  "exhaustive_base_learner": "GaussianContextListener",
+  "exhaustive_base_weight": -0.15,
+  "exhaustive_inv_temperature": 0.544,
+  "exhaustive_num_sample_sets": 8,
+  "exhaustive_num_samples": 8,
+  "exhaustive_output_all_grids": true,
+  "exhaustive_output_speaker_predictions": true,
+  "exhaustive_output_speaker_samples": true,
   "exhaustive_reject_duplicates": 0,
-  "exhaustive_sampler_learner": "Speaker",
-  "exhaustive_sampler_model": null,
+  "exhaustive_sampler_learner": "RecurrentContextSpeaker",
+  "exhaustive_sampler_model": "models/s0_quick.p",
   "grad_of_est": false,
   "layer_by_layer": true,
-  "learner": "GaussianContextListener",
+  "learner": "ExhaustiveL2",
   "listener": true,
   "listener_bidi": true,
   "listener_cell": "LSTM",
@@ -40,10 +40,12 @@
   ],
   "listener_color_repr": "fourier",
   "listener_color_resolution": [
-    3
+    2,
+    2,
+    1
   ],
   "listener_dropout": 0.0,
-  "listener_eval_batch_size": 65536,
+  "listener_eval_batch_size": 1024,
   "listener_forget_bias": 0.0,
   "listener_grad_clipping": 0.0,
   "listener_hidden_color_layers": 2,
@@ -69,7 +71,7 @@
   "num_distractors": 2,
   "output_test_data": true,
   "output_train_data": true,
-  "progress_tick": 10,
+  "progress_tick": 60,
   "random_seed": "DefaultRandomSeed",
   "reset_optimizer_vars": true,
   "rsa_alpha": [
@@ -91,7 +93,7 @@
   ],
   "rsa_optimizer": "adagrad",
   "rsa_speakers": 2,
-  "run_dir": "runs/l0",
+  "run_dir": "runs/lb",
   "speaker_beam_size": 1,
   "speaker_cell": "LSTM",
   "speaker_cell_size": 20,
@@ -106,7 +108,7 @@
     1
   ],
   "speaker_dropout": 0.2,
-  "speaker_eval_batch_size": 16384,
+  "speaker_eval_batch_size": 1024,
   "speaker_forget_bias": 5.0,
   "speaker_grad_clipping": 0.0,
   "speaker_hidden_color_layers": 0,
@@ -129,7 +131,7 @@
   ],
   "train_data_file": null,
   "train_epochs": 10,
-  "train_iters": 5,
+  "train_iters": 10,
   "train_size": [
     10000000
   ],
@@ -138,7 +140,7 @@
   "tuna_cv_test_fold": 4,
   "tuna_section": "*",
   "validation_size": [
-    3500
+    0
   ],
   "verbosity": 4
 }
