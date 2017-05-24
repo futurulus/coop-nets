@@ -11,7 +11,7 @@
     "filtered_dev"
   ],
   "detect_nans": false,
-  "device": "gpu1",
+  "device": "cpu",
   "direct_base_is_listener": 0,
   "direct_base_learner": "Listener",
   "direct_base_uses_context": false,
