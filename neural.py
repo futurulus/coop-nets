@@ -4,7 +4,10 @@ import numpy as np
 import os
 import theano
 import theano.tensor as T
-import theano.sandbox.cuda.basic_ops as G
+try:
+    import theano.sandbox.cuda.basic_ops as G
+except ImportError:
+    import theano.gpuarray.basic_ops as G
 import time
 import warnings
 from collections import Sequence, OrderedDict

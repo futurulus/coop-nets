@@ -1,5 +1,5 @@
 from glob import glob
-from sklearn.cross_validation import KFold
+from sklearn.model_selection import KFold
 
 from stanza.research import config
 from stanza.research.instance import Instance
