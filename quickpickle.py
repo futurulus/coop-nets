@@ -28,7 +28,11 @@ def patch(model):
 if __name__ == '__main__':
     sys.setrecursionlimit(50000)
     options = config.options(read=True)
-    with config.open('model.p', 'r') as infile, config.open('quickpickle.p', 'w') as outfile:
+    if options.load:
+        modelfile = options.load
+    else:
+        modelfile = config.get_file_path('model.p')
+    with open(modelfile, 'rb') as infile, config.open('quickpickle.p', 'wb') as outfile:
         model = pickle.load(infile)
         patch(model)
         pickle.dump(model, outfile)

@@ -27,7 +27,7 @@
   "exhaustive_output_speaker_samples": true,
   "exhaustive_reject_duplicates": 0,
   "exhaustive_sampler_learner": "RecurrentContextSpeaker",
-  "exhaustive_sampler_model": "models/s0_quick.p",
+  "exhaustive_sampler_model": "runs/s0/quickpickle.p",
   "grad_of_est": false,
   "layer_by_layer": true,
   "learner": "ExhaustiveL2",
