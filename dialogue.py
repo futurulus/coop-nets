@@ -1,13 +1,16 @@
 import numpy as np
 import theano.tensor as T
-from lasagne.layers import InputLayer, DenseLayer
+from lasagne.layers import InputLayer, DenseLayer, DropoutLayer, EmbeddingLayer, NonlinearityLayer
+from lasagne.layers.recurrent import Gate
+from lasagne.init import Constant
 from lasagne.objectives import categorical_crossentropy
 from lasagne.nonlinearities import softmax
 
 from stanza.monitoring import progress
 from stanza.research import iterators, learner
-from neural import NeuralLearner, SimpleLasagneModel, OPTIMIZERS, sample
+from neural import NeuralLearner, SimpleLasagneModel, NONLINEARITIES, OPTIMIZERS, CELLS, sample
 import color_instances as ci
+import listener
 
 
 class ReprNextActionLearner(NeuralLearner):
@@ -108,6 +111,64 @@ class ReprNextActionLearner(NeuralLearner):
         return l_out, [l_in]
 
 
+class LSTMNextActionLearner(listener.ListenerLearner):
+    def unvectorize(self, indices, random=False):
+        return indices
+
+    def _get_l_out(self, input_vars):
+        listener.check_options(self.options)
+        id_tag = (self.id + '/') if self.id else ''
+
+        input_var = input_vars[0]
+
+        l_in = InputLayer(shape=(None, self.seq_vec.max_len), input_var=input_var,
+                          name=id_tag + 'desc_input')
+        l_in_embed = EmbeddingLayer(l_in, input_size=len(self.seq_vec.tokens),
+                                    output_size=self.options.listener_cell_size,
+                                    name=id_tag + 'desc_embed')
+
+        cell = CELLS[self.options.listener_cell]
+        cell_kwargs = {
+            'grad_clipping': self.options.listener_grad_clipping,
+            'num_units': self.options.listener_cell_size,
+        }
+        if self.options.listener_cell == 'LSTM':
+            cell_kwargs['forgetgate'] = Gate(b=Constant(self.options.listener_forget_bias))
+        if self.options.listener_cell != 'GRU':
+            cell_kwargs['nonlinearity'] = NONLINEARITIES[self.options.listener_nonlinearity]
+
+        l_rec1 = cell(l_in_embed, name=id_tag + 'rec1', **cell_kwargs)
+        if self.options.listener_dropout > 0.0:
+            l_rec1_drop = DropoutLayer(l_rec1, p=self.options.listener_dropout,
+                                       name=id_tag + 'rec1_drop')
+        else:
+            l_rec1_drop = l_rec1
+
+        l_hidden = DenseLayer(l_rec1_drop, num_units=self.options.listener_cell_size,
+                              nonlinearity=NONLINEARITIES[self.options.listener_nonlinearity],
+                              name=id_tag + 'hidden')
+        if self.options.listener_dropout > 0.0:
+            l_hidden_drop = DropoutLayer(l_hidden, p=self.options.listener_dropout,
+                                         name=id_tag + 'hidden_drop')
+        else:
+            l_hidden_drop = l_hidden
+        l_out = DenseLayer(l_hidden_drop, num_units=3, nonlinearity=softmax,
+                           name=id_tag + 'scores')
+
+        return l_out, [l_in]
+
+    def _data_to_arrays(self, training_instances, *args, **kwargs):
+        xs, (_,) = super(LSTMNextActionLearner, self)._data_to_arrays(training_instances,
+                                                                      *args, **kwargs)
+        y = np.array([(inst.output or 0)
+                      for inst in training_instances], dtype=np.int32)
+        return xs, [y]
+
+    def on_iter_end(self, step, writer):
+        pass
+
+
+
 class BaselineNextActionLearner(learner.Learner):
     def train(self, *args, **kwargs):
         pass
@@ -202,7 +263,6 @@ def nounify(adj_word):
 
 from stanza.research import config
 import learners
-import listener
 
 parser = config.get_options_parser()
 parser.add_argument('--repr_learner', default='Speaker',
