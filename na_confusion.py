@@ -5,7 +5,7 @@
 # run dir should have data.eval.jsons.
 import os
 import json
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
 
 from stanza.research import config
 
@@ -21,8 +21,17 @@ def print_confusion_matrix():
     with open(preds_path, 'r') as infile:
         preds = [json.loads(line.strip()) for line in infile]
 
-    print classification_report(gold, preds,
-                                target_names=['none', 'speak', 'choose'])
+    print(classification_report(gold, preds,
+                                target_names=['none', 'speak', 'choose']))
+    print(confusion_matrix(gold, preds))
+    print('(row = gold; column = prediction)\n')
+
+    gold = [int(y == 2) for y in gold]
+    preds = [int(y == 2) for y in preds]
+    print(classification_report(gold, preds,
+                                target_names=['other', 'choose']))
+    print(confusion_matrix(gold, preds))
+    print('(row = gold; column = prediction)\n')
 
 
 
