@@ -389,4 +389,5 @@ LEARNERS.update({
 import dialogue
 LEARNERS.update({
     'ReprNextAction': dialogue.ReprNextActionLearner,
+    'BaselineNextAction': dialogue.BaselineNextActionLearner,
 })
