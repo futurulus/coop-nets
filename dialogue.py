@@ -139,7 +139,7 @@ class BaselineNextActionLearner(learner.Learner):
         if last_line.startswith('| '):
             return ci.ACTION_NONE, np.log([0.5, 0.3, 0.2][inst.output])
         # 2. if no color term yet, predict NONE: 40%, SPEAK: *40%, CHOOSE: 20%
-        elif not has_color_word(''.join(line for line in lines if not line.startswith('| '))):
+        elif not has_color_word(' '.join(line for line in lines if not line.startswith('| '))):
             return ci.ACTION_SPEAK, np.log([0.4, 0.4, 0.2][inst.output])
         # 3. otherwise predict NONE: 12%, SPEAK: 8%, CHOOSE: *80%
         else:
