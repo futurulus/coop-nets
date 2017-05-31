@@ -385,3 +385,8 @@ import sampled_ams
 LEARNERS.update({
     'ACGaussian': sampled_ams.ACGaussianLearner,
 })
+
+import dialogue
+LEARNERS.update({
+    'ReprNextAction': dialogue.ReprNextActionLearner,
+})

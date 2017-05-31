@@ -762,12 +762,21 @@ class GaussianContextListenerLearner(ContextListenerLearner):
             l_scores = reshape(l_unnorm_scores, (-1, multi_utt, self.context_len),
                                name=id_tag + 'scores_reshape')
 
-        self.gaussian_fn = theano.function(input_vars, [get_output(l_pred_mean),
-                                                        get_output(l_pred_covar),
-                                                        get_output(l_context_points),
-                                                        get_output(l_unnorm_scores)],
+        self.gaussian_fn = theano.function(input_vars, [get_output(l_pred_mean,
+                                                                   deterministic=True),
+                                                        get_output(l_pred_covar,
+                                                                   deterministic=True),
+                                                        get_output(l_context_points,
+                                                                   deterministic=True),
+                                                        get_output(l_unnorm_scores,
+                                                                   deterministic=True)],
                                            name=id_tag + 'gaussian',
                                            on_unused_input='ignore')
+
+        self.repr_fn = theano.function(input_vars, get_output(l_rec1_drop,
+                                                              deterministic=True),
+                                       name=id_tag + 'repr',
+                                       on_unused_input='ignore')
 
         return l_scores, [l_in] + context_inputs
 
@@ -779,6 +788,12 @@ class GaussianContextListenerLearner(ContextListenerLearner):
                 print('covar: {}'.format(covar.tolist()))
                 print('points: {}'.format(points.tolist()))
                 print('scores: {}'.format(scores.tolist()))
+
+    def get_reprs(self, utts):
+        insts = [instance.Instance(utt, 0, alt_outputs=[(0, 0, 0)] * 3)
+                 for utt in utts]
+        xs, (_,) = self._data_to_arrays(insts, test=True)
+        return self.repr_fn(*xs)
 
     def get_gaussian_params(self, utt):
         inst = instance.Instance(utt, 0, alt_outputs=[(0, 0, 0)] * 3)

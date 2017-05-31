@@ -324,6 +324,16 @@ def amsterdam_test_allways(listener=False):
     return triples_to_insts(data, listener=listener)
 
 
+def gaussian_sanity(listener=False):
+    data = [
+        ('drab green not the bluer one', 1,
+         [(193.0, 37.39837398373984, 61.5),
+          (155.0, 19.81981981981982, 55.5),
+          (72.0, 70.96774193548387, 77.5)]),
+    ]
+    return triples_to_insts(data, listener=listener)
+
+
 def reference_game_train(gen_func):
     def generate_refgame_train(listener=False):
         return reference_game(get_training_instances(listener=listener),
@@ -532,18 +542,7 @@ def filtered(listener=False):
 
             instances[key] = len(FILTERED_DATASET_LISTENER)
 
-            context = [
-                (hsl_to_hsv((row['%sColH' % i],
-                             row['%sColS' % i],
-                             row['%sColL' % i])),
-                 row['%sLocS' % i], row['%sStatus' % i])
-                for i in ('click', 'alt1', 'alt2')
-            ]
-            context.sort(key=lambda c: c[1])
-            target_idx = [i for i, (_, _, status) in enumerate(context) if status == 'target']
-            assert len(target_idx) == 1, context
-            target_idx = target_idx[0]
-            alt_colors = [c for (c, _, _) in context]
+            target_idx, alt_colors = context_from_row(row)
 
             FILTERED_DATASET_LISTENER.append(
                 Instance(input=message, output=target_idx, alt_outputs=alt_colors,
@@ -577,6 +576,101 @@ def filtered_dev(listener=False):
 def filtered_test(listener=False):
     insts = filtered(listener=listener)
     test_insts = insts[FILTERED_SPLIT[2]:]
+    print('Test contexts: {}'.format(len(test_insts)))
+    return test_insts
+
+
+ACTION_NONE = 0
+ACTION_SPEAK = 1
+ACTION_CHOOSE = 2
+
+NEXT_ACTION_SPLIT = None
+NEXT_ACTION_DATASET = None
+
+
+def next_action():
+    global NEXT_ACTION_DATASET, NEXT_ACTION_SPLIT
+    if NEXT_ACTION_DATASET is not None:
+        return NEXT_ACTION_DATASET
+
+    NEXT_ACTION_SPLIT = []
+    NEXT_ACTION_DATASET = []
+
+    previous = []
+    prev_key = None
+    prev_context = None
+    with open('behavioralAnalysis/humanOutput/filteredCorpus.csv', 'r') as infile:
+        for row in csv.DictReader(infile):
+            key = (row['gameid'], row['roundNum'])
+
+            if len(NEXT_ACTION_SPLIT) < len(FILTERED_SPLIT_IDS) and \
+                    key[0] == FILTERED_SPLIT_IDS[len(NEXT_ACTION_SPLIT)]:
+                NEXT_ACTION_SPLIT.append(len(NEXT_ACTION_DATASET))
+
+            if key != prev_key:
+                action = ACTION_CHOOSE
+            elif row['role'] == 'listener':
+                action = ACTION_SPEAK
+            else:
+                action = ACTION_NONE
+
+            new_message = ('| ' if row['role'] == 'listener' else '') + row['contents']
+            prev_message = ' ~ '.join(previous)
+            context = context_from_row(row)
+
+            if prev_key is not None:
+                target_idx, alt_colors = prev_context
+
+                NEXT_ACTION_DATASET.append(
+                    Instance(input=prev_message, output=action, alt_outputs=alt_colors,
+                             source=prev_key + (row['condition'], len(previous)))
+                )
+
+            if key != prev_key:
+                previous = []
+            previous.append(new_message)
+            prev_key = key
+            prev_context = context
+
+    return NEXT_ACTION_DATASET
+
+
+def context_from_row(row):
+    context = [
+        (hsl_to_hsv((row['%sColH' % i],
+                     row['%sColS' % i],
+                     row['%sColL' % i])),
+         row['%sLocS' % i], row['%sStatus' % i])
+        for i in ('click', 'alt1', 'alt2')
+    ]
+    context.sort(key=lambda c: c[1])
+    target_idx = [i for i, (_, _, status) in enumerate(context) if status == 'target']
+    assert len(target_idx) == 1, context
+    target_idx = target_idx[0]
+    alt_colors = [c for (c, _, _) in context]
+
+    return target_idx, alt_colors
+
+
+def next_action_train(listener='ignored'):
+    insts = next_action()
+    assert NEXT_ACTION_SPLIT[0] == 0
+    train_insts = insts[:NEXT_ACTION_SPLIT[1]]
+    print('Training contexts: {}'.format(len(train_insts)))
+    rng.shuffle(train_insts)
+    return train_insts
+
+
+def next_action_dev(listener='ignored'):
+    insts = next_action()
+    dev_insts = insts[NEXT_ACTION_SPLIT[1]:NEXT_ACTION_SPLIT[2]]
+    print('Dev contexts: {}'.format(len(dev_insts)))
+    return dev_insts
+
+
+def next_action_test(listener='ignored'):
+    insts = next_action()
+    test_insts = insts[NEXT_ACTION_SPLIT[2]:]
     print('Test contexts: {}'.format(len(test_insts)))
     return test_insts
 
@@ -638,8 +732,11 @@ SOURCES = {
     'hawkins_big_test': DataSource(hawkins_big_train, hawkins_big_test),
     'hawkins_big_tune': DataSource(hawkins_big_tune_train, hawkins_big_tune_test),
     'hawkins_big_easyhard':  DataSource(hawkins_big_easy, hawkins_big_hard),
+    'gaussian_sanity':  DataSource(lambda listener: [], gaussian_sanity),
     'filtered_dev': DataSource(filtered_train, filtered_dev),
     'filtered_test': DataSource(filtered_train, filtered_test),
+    'next_action_dev': DataSource(next_action_train, next_action_dev),
+    'next_action_test': DataSource(next_action_train, next_action_test),
     'ams_literal': DataSource(amsterdam_literal_train, amsterdam_test),
     'ams_unambig': DataSource(amsterdam_unambiguous_train, amsterdam_test),
     'ams_1word': DataSource(amsterdam_1word_train, amsterdam_test),
