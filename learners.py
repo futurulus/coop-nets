@@ -2,13 +2,16 @@ from collections import defaultdict, Counter
 from numbers import Number
 import numpy as np
 
+from sklearn.linear_model import LogisticRegression
+from scipy.misc import logsumexp
+
 from stanza.monitoring import progress
 from stanza.research.learner import Learner
 from stanza.research import config
 from lux import LuxLearner
 from listener import LISTENERS
 from speaker import SPEAKERS
-from vectorizers import BucketsVectorizer, SequenceVectorizer
+from vectorizers import BucketsVectorizer, SequenceVectorizer, FourierVectorizer
 from tokenizers import TOKENIZERS
 from rsa import RSALearner
 
@@ -358,6 +361,104 @@ class LookupLearner(Learner):
         self.counters = defaultdict(Counter, {k: Counter(v) for k, v in state['counters']})
 
 
+'''
+JENN'S BASELINE LEARNER 06/28/2017
+'''
+
+class JennsLearner(Learner):
+    def __init__(self):
+        options = config.options()
+        self.res = [2] #self.res = options.listener_color_resolution
+        self.hsv = options.listener_hsv
+        
+        # sklearn model
+        self.model = LogisticRegression()
+        
+    def vectorize_all(self, c):
+        color_vec = FourierVectorizer(self.res, hsv=self.hsv)
+        return color_vec.vectorize_all(c)
+
+    def make_features(self, instances):
+        num_instances = len(instances)
+        num_features = 10 # TEMPORARY
+
+        X = np.random.rand(num_instances*3, num_features)
+
+        color_words = ('red', 'orange', 'yellow', 'green', 'blue', 'purple')
+        self.num_params = len(color_words)
+
+        # initialize to zeros
+        X = np.zeros((3, len(instances), self.num_params))
+
+        for i, inst in enumerate(instances):
+            # get input (utterance) and alt outputs (colors)
+            inp, alt = inst.input, inst.alt_outputs
+
+            # fourier vectorize
+            # fourier_colors = FourierVectorizer(self.res, hsv=self.hsv).vectorize_all(alt)
+            fourier_colors = self.vectorize_all(alt)
+            
+            # NOTE: this will mark words like 'colored' as containing 'red'
+            color_word_dict = { c : 1 if c in inp else -1 for c in color_words }
+
+            # go through each color
+            for j in xrange(3):
+                # select the fourier vectorized color
+                color_j = fourier_colors[j]
+                
+                # TODO: store features in X
+                # TEMPORARY: simply multiply
+                for k, c in enumerate(color_words):
+                    X[j,i,k] = color_j[1] * color_word_dict[c]
+
+        return X
+
+    def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
+        self.num_params = 0 # WHAT IS THIS???
+
+        self.X_train = self.make_features(training_instances)
+
+        # transform outputs into ``one-hot coded'' vectors
+        training_targets = np.zeros(3*len(training_instances)) # initialize to all zeros
+        for i, inst in enumerate(training_instances):
+            out = inst.output
+            training_targets[3*i + out] = 1
+
+        # learn the parameters for the model
+        self.model.fit(self.X_train, training_targets)
+
+    def predict_and_score(self, eval_instances):
+        num_instances = len(eval_instances)
+
+        # make features for eval dataset
+        self.X_eval = self.make_features(eval_instances)
+
+        # find log probabilities using model trained above
+        log_probs = self.model.predict_log_proba(self.X_eval)
+
+        # only keep probabilities associated with class 1
+        class_one_log_probs = np.delete(log_probs, 0, axis=1)
+    
+        # reshape to allow for vectorized operations
+        reshaped = np.reshape(class_one_log_probs,(num_instances,3))
+
+        # use softmax to create probability distribution
+        final_probs = reshaped - logsumexp(reshaped)
+
+        preds = []
+        scores = []
+        progress.start_task('Example', len(eval_instances))
+        for i, inst in enumerate(eval_instances):
+            progress.progress(i)
+
+            pred = np.argmax(final_probs[i])
+            score = final_probs[i][inst.output]
+            preds.append(pred)
+            scores.append(np.log(score))
+
+        progress.end_task()
+        return preds, scores
+
 LEARNERS = {
     'Histogram': HistogramLearner,
     'Lux': LuxLearner,
@@ -366,6 +467,7 @@ LEARNERS = {
     'UnigramLM': UnigramLMSpeakerLearner,
     'Random': RandomListenerLearner,
     'Lookup': LookupLearner,
+    'Jenns' : JennsLearner
 }
 LEARNERS.update(LISTENERS)
 LEARNERS.update(SPEAKERS)
