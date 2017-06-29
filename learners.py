@@ -366,25 +366,16 @@ JENN'S BASELINE LEARNER 06/28/2017
 '''
 
 class JennsLearner(Learner):
-    hsv_colors = {
-        'red' : 0,
-        'orange' : 30,
-        'yellow' : 60,
-        'green' : 120,
-        'cyan' : 180,
-        'blue': 240,
-        'purple': 270,
-        'magenta' : 300
-    }
-    # saturation words boundary=75 on a 0-100 saturation scale in HSV
-    saturation_words = (
-        ['pure', 'solid', 'rich', 'strong', 'harsh', 'intense'],
-        ['white', 'gray','grey', 'faded', 'pale' 'bleached', 'pastel', 'mellow', 'muted', 'baby', 'dull']
-    )
 
-    # value words boundary=50 on 0-100 value scale in HSV
-    value_words = ('dark', 'deep', 'muted' 
-                    'light', 'bright')
+    # # saturation words boundary=75 on a 0-100 saturation scale in HSV
+    # saturation_words = (
+    #     ['pure', 'solid', 'rich', 'strong', 'harsh', 'intense'],
+    #     ['white', 'gray','grey', 'faded', 'pale' 'bleached', 'pastel', 'mellow', 'muted', 'baby', 'dull']
+    # )
+
+    # # value words boundary=50 on 0-100 value scale in HSV
+    # value_words = ('dark', 'deep', 'muted' 
+    #                 'light', 'bright')
 
     def __init__(self):
         options = config.options()
@@ -399,16 +390,26 @@ class JennsLearner(Learner):
         return color_vec.vectorize_all(c)
 
     def make_features(self, instances):
+        color_words = ('red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'magenta')
+        
+        hsv_dict = {
+            'red' : 0,
+            'orange' : 30,
+            'yellow' : 60,
+            'green' : 120,
+            'cyan' : 180,
+            'blue': 240,
+            'purple': 270,
+            'magenta' : 300
+        }
+
+        # constants
+        hue_interval = 45
         num_instances = len(instances)
-        num_features = 10 # TEMPORARY
-
-        X = np.random.rand(num_instances*3, num_features)
-
-        color_words = ('red', 'orange', 'yellow', 'green', 'blue', 'purple')
-        self.num_params = len(color_words)
+        num_features = len(color_words) # TEMPORARY!!!!
 
         # initialize to zeros
-        X = np.zeros((3, len(instances), self.num_params))
+        X = np.zeros((num_instances*3, num_features))
 
         for i, inst in enumerate(instances):
             # get input (utterance) and alt outputs (colors)
@@ -416,20 +417,27 @@ class JennsLearner(Learner):
 
             # fourier vectorize
             # fourier_colors = FourierVectorizer(self.res, hsv=self.hsv).vectorize_all(alt)
-            fourier_colors = self.vectorize_all(alt)
+            # fourier_colors = self.vectorize_all(alt)
             
-            # NOTE: this will mark words like 'colored' as containing 'red'
-            color_word_dict = { c : 1 if c in inp else -1 for c in color_words }
-
             # go through each color
             for j in xrange(3):
-                # select the fourier vectorized color
-                color_j = fourier_colors[j]
-                
-                # TODO: store features in X
-                # TEMPORARY: simply multiply
+                c_ij = alt[j]
+
                 for k, c in enumerate(color_words):
-                    X[j,i,k] = color_j[1] * color_word_dict[c]
+                    hue_indicator = 1 if abs(c_ij[0] - hsv_dict[c]) <= hue_interval else -1
+                    word_indicator = 1 if c in inp else -1
+
+                    # if i <=5:
+
+                    #     print "COLOR: ", c
+                    #     print "hue of c_ij: ", c_ij[0]
+                    #     print "hue of %s: %d" % (c, hsv_colors[c])
+                    #     print "diff: %d" % (c_ij[0] - hsv_colors[c])
+                    #     print "color word present: ", color_word_dict[c]
+                    #     print "INDICATOR: ", color_word_dict[c] * hue_indicator
+                    #     print
+
+                    X[i*3 + j][k] = word_indicator * hue_indicator
 
         return X
 
@@ -437,6 +445,7 @@ class JennsLearner(Learner):
         self.num_params = 0 # WHAT IS THIS???
 
         self.X_train = self.make_features(training_instances)
+        print "X_train: ", self.X_train
 
         # transform outputs into ``one-hot coded'' vectors
         training_targets = np.zeros(3*len(training_instances)) # initialize to all zeros
