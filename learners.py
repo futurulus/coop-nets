@@ -366,16 +366,23 @@ JENN'S BASELINE LEARNER 06/28/2017
 '''
 
 class JennsLearner(Learner):
+    hsv_colors = {
+        'red' : 0,
+        'orange' : 30,
+        'yellow' : 60,
+        'green' : 120,
+        'cyan' : 180,
+        'blue': 240,
+        'purple': 270,
+        'magenta' : 300
+    }
 
     # # saturation words boundary=75 on a 0-100 saturation scale in HSV
-    # saturation_words = (
-    #     ['pure', 'solid', 'rich', 'strong', 'harsh', 'intense'],
-    #     ['white', 'gray','grey', 'faded', 'pale' 'bleached', 'pastel', 'mellow', 'muted', 'baby', 'dull']
-    # )
-
+    # pos_sat_words = ['pure', 'solid', 'rich', 'strong', 'harsh', 'intense']
+    # neg_sat_words = ['white', 'gray','grey', 'faded', 'pale' 'bleached', 'pastel', 'mellow', 'muted', 'baby', 'dull']
     # # value words boundary=50 on 0-100 value scale in HSV
-    # value_words = ('dark', 'deep', 'muted' 
-    #                 'light', 'bright')
+    # pos_val_words = ['dark', 'deep', 'muted']
+    # neg_val_words = ['light', 'bright']
 
     def __init__(self):
         options = config.options()
