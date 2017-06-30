@@ -4,6 +4,7 @@ import numpy as np
 
 from sklearn.linear_model import LogisticRegression
 from scipy.misc import logsumexp
+from nltk.corpus import stopwords
 
 from stanza.monitoring import progress
 from stanza.research.learner import Learner
@@ -363,26 +364,31 @@ class LookupLearner(Learner):
 class JennsLearner(Learner):
     def __init__(self):
         options = config.options()
-        # self.res = [2] #self.res = options.listener_color_resolution
+        # self.res = [2]
+        # self.res = options.listener_color_resolution
         self.hsv = options.listener_hsv
         self.model = LogisticRegression()
         
-    # def vectorize_all(self, c):
+    # def vectorize_all(self, c, self.res):
     #     color_vec = FourierVectorizer(self.res, hsv=self.hsv)
     #     return color_vec.vectorize_all(c)
 
     def make_features(self, instances):
-        hue_dict = {
-            'red' : 0, 'orange' : 30, 'yellow' : 60, 'green' : 120,
-            'cyan' : 180, 'blue': 240, 'purple': 270, 'magenta' : 300
-        }
-        hue_words = hue_dict.keys()
+        hue_dict = {'red' : 0, 'orange' : 30, 'yellow' : 60, 'green' : 120,
+                    'cyan' : 180, 'blue': 240, 'purple': 270, 'magenta' : 300}
+        hues = hue_dict.keys()
+        sat_dict = {'dull' : 50, 'faded' : 50, 'pale' : 50, 'bright': 100}
+        sats = sat_dict.keys()
+        val_dict = {'dark' : 25, 'muted' : 50, 'light' : 75}
+        vals = val_dict.keys()
 
         # constants
         hue_interval = 45
+        sat_interval = 25
+        val_interval = 25
         num_instances = len(instances)
-        num_features = 3*len(color_words) # TEMPORARY
-
+        num_features = len(self.top_words) * len(hues) * len(sats) * len(vals)
+        
         # initialize to zeros
         X = np.zeros((num_instances*3, num_features))
 
@@ -392,29 +398,54 @@ class JennsLearner(Learner):
 
             # go through each color
             for j in xrange(3):
-                c_ij = alt[j] # not transformed or vectorized
-                H,S,V = c_ij[:]
+                H,S,V = alt[j][:]
+                # cos_hue = np.cos(H)
+                # sin_hue = np.sin(H)
 
-                cos_hue = np.cos(H)
-                sin_hue = np.sin(H)
-
-                for k, c in enumerate(hue_words):
-                    word_indicator = 1 if c in inp else -1
-                    hue_indicator = 1 if abs(H - hue_dict[c]) <= hue_interval else -1
+                for w_index, w in enumerate(self.top_words):
+                    w_indicator = 1 if w in inp else -1
                     
-                    X[i*3+j][k] = word_indicator * hue_indicator
-                    X[i*3+j][len(hue_words) + k] = word_indicator * cos_hue
-                    X[i*3+j][2*len(hue_words) + k] = word_indicator * sin_hue
+                    for h_index, h in enumerate(hues):
+                        h_indicator = 1 if abs(H - hue_dict[h]) <= hue_interval else -1
+                        X[i*3+j][w_index+len(self.top_words)*h_index] = w_indicator * h_indicator
+
+                    for s_index, s in enumerate(sats):
+                        s_indicator = 1 if abs(S - sat_dict[s]) <= sat_interval else -1
+                        X[i*3+j][len(self.top_words)*len(hues) + w_index+len(self.top_words)*s_index] = w_indicator * s_indicator
+
+                    for v_index, v in enumerate(vals):
+                        v_indicator = 1 if abs(V - val_dict[v]) <= val_interval else -1
+                        X[i*3+j][len(self.top_words)*len(hues)*len(sats) + w_index+len(self.top_words)*v_index] = w_indicator * v_indicator
+
+                # for k1, c1 in enumerate(hue_words):
+                #     word_indicator = 1 if c1 in inp else -1
+
+                #     X[i*3+j][len(hue_words)**2 + k1] = word_indicator * cos_hue
+                #     X[i*3+j][len(hue_words)**2 + len(hue_words) + k1] = word_indicator * sin_hue
+
+                #     for k2, c2 in enumerate(hue_words):
+                #         hue_indicator = 1 if abs(H - hue_dict[c2]) <= hue_interval else -1
+                #         X[i*3+j][k1*len(hue_words)+k2] = word_indicator * hue_indicator
 
         return X
 
     def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
         self.num_params = 0 # change later
 
-        # make features for training dataset
-        self.X_train = self.make_features(training_instances)
-        print "X_train: ", self.X_train # debugging
+        print "finding top words..."
+        stops = set(stopwords.words("english"))
+        all_words = []
+        for inst in training_instances:
+            all_words.extend(map(lambda s : s.lower(), inst.input.split()))
 
+        from collections import Counter
+        self.top_words = [w for w, w_count in Counter(all_words).most_common(100) if w not in stops and w.isalpha()]
+        print self.top_words
+
+        # make features for training dataset
+        print "making features for training dataset..."
+        self.X_train = self.make_features(training_instances)
+        
         # transform outputs into ``one-hot coded'' vectors
         training_targets = np.zeros(3*len(training_instances))
         for i, inst in enumerate(training_instances):
@@ -422,14 +453,17 @@ class JennsLearner(Learner):
             training_targets[3*i+out] = 1
 
         # learn the parameters for the model
+        print "training..."
         self.model.fit(self.X_train, training_targets)
 
     def predict_and_score(self, eval_instances):
         num_instances = len(eval_instances)
 
         # make features for eval dataset
+        print "making features for eval dataset..."
         self.X_eval = self.make_features(eval_instances)
 
+        print "finding probabilities..."
         # find log probabilities using model trained above
         log_probs = self.model.predict_log_proba(self.X_eval)
 
@@ -444,6 +478,7 @@ class JennsLearner(Learner):
 
         preds = []
         scores = []
+        print "making predictions..."
         progress.start_task('Example', len(eval_instances))
         for i, inst in enumerate(eval_instances):
             progress.progress(i)
