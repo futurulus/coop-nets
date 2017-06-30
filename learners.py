@@ -1,6 +1,8 @@
 from collections import defaultdict, Counter
 from numbers import Number
 import numpy as np
+import math
+from nltk.corpus import wordnet as wn
 
 from sklearn.linear_model import LogisticRegression
 from scipy.misc import logsumexp
@@ -366,23 +368,6 @@ JENN'S BASELINE LEARNER 06/28/2017
 '''
 
 class JennsLearner(Learner):
-    hsv_colors = {
-        'red' : 0,
-        'orange' : 30,
-        'yellow' : 60,
-        'green' : 120,
-        'cyan' : 180,
-        'blue': 240,
-        'purple': 270,
-        'magenta' : 300
-    }
-
-    # # saturation words boundary=75 on a 0-100 saturation scale in HSV
-    # pos_sat_words = ['pure', 'solid', 'rich', 'strong', 'harsh', 'intense']
-    # neg_sat_words = ['white', 'gray','grey', 'faded', 'pale' 'bleached', 'pastel', 'mellow', 'muted', 'baby', 'dull']
-    # # value words boundary=50 on 0-100 value scale in HSV
-    # pos_val_words = ['dark', 'deep', 'muted']
-    # neg_val_words = ['light', 'bright']
 
     def __init__(self):
         options = config.options()
@@ -396,9 +381,20 @@ class JennsLearner(Learner):
         color_vec = FourierVectorizer(self.res, hsv=self.hsv)
         return color_vec.vectorize_all(c)
 
+    # gets the specific synset for color of a colorword. e.g. 'orange' is 'orange.n.02'
+    def get_color_synset(self, color):
+        for s in wn.synsets(color, pos=wn.NOUN):
+            if 'color' in s.definition():
+                return s
+
+    # get all the hyponyms of a synset
+    def all_hyponyms(self, syn):
+        hypo_syns = syn.closure(lambda s: s.hyponyms())
+        return [str(lemma.name()).replace('_', ' ')
+                for s in hypo_syns for lemma in s.lemmas()]
+
     def make_features(self, instances):
         color_words = ('red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'magenta')
-        
         hsv_dict = {
             'red' : 0,
             'orange' : 30,
@@ -410,10 +406,17 @@ class JennsLearner(Learner):
             'magenta' : 300
         }
 
+        # # saturation words boundary=75 on a 0-100 saturation scale in HSV
+        # pos_sat_words = ['pure', 'solid', 'rich', 'strong', 'harsh', 'intense']
+        # neg_sat_words = ['white', 'gray','grey', 'faded', 'pale' 'bleached', 'pastel', 'mellow', 'muted', 'baby', 'dull']
+        # # value words boundary=50 on 0-100 value scale in HSV
+        # pos_val_words = ['dark', 'deep', 'muted']
+        # neg_val_words = ['light', 'bright']
+
         # constants
         hue_interval = 45
         num_instances = len(instances)
-        num_features = len(color_words) # TEMPORARY!!!!
+        num_features = len(color_words) * 3 # TEMPORARY!!!!
 
         # initialize to zeros
         X = np.zeros((num_instances*3, num_features))
@@ -421,30 +424,23 @@ class JennsLearner(Learner):
         for i, inst in enumerate(instances):
             # get input (utterance) and alt outputs (colors)
             inp, alt = inst.input, inst.alt_outputs
-
-            # fourier vectorize
-            # fourier_colors = FourierVectorizer(self.res, hsv=self.hsv).vectorize_all(alt)
-            # fourier_colors = self.vectorize_all(alt)
             
             # go through each color
             for j in xrange(3):
                 c_ij = alt[j]
 
                 for k, c in enumerate(color_words):
+                    hue_cos_indicator = math.cos(c_ij[0])
+                    hue_sin_indicator = math.sin(c_ij[0])
                     hue_indicator = 1 if abs(c_ij[0] - hsv_dict[c]) <= hue_interval else -1
-                    word_indicator = 1 if c in inp else -1
 
-                    # if i <=5:
+                    c_synset = self.get_color_synset(c) 
+                    hyponyms = self.all_hyponyms(c_synset)
+                    word_indicator = 1 if c in hyponyms else -1
 
-                    #     print "COLOR: ", c
-                    #     print "hue of c_ij: ", c_ij[0]
-                    #     print "hue of %s: %d" % (c, hsv_colors[c])
-                    #     print "diff: %d" % (c_ij[0] - hsv_colors[c])
-                    #     print "color word present: ", color_word_dict[c]
-                    #     print "INDICATOR: ", color_word_dict[c] * hue_indicator
-                    #     print
-
-                    X[i*3 + j][k] = word_indicator * hue_indicator
+                    X[i*3 + j][k * 3] = word_indicator * hue_cos_indicator
+                    X[i*3 + j][k * 3 + 1] = word_indicator * hue_sin_indicator
+                    X[i*3 + j][k * 3 + 2] = word_indicator * hue_indicator
 
         return X
 
@@ -452,7 +448,7 @@ class JennsLearner(Learner):
         self.num_params = 0 # WHAT IS THIS???
 
         self.X_train = self.make_features(training_instances)
-        print "X_train: ", self.X_train
+        print("X_train: ", self.X_train)
 
         # transform outputs into ``one-hot coded'' vectors
         training_targets = np.zeros(3*len(training_instances)) # initialize to all zeros
