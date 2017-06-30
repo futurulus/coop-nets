@@ -490,7 +490,7 @@ class JennsLearner(Learner):
             pred = np.argmax(final_probs[i])
             score = final_probs[i][inst.output]
             preds.append(pred)
-            scores.append(np.log(score))
+            scores.append(score)
 
         progress.end_task()
         return preds, scores
