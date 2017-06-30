@@ -2,9 +2,11 @@ from collections import defaultdict, Counter
 from numbers import Number
 import numpy as np
 
+# for JennsLearner
 from sklearn.linear_model import LogisticRegression
 from scipy.misc import logsumexp
 from nltk.corpus import stopwords
+from collections import Counter
 
 from stanza.monitoring import progress
 from stanza.research.learner import Learner
@@ -363,15 +365,7 @@ class LookupLearner(Learner):
 
 class JennsLearner(Learner):
     def __init__(self):
-        options = config.options()
-        # self.res = [2]
-        # self.res = options.listener_color_resolution
-        self.hsv = options.listener_hsv
         self.model = LogisticRegression()
-        
-    # def vectorize_all(self, c, self.res):
-    #     color_vec = FourierVectorizer(self.res, hsv=self.hsv)
-    #     return color_vec.vectorize_all(c)
 
     def make_features(self, instances):
         hue_dict = {'red' : 0, 'orange' : 30, 'yellow' : 60, 'green' : 120,
@@ -387,7 +381,7 @@ class JennsLearner(Learner):
         sat_interval = 25
         val_interval = 25
         num_instances = len(instances)
-        num_features = len(self.top_words) * len(hues) * len(sats) * len(vals)
+        num_features = self.num_top_words) * len(hues) * len(sats) * len(vals)
         
         # initialize to zeros
         X = np.zeros((num_instances*3, num_features))
@@ -431,6 +425,7 @@ class JennsLearner(Learner):
 
     def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
         self.num_params = 0 # change later
+        self.num_top_words = 100
 
         print "finding top words..."
         stops = set(stopwords.words("english"))
@@ -438,19 +433,19 @@ class JennsLearner(Learner):
         for inst in training_instances:
             all_words.extend(map(lambda s : s.lower(), inst.input.split()))
 
-        from collections import Counter
-        self.top_words = [w for w, w_count in Counter(all_words).most_common(100) if w not in stops and w.isalpha()]
+        self.top_words = [w for w, w_count in Counter(all_words).most_common(self.num_top_words)
+                            if w not in stops and w.isalpha()]
+        print "top %d words: " % self.num_top_words
         print self.top_words
 
         # make features for training dataset
         print "making features for training dataset..."
         self.X_train = self.make_features(training_instances)
         
-        # transform outputs into ``one-hot coded'' vectors
+        # transform outputs into one-hot vectors
         training_targets = np.zeros(3*len(training_instances))
         for i, inst in enumerate(training_instances):
-            out = inst.output
-            training_targets[3*i+out] = 1
+            training_targets[3*i+inst.output] = 1
 
         # learn the parameters for the model
         print "training..."
@@ -463,17 +458,10 @@ class JennsLearner(Learner):
         print "making features for eval dataset..."
         self.X_eval = self.make_features(eval_instances)
 
-        print "finding probabilities..."
         # find log probabilities using model trained above
-        log_probs = self.model.predict_log_proba(self.X_eval)
-
-        # only keep probabilities associated with class 1
-        class1_log_probs = log_probs[:,1]
-    
-        # reshape to allow for vectorized operations
-        reshaped = np.reshape(class1_log_probs,(num_instances,3))
-
-        # use softmax to create probability distribution
+        print "finding probabilities..."
+        log_probs = self.model.predict_log_proba(self.X_eval)[:,1]
+        reshaped = np.reshape(log_probs,(num_instances,3))
         final_probs = reshaped - logsumexp(reshaped, axis=1, keepdims=True)
 
         preds = []
@@ -482,12 +470,10 @@ class JennsLearner(Learner):
         progress.start_task('Example', len(eval_instances))
         for i, inst in enumerate(eval_instances):
             progress.progress(i)
-
             pred = np.argmax(final_probs[i])
             score = final_probs[i][inst.output]
             preds.append(pred)
             scores.append(score)
-
         progress.end_task()
         return preds, scores
 
