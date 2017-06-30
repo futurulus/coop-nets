@@ -367,24 +367,27 @@ class JennsLearner(Learner):
     def __init__(self):
         self.model = LogisticRegression()
 
+    # returns 1 if X is within x_interval around x's value in x_dict
+    # returns -1 otherwise
+    def indicator(self, X, x, x_dict, x_interval):
+        return 1 if abs(X - x_dict[x]) <= x_interval else -1
+
     def make_features(self, instances):
         hue_dict = {'red' : 0, 'orange' : 30, 'yellow' : 60, 'green' : 120,
                     'cyan' : 180, 'blue': 240, 'purple': 270, 'magenta' : 300}
         hues = hue_dict.keys()
+        hue_interval = 45
+
         sat_dict = {'dull' : 50, 'faded' : 50, 'pale' : 50, 'bright': 100}
         sats = sat_dict.keys()
+        sat_interval = 25
+
         val_dict = {'dark' : 25, 'muted' : 50, 'light' : 75}
         vals = val_dict.keys()
-
-        # constants
-        hue_interval = 45
-        sat_interval = 25
         val_interval = 25
-        num_instances = len(instances)
-        num_features = self.num_top_words) * len(hues) * len(sats) * len(vals)
-        
+
         # initialize to zeros
-        X = np.zeros((num_instances*3, num_features))
+        X = [[] for x in xrange(len(instances)*3)]
 
         for i, inst in enumerate(instances):
             # get input (utterance) and alt outputs (colors)
@@ -393,48 +396,38 @@ class JennsLearner(Learner):
             # go through each color
             for j in xrange(3):
                 H,S,V = alt[j][:]
-                # cos_hue = np.cos(H)
-                # sin_hue = np.sin(H)
+                row = X[3*i+j]
 
-                for w_index, w in enumerate(self.top_words):
+                for w in self.top_words:
                     w_indicator = 1 if w in inp else -1
-                    
-                    for h_index, h in enumerate(hues):
-                        h_indicator = 1 if abs(H - hue_dict[h]) <= hue_interval else -1
-                        X[i*3+j][w_index+len(self.top_words)*h_index] = w_indicator * h_indicator
 
-                    for s_index, s in enumerate(sats):
-                        s_indicator = 1 if abs(S - sat_dict[s]) <= sat_interval else -1
-                        X[i*3+j][len(self.top_words)*len(hues) + w_index+len(self.top_words)*s_index] = w_indicator * s_indicator
+                    h_features = [w_indicator * self.indicator(H, h, hue_dict, hue_interval) for h in hues]
+                    s_features = [w_indicator * self.indicator(S, s, sat_dict, sat_interval) for s in sats]
+                    v_features = [w_indicator * self.indicator(V, v, val_dict, val_interval) for v in vals]
 
-                    for v_index, v in enumerate(vals):
-                        v_indicator = 1 if abs(V - val_dict[v]) <= val_interval else -1
-                        X[i*3+j][len(self.top_words)*len(hues)*len(sats) + w_index+len(self.top_words)*v_index] = w_indicator * v_indicator
+                    row.extend(h_features)
+                    row.extend(s_features)
+                    row.extend(v_features)
 
-                # for k1, c1 in enumerate(hue_words):
-                #     word_indicator = 1 if c1 in inp else -1
-
-                #     X[i*3+j][len(hue_words)**2 + k1] = word_indicator * cos_hue
-                #     X[i*3+j][len(hue_words)**2 + len(hue_words) + k1] = word_indicator * sin_hue
-
-                #     for k2, c2 in enumerate(hue_words):
-                #         hue_indicator = 1 if abs(H - hue_dict[c2]) <= hue_interval else -1
-                #         X[i*3+j][k1*len(hue_words)+k2] = word_indicator * hue_indicator
+                    # row.append(w_indicator*np.cos(H))
+                    # row.append(w_indicator*np.sin(H))
 
         return X
+
+    def top_words(self, instances):
+        stops = set(stopwords.words("english"))
+        all_words = []
+        for inst in instances:
+            all_words.extend(map(lambda s : s.lower(), inst.input.split()))
+        self.top_words = [w for w, w_count in Counter(all_words).most_common(self.num_top_words)
+                            if w not in stops and w.isalpha()]
 
     def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
         self.num_params = 0 # change later
         self.num_top_words = 100
 
         print "finding top words..."
-        stops = set(stopwords.words("english"))
-        all_words = []
-        for inst in training_instances:
-            all_words.extend(map(lambda s : s.lower(), inst.input.split()))
-
-        self.top_words = [w for w, w_count in Counter(all_words).most_common(self.num_top_words)
-                            if w not in stops and w.isalpha()]
+        self.top_words(training_instances)
         print "top %d words: " % self.num_top_words
         print self.top_words
 
