@@ -422,6 +422,7 @@ class JennsLearner(Learner):
             all_words.extend(map(lambda s : s.lower(), inst.input.split()))
         self.top_words = [w for w, w_count in Counter(all_words).most_common(self.num_top_words)
                             if w not in stops and w.isalpha()]
+        self.top_words[-1] = 'not'
 
     def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
         self.num_params = 0 # change later
