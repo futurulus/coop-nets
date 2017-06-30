@@ -6,6 +6,7 @@ from nltk.corpus import wordnet as wn
 
 from sklearn.linear_model import LogisticRegression
 from scipy.misc import logsumexp
+from nltk.corpus import stopwords
 
 from stanza.monitoring import progress
 from stanza.research.learner import Learner
@@ -362,24 +363,17 @@ class LookupLearner(Learner):
         self.init_vectorizer()
         self.counters = defaultdict(Counter, {k: Counter(v) for k, v in state['counters']})
 
-
-'''
-JENN'S BASELINE LEARNER 06/28/2017
-'''
-
 class JennsLearner(Learner):
-
     def __init__(self):
         options = config.options()
-        self.res = [2] #self.res = options.listener_color_resolution
+        # self.res = [2]
+        # self.res = options.listener_color_resolution
         self.hsv = options.listener_hsv
-        
-        # sklearn model
         self.model = LogisticRegression()
         
-    def vectorize_all(self, c):
-        color_vec = FourierVectorizer(self.res, hsv=self.hsv)
-        return color_vec.vectorize_all(c)
+    # def vectorize_all(self, c, self.res):
+    #     color_vec = FourierVectorizer(self.res, hsv=self.hsv)
+    #     return color_vec.vectorize_all(c)
 
     # gets the specific synset for color of a colorword. e.g. 'orange' is 'orange.n.02'
     def get_color_synset(self, color):
@@ -394,17 +388,13 @@ class JennsLearner(Learner):
                 for s in hypo_syns for lemma in s.lemmas()]
 
     def make_features(self, instances):
-        color_words = ('red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'magenta')
-        hsv_dict = {
-            'red' : 0,
-            'orange' : 30,
-            'yellow' : 60,
-            'green' : 120,
-            'cyan' : 180,
-            'blue': 240,
-            'purple': 270,
-            'magenta' : 300
-        }
+        hue_dict = {'red' : 0, 'orange' : 30, 'yellow' : 60, 'green' : 120,
+                    'cyan' : 180, 'blue': 240, 'purple': 270, 'magenta' : 300}
+        hues = hue_dict.keys()
+        sat_dict = {'dull' : 50, 'faded' : 50, 'pale' : 50, 'bright': 100}
+        sats = sat_dict.keys()
+        val_dict = {'dark' : 25, 'muted' : 50, 'light' : 75}
+        vals = val_dict.keys()
 
         # # saturation words boundary=75 on a 0-100 saturation scale in HSV
         # pos_sat_words = ['pure', 'solid', 'rich', 'strong', 'harsh', 'intense']
@@ -415,70 +405,93 @@ class JennsLearner(Learner):
 
         # constants
         hue_interval = 45
+        sat_interval = 25
+        val_interval = 25
         num_instances = len(instances)
-        num_features = len(color_words) * 3 # TEMPORARY!!!!
-
+        num_features = len(self.top_words) * len(hues) * len(sats) * len(vals)
+        
         # initialize to zeros
         X = np.zeros((num_instances*3, num_features))
 
         for i, inst in enumerate(instances):
             # get input (utterance) and alt outputs (colors)
             inp, alt = inst.input, inst.alt_outputs
-            
             # go through each color
             for j in xrange(3):
-                c_ij = alt[j]
+                H,S,V = alt[j][:]
+                # cos_hue = np.cos(H)
+                # sin_hue = np.sin(H)
 
-                for k, c in enumerate(color_words):
-                    hue_cos_indicator = math.cos(c_ij[0])
-                    hue_sin_indicator = math.sin(c_ij[0])
-                    hue_indicator = 1 if abs(c_ij[0] - hsv_dict[c]) <= hue_interval else -1
+                for w_index, w in enumerate(self.top_words):
+                    w_indicator = 1 if w in inp else -1
+                    
+                    for h_index, h in enumerate(hues):
+                        h_indicator = 1 if abs(H - hue_dict[h]) <= hue_interval else -1
+                        c_synset = self.get_color_synset(c) 
+                        hyponyms = self.all_hyponyms(c_synset)
+                        w_indicator = 1 if c in hyponyms else -1
+                        X[i*3+j][w_index+len(self.top_words)*h_index] = w_indicator * h_indicator
 
-                    c_synset = self.get_color_synset(c) 
-                    hyponyms = self.all_hyponyms(c_synset)
-                    word_indicator = 1 if c in hyponyms else -1
+                    for s_index, s in enumerate(sats):
+                        s_indicator = 1 if abs(S - sat_dict[s]) <= sat_interval else -1
+                        X[i*3+j][len(self.top_words)*len(hues) + w_index+len(self.top_words)*s_index] = w_indicator * s_indicator
 
-                    X[i*3 + j][k * 3] = word_indicator * hue_cos_indicator
-                    X[i*3 + j][k * 3 + 1] = word_indicator * hue_sin_indicator
-                    X[i*3 + j][k * 3 + 2] = word_indicator * hue_indicator
+                    for v_index, v in enumerate(vals):
+                        v_indicator = 1 if abs(V - val_dict[v]) <= val_interval else -1
+                        X[i*3+j][len(self.top_words)*len(hues)*len(sats) + w_index+len(self.top_words)*v_index] = w_indicator * v_indicator
 
         return X
 
     def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
-        self.num_params = 0 # WHAT IS THIS???
+        self.num_params = 0 # change later
 
+        print "finding top words..."
+        stops = set(stopwords.words("english"))
+        all_words = []
+        for inst in training_instances:
+            all_words.extend(map(lambda s : s.lower(), inst.input.split()))
+
+        from collections import Counter
+        self.top_words = [w for w, w_count in Counter(all_words).most_common(100) if w not in stops and w.isalpha()]
+        print self.top_words
+
+        # make features for training dataset
+        print "making features for training dataset..."
         self.X_train = self.make_features(training_instances)
-        print("X_train: ", self.X_train)
-
+        
         # transform outputs into ``one-hot coded'' vectors
-        training_targets = np.zeros(3*len(training_instances)) # initialize to all zeros
+        training_targets = np.zeros(3*len(training_instances))
         for i, inst in enumerate(training_instances):
             out = inst.output
-            training_targets[3*i + out] = 1
+            training_targets[3*i+out] = 1
 
         # learn the parameters for the model
+        print "training..."
         self.model.fit(self.X_train, training_targets)
 
     def predict_and_score(self, eval_instances):
         num_instances = len(eval_instances)
 
         # make features for eval dataset
+        print "making features for eval dataset..."
         self.X_eval = self.make_features(eval_instances)
 
+        print "finding probabilities..."
         # find log probabilities using model trained above
         log_probs = self.model.predict_log_proba(self.X_eval)
 
         # only keep probabilities associated with class 1
-        class_one_log_probs = np.delete(log_probs, 0, axis=1)
+        class1_log_probs = log_probs[:,1]
     
         # reshape to allow for vectorized operations
-        reshaped = np.reshape(class_one_log_probs,(num_instances,3))
+        reshaped = np.reshape(class1_log_probs,(num_instances,3))
 
         # use softmax to create probability distribution
-        final_probs = reshaped - logsumexp(reshaped)
+        final_probs = reshaped - logsumexp(reshaped, axis=1, keepdims=True)
 
         preds = []
         scores = []
+        print "making predictions..."
         progress.start_task('Example', len(eval_instances))
         for i, inst in enumerate(eval_instances):
             progress.progress(i)
