@@ -515,18 +515,14 @@ class ChineseLearner(Learner):
 
     def top_words(self, instances):
         self.num_top_words = 25
-        # stops = set(stopwords.words('chinese'))
         with open('behavioralAnalysis/stopwords-zh.txt') as f:
             stops = f.readlines()
-        stops = [x.strip().decode('utf-8') for x in stops]
-        stops = set(stops)
-        print stops
+        stops = set([x.strip().decode('utf-8') for x in stops])
         all_words = []
         for inst in instances:
             all_words += list(inst.input)
         self.top_words = [w for w, w_count in Counter(all_words).most_common(self.num_top_words)
-                            if (w.isalpha() and w not in stops)]
-                            # if w not in stops]
+                            if w.isalpha() and w not in stops]
 
     def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
         self.num_params = 0 # change later
