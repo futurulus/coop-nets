@@ -3,6 +3,8 @@
 from collections import defaultdict, Counter
 from numbers import Number
 import numpy as np
+import math
+from nltk.corpus import wordnet as wn
 
 # for JennsLearner
 from sklearn.linear_model import LogisticRegression
@@ -418,6 +420,7 @@ class BaselineLearner(Learner):
             all_words += map(lambda s : s.lower(), inst.input.split())
         self.top_words = [w for w, w_count in Counter(all_words).most_common(self.num_top_words)
                             if w not in stops and w.isalpha()]
+        self.top_words[-1] = 'not'
 
     def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
         self.num_params = 0 # change later
