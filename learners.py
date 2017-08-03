@@ -1,3 +1,5 @@
+# coding:utf-8
+
 from collections import defaultdict, Counter
 from numbers import Number
 import numpy as np
@@ -363,68 +365,62 @@ class LookupLearner(Learner):
         self.init_vectorizer()
         self.counters = defaultdict(Counter, {k: Counter(v) for k, v in state['counters']})
 
-class JennsLearner(Learner):
+class BaselineLearner(Learner):
     def __init__(self):
         self.model = LogisticRegression()
 
-    # returns 1 if X is within x_interval around x's value in x_dict
+    # returns 1 if X is within x_eps around x's value in x_dict
     # returns -1 otherwise
-    def indicator(self, X, x, x_dict, x_interval):
-        return 1 if abs(X - x_dict[x]) <= x_interval else -1
+    def indicator(self, X, x, x_dict, x_eps):
+        return 1 if abs(X - x_dict[x]) <= x_eps else -1
 
     def make_features(self, instances):
+        # dictionaries for representative values
         hue_dict = {'red' : 0, 'orange' : 30, 'yellow' : 60, 'green' : 120,
                     'cyan' : 180, 'blue': 240, 'purple': 270, 'magenta' : 300}
-        hues = hue_dict.keys()
-        hue_interval = 45
-
         sat_dict = {'dull' : 50, 'faded' : 50, 'pale' : 50, 'bright': 100}
-        sats = sat_dict.keys()
-        sat_interval = 25
-
         val_dict = {'dark' : 25, 'muted' : 50, 'light' : 75}
-        vals = val_dict.keys()
-        val_interval = 25
 
-        # initialize to zeros
+        # epsilon - the interval around the representative values
+        hue_eps = 45
+        sat_eps = 25
+        val_eps = 25
+
         X = [[] for x in xrange(len(instances)*3)]
 
         for i, inst in enumerate(instances):
-            # get input (utterance) and alt outputs (colors)
             inp, alt = inst.input, inst.alt_outputs
-
             # go through each color
             for j in xrange(3):
                 H,S,V = alt[j][:]
                 row = X[3*i+j]
-
                 for w in self.top_words:
                     w_indicator = 1 if w in inp else -1
 
-                    h_features = [w_indicator * self.indicator(H, h, hue_dict, hue_interval) for h in hues]
-                    s_features = [w_indicator * self.indicator(S, s, sat_dict, sat_interval) for s in sats]
-                    v_features = [w_indicator * self.indicator(V, v, val_dict, val_interval) for v in vals]
+                    h_feats = [w_indicator * self.indicator(H,h,hue_dict,hue_eps)
+                                for h in hue_dict.keys()]
+                    s_feats = [w_indicator * self.indicator(S,s,sat_dict,sat_eps)
+                                for s in sat_dict.keys()]
+                    v_feats = [w_indicator * self.indicator(V,v,val_dict,val_eps)
+                                for v in val_dict.keys()]
 
-                    row.extend(h_features)
-                    row.extend(s_features)
-                    row.extend(v_features)
+                    row += h_feats + s_feats + v_feats
 
                     # row.append(w_indicator*np.cos(H))
                     # row.append(w_indicator*np.sin(H))
-
         return X
 
     def top_words(self, instances):
+        self.num_top_words = 100
         stops = set(stopwords.words("english"))
         all_words = []
         for inst in instances:
-            all_words.extend(map(lambda s : s.lower(), inst.input.split()))
+            all_words += map(lambda s : s.lower(), inst.input.split())
         self.top_words = [w for w, w_count in Counter(all_words).most_common(self.num_top_words)
                             if w not in stops and w.isalpha()]
 
     def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
         self.num_params = 0 # change later
-        self.num_top_words = 100
 
         print "finding top words..."
         self.top_words(training_instances)
@@ -434,7 +430,7 @@ class JennsLearner(Learner):
         # make features for training dataset
         print "making features for training dataset..."
         self.X_train = self.make_features(training_instances)
-        
+
         # transform outputs into one-hot vectors
         training_targets = np.zeros(3*len(training_instances))
         for i, inst in enumerate(training_instances):
@@ -470,6 +466,111 @@ class JennsLearner(Learner):
         progress.end_task()
         return preds, scores
 
+class ChineseLearner(Learner):
+    def __init__(self):
+        self.model = LogisticRegression()
+        # dictionaries for representative values
+        self.hue_dict = {'红' : 0, '橙' : 30, '黄' : 60, '绿' : 120,
+                        '青' : 180, '蓝': 240, '紫': 270, '品红' : 300}
+        self.sat_dict = {'淡' : 50, '亮': 100}
+        self.val_dict = {'深' : 25, '浅' : 75}
+        # epsilon - the interval around the representative values
+        self.hue_eps = 45
+        self.sat_eps = 25
+        self.val_eps = 25
+
+    # returns 1 if X is within x_eps around x's value in x_dict, else -1
+    def indicator(self, X, x, attribute):
+        if attribute == 'hue':
+            x_dict, x_eps = self.hue_dict, self.hue_eps
+        elif attribute == 'sat':
+            x_dict, x_eps = self.sat_dict, self.sat_eps
+        elif attribute == 'val':
+            x_dict, x_eps = self.val_dict, self.val_eps
+        else:
+            raise NameError('Invalid attribute: try hue, sat, or val.')
+        return 1 if abs(X - x_dict[x]) <= x_eps else -1
+
+    def make_features(self, instances):
+        X = [[] for x in xrange(len(instances) * 3)]
+        for i, inst in enumerate(instances):
+            inp, alt = inst.input, inst.alt_outputs
+            # go through each color
+            for j in xrange(3):
+                H,S,V = alt[j][:]
+                row = X[3 * i + j]
+                for w in self.top_words:
+                    w_indicator = 1 if w in inp else -1
+                    h_feats = [w_indicator * self.indicator(H, h, 'hue')
+                                for h in self.hue_dict.keys()]
+                    s_feats = [w_indicator * self.indicator(S, s, 'sat')
+                                for s in self.sat_dict.keys()]
+                    v_feats = [w_indicator * self.indicator(V, v, 'val')
+                                for v in self.val_dict.keys()]
+                    row += h_feats + s_feats + v_feats
+        return X
+
+    def top_words(self, instances):
+        self.num_top_words = 25
+        # stops = set(stopwords.words('chinese'))
+        with open('behavioralAnalysis/stopwords-zh.txt') as f:
+            stops = f.readlines()
+        stops = [x.strip().decode('utf-8') for x in stops]
+        stops = set(stops)
+        print stops
+        all_words = []
+        for inst in instances:
+            all_words += list(inst.input)
+        self.top_words = [w for w, w_count in Counter(all_words).most_common(self.num_top_words)
+                            if (w.isalpha() and w not in stops)]
+                            # if w not in stops]
+
+    def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
+        self.num_params = 0 # change later
+
+        print "finding top words..."
+        self.top_words(training_instances)
+        print "top %d words: " % self.num_top_words
+        print repr(self.top_words).decode('unicode_escape').encode('utf-8')
+
+        # make features for training dataset
+        print "making features for training dataset..."
+        self.X_train = self.make_features(training_instances)
+
+        # transform outputs into one-hot vectors
+        training_targets = np.zeros(3 * len(training_instances))
+        for i, inst in enumerate(training_instances):
+            training_targets[3 * i + inst.output] = 1
+
+        # learn the parameters for the model
+        print "training..."
+        self.model.fit(self.X_train, training_targets)
+
+    def predict_and_score(self, eval_instances):
+        num_instances = len(eval_instances)
+
+        # make features for eval dataset
+        print "making features for eval dataset..."
+        self.X_eval = self.make_features(eval_instances)
+
+        # find log probabilities using model trained above
+        print "finding probabilities..."
+        log_probs = self.model.predict_log_proba(self.X_eval)[:,1]
+        reshaped = np.reshape(log_probs,(num_instances, 3))
+        final_probs = reshaped - logsumexp(reshaped, axis=1, keepdims=True)
+
+        preds, scores = [], []
+        print "making predictions..."
+        progress.start_task('Example', len(eval_instances))
+        for i, inst in enumerate(eval_instances):
+            progress.progress(i)
+            pred = np.argmax(final_probs[i])
+            score = final_probs[i][inst.output]
+            preds.append(pred)
+            scores.append(score)
+        progress.end_task()
+        return preds, scores
+
 LEARNERS = {
     'Histogram': HistogramLearner,
     'Lux': LuxLearner,
@@ -478,7 +579,8 @@ LEARNERS = {
     'UnigramLM': UnigramLMSpeakerLearner,
     'Random': RandomListenerLearner,
     'Lookup': LookupLearner,
-    'Jenns' : JennsLearner
+    'Baseline': BaselineLearner,
+    'Chinese': ChineseLearner
 }
 LEARNERS.update(LISTENERS)
 LEARNERS.update(SPEAKERS)

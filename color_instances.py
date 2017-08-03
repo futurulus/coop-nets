@@ -1,3 +1,5 @@
+#coding:utf-8
+
 import colorsys
 import csv
 from collections import namedtuple, defaultdict
@@ -351,13 +353,16 @@ def reference_game(insts, gen_func, listener=False):
         insts[i] = ref_inst
     return insts
 
+# def u_open(filename, *args, **kwargs):
+#     import codecs
+#     return codecs.open(filename, *args, encoding='utf-8', **kwargs)
 
-def hawkins_context(listener=False, suffix=''):
+def hawkins_context(listener=False, speakerID='speaker', suffix=''):
     messages = defaultdict(list)
     with open('hawkins_data/colorReferenceMessage%s.csv' % suffix, 'r') as infile:
         for row in csv.DictReader(infile):
-            if row['sender'] == 'speaker':
-                message = row['contents']  # TODO: clean, tokenize?
+            if row['sender'] == speakerID:
+                message = row['contents'].decode('utf-8')  # TODO: clean, tokenize?
                 messages[(row['gameid'], row['roundNum'])].append(message)
 
     result = []
@@ -404,23 +409,23 @@ def hawkins_target(listener=False):
             for inst in insts]
 
 
-def hawkins_train(listener=False, suffix=''):
-    insts = hawkins_context(listener=listener, suffix=suffix)
+def hawkins_train(listener=False, speakerID='speaker', suffix=''):
+    insts = hawkins_context(listener, speakerID, suffix=suffix)
     num_insts = len(insts) / 3
     train_insts = insts[:num_insts]
     rng.shuffle(train_insts)
     return train_insts
 
 
-def hawkins_dev(listener=False, suffix=''):
-    insts = hawkins_context(listener=listener, suffix=suffix)
+def hawkins_dev(listener=False, speakerID='speaker', suffix=''):
+    insts = hawkins_context(listener, speakerID, suffix=suffix)
     num_insts = len(insts) / 3
     dev_insts = insts[num_insts:num_insts * 2]
     return dev_insts
 
 
-def hawkins_test(listener=False, suffix=''):
-    insts = hawkins_context(listener=listener, suffix=suffix)
+def hawkins_test(listener=False, speakerID='speaker', suffix=''):
+    insts = hawkins_context(listener, speakerID, suffix=suffix)
     num_insts = len(insts) / 3
     train_insts = insts[num_insts * 2:]
     return train_insts
@@ -483,6 +488,17 @@ def hawkins_big_tune_train(listener=False):
 def hawkins_big_tune_test(listener=False):
     return hawkins_tune_test(listener=listener, suffix='2', tuning_insts=3500)
 
+
+def chinese_train(listener=False):
+    return hawkins_train(listener=listener, speakerID='演说者', suffix='Chinese')
+
+
+def chinese_dev(listener=False):
+    return hawkins_dev(listener=listener, speakerID='演说者', suffix='Chinese')
+
+
+def chinese_test(listener=False):
+    return hawkins_test(listener=listener, listenerID='倾听者', speakerID='演说者', suffix='Chinese')
 
 # train: 1124-1:1  (start) - 8994-5:50
 # dev:   2641-2:1          - 8574-6:50
@@ -647,5 +663,7 @@ SOURCES = {
     'ams_typical_allways': DataSource(amsterdam_typical_train, amsterdam_test_allways),
     'tuna_cv': DataSource(tuna_instances.tuna_train_cv, tuna_instances.tuna_test_cv),
     'tuna_dev': DataSource(tuna_instances.tuna08_train, tuna_instances.tuna08_dev),
-    'tuna_test': DataSource(tuna_instances.tuna08_train, tuna_instances.tuna08_test)
+    'tuna_test': DataSource(tuna_instances.tuna08_train, tuna_instances.tuna08_test),
+    'chinese_dev': DataSource(chinese_train, chinese_dev),
+    'chinese_train': DataSource(chinese_train, chinese_test),
 }
