@@ -472,15 +472,17 @@ class BaselineLearner(Learner):
 class ChineseLearner(Learner):
     def __init__(self):
         self.model = LogisticRegression()
+        # subcharacters to look for
+        self.subchars = [u'红', u'水', u'火', u'草']
         # dictionaries for representative values
         self.hue_dict = {'红' : 0, '橙' : 30, '黄' : 60, '绿' : 120,
                         '青' : 180, '蓝': 240, '紫': 270, '品红' : 300}
         self.sat_dict = {'淡' : 50, '亮': 100}
         self.val_dict = {'深' : 25, '浅' : 75}
         # epsilon - the interval around the representative values
-        self.hue_eps = 45
-        self.sat_eps = 25
-        self.val_eps = 25
+        self.hue_eps = 75
+        self.sat_eps = 45
+        self.val_eps = 45
 
     # returns 1 if X is within x_eps around x's value in x_dict, else -1
     def indicator(self, X, x, attribute):
@@ -494,14 +496,28 @@ class ChineseLearner(Learner):
             raise NameError('Invalid attribute: try hue, sat, or val.')
         return 1 if abs(X - x_dict[x]) <= x_eps else -1
 
+    def u(self, x):
+        return repr(x).decode('unicode_escape')
+
+    def is_subchar(self, char, subchar):
+        import cjklib.characterlookup as cl
+        cjk = cl.CharacterLookup('C')
+        decomp = cjk.getDecompositionEntries(char)
+        if decomp:
+            subchars = decomp[0][1:]
+            return repr(subchar) in [x[0] for x in subchars]
+        else:
+            return False
+
     def make_features(self, instances):
         X = [[] for x in xrange(len(instances) * 3)]
         for i, inst in enumerate(instances):
             inp, alt = inst.input, inst.alt_outputs
             # go through each color
             for j in xrange(3):
-                H,S,V = alt[j][:]
+                H, S, V = alt[j][:]
                 row = X[3 * i + j]
+                # top words
                 for w in self.top_words:
                     w_indicator = 1 if w in inp else -1
                     h_feats = [w_indicator * self.indicator(H, h, 'hue')
@@ -511,10 +527,14 @@ class ChineseLearner(Learner):
                     v_feats = [w_indicator * self.indicator(V, v, 'val')
                                 for v in self.val_dict.keys()]
                     row += h_feats + s_feats + v_feats
+                # indicators for subcharacters
+                for c in self.subchars:
+                    c_indicator = any([self.is_subchar(s, c) for s in inp])
+                    row.append(c_indicator)
         return X
 
     def top_words(self, instances):
-        self.num_top_words = 25
+        self.num_top_words = 40
         with open('behavioralAnalysis/stopwords-zh.txt') as f:
             stops = f.readlines()
         stops = set([x.strip().decode('utf-8') for x in stops])
@@ -535,6 +555,8 @@ class ChineseLearner(Learner):
         # make features for training dataset
         print "making features for training dataset..."
         self.X_train = self.make_features(training_instances)
+
+        print self.X_train
 
         # transform outputs into one-hot vectors
         training_targets = np.zeros(3 * len(training_instances))
