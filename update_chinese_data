@@ -1,0 +1,33 @@
+#!/bin/bash
+# This program updates the .json using mongoexport and converts it to csv using the python script
+# Requires mongoexport
+# Requires a file called "auth" with the user and password separated by a space on the same line.
+
+# terminate if fail
+set -e 
+
+read -p "WARNING: Previous data will be overwritten. Do you wish to continue? (y/n): " CONT
+
+if [ "$CONT" = "y" ]
+then 
+	# read authentication file for mongo
+	auth="mlab_auth"
+	while read -r user password
+	do
+		rm *.csv *.json &> /dev/null || # try remove silently
+		echo "User: $user"
+		echo "Password: $password"
+		# get data
+		chat="mongoexport -h ds115583.mlab.com:15583 -d heroku_7slvngr1 -c chatmessages -u $user -p $password -o hawkins_data/chatmessages.json"
+		clicked="mongoexport -h ds115583.mlab.com:15583 -d heroku_7slvngr1 -c clickedobjs -u $user -p $password -o hawkins_data/clickedobjs.json"
+		eval $chat
+		eval $clicked
+	done < "$auth"
+
+	# convert to csv
+	python jsonToCSV.py
+
+else
+	exit 1
+fi
+
