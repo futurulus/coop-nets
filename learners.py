@@ -473,31 +473,30 @@ class ChineseLearner(Learner):
     def __init__(self):
         self.model = LogisticRegression()
         # subcharacters to look for
-        self.subchars = [u'红', u'水', u'火', u'草']
+        self.subchars = ['纟', '氵', '水', '火', '灬',
+                        '艹', '木', '土', '日', '米', '女']
         # dictionaries for representative values
-        self.hue_dict = {'红' : 0, '橙' : 30, '黄' : 60, '绿' : 120,
-                        '青' : 180, '蓝': 240, '紫': 270, '品红' : 300}
-        self.sat_dict = {'淡' : 50, '亮': 100}
-        self.val_dict = {'深' : 25, '浅' : 75}
+        self.hue_dict = {'红' : 0, '土' : 30, '黄' : 60, '绿' : 120,
+                        '海' : 180, '蓝' : 240, '紫' : 270, '粉' : 370}
+        self.sat_dict = {'灰' : 25, '淡' : 50, '亮' : 100}
+        self.val_dict = {'墨' : 0, '深' : 25, '暗' : 25, '肝' : 25,
+                        '淡' : 75, '浅' : 75}
         # epsilon - the interval around the representative values
-        self.hue_eps = 75
-        self.sat_eps = 45
-        self.val_eps = 45
+        self.hue_eps = 50
+        self.sat_eps = 30
+        self.val_eps = 30
 
     # returns 1 if X is within x_eps around x's value in x_dict, else -1
-    def indicator(self, X, x, attribute):
-        if attribute == 'hue':
-            x_dict, x_eps = self.hue_dict, self.hue_eps
-        elif attribute == 'sat':
-            x_dict, x_eps = self.sat_dict, self.sat_eps
-        elif attribute == 'val':
-            x_dict, x_eps = self.val_dict, self.val_eps
+    def in_range(self, X, x, attributeid):
+        if attributeid == 'hue':
+            d, eps = self.hue_dict, self.hue_eps
+        elif attributeid == 'sat':
+            d, eps = self.sat_dict, self.sat_eps
+        elif attributeid == 'val':
+            d, eps = self.val_dict, self.val_eps
         else:
-            raise NameError('Invalid attribute: try hue, sat, or val.')
-        return 1 if abs(X - x_dict[x]) <= x_eps else -1
-
-    def u(self, x):
-        return repr(x).decode('unicode_escape')
+            raise NameError('Invalid attributeid: try hue, sat, or val.')
+        return 1 if abs(X - d[x]) <= eps else -1
 
     def is_subchar(self, char, subchar):
         import cjklib.characterlookup as cl
@@ -505,9 +504,29 @@ class ChineseLearner(Learner):
         decomp = cjk.getDecompositionEntries(char)
         if decomp:
             subchars = decomp[0][1:]
-            return repr(subchar) in [x[0] for x in subchars]
+            return subchar.decode('utf-8') in [x[0] for x in subchars]
         else:
             return False
+
+    def char_multiplier(self, inp, char, multiplier, row):
+        if char in inp:
+            split = inp.split(char)[1:]
+            for s in split:
+                for w in list(s):
+                    if w in self.top_words:
+                        k = self.top_words.index(w)
+                        n = len(self.hue_dict.keys() + self.sat_dict.keys()
+                                + self.val_dict.keys())
+                        for l in xrange(k * n, k * n + n):
+                            row[l] *= multiplier
+
+    def subchar_feats(self, inp, H, row):
+        for c in self.subchars:
+            c_indicator = 1 if any([self.is_subchar(s, c)
+                                    for s in inp]) else -1
+            h_feats = [c_indicator * self.in_range(H, h, 'hue')
+                        for h in self.hue_dict.keys()]
+            row += h_feats
 
     def make_features(self, instances):
         X = [[] for x in xrange(len(instances) * 3)]
@@ -517,37 +536,36 @@ class ChineseLearner(Learner):
             for j in xrange(3):
                 H, S, V = alt[j][:]
                 row = X[3 * i + j]
-                # top words
                 for w in self.top_words:
                     w_indicator = 1 if w in inp else -1
-                    h_feats = [w_indicator * self.indicator(H, h, 'hue')
+                    h_feats = [w_indicator * self.in_range(H, h, 'hue')
                                 for h in self.hue_dict.keys()]
-                    s_feats = [w_indicator * self.indicator(S, s, 'sat')
+                    s_feats = [w_indicator * self.in_range(S, s, 'sat')
                                 for s in self.sat_dict.keys()]
-                    v_feats = [w_indicator * self.indicator(V, v, 'val')
+                    v_feats = [w_indicator * self.in_range(V, v, 'val')
                                 for v in self.val_dict.keys()]
                     row += h_feats + s_feats + v_feats
-                # indicators for subcharacters
-                for c in self.subchars:
-                    c_indicator = any([self.is_subchar(s, c) for s in inp])
-                    row.append(c_indicator)
+                # check for superlative and negation
+                self.char_multiplier(inp, u'最', 2, row)
+                self.char_multiplier(inp, u'不', -1, row)
+                # check for subchars and relationship with hue
+                # self.subchar_feats(inp, H, row)
         return X
 
     def top_words(self, instances):
-        self.num_top_words = 40
+        self.num_top_words = 15
         with open('behavioralAnalysis/stopwords-zh.txt') as f:
             stops = f.readlines()
         stops = set([x.strip().decode('utf-8') for x in stops])
-        all_words = []
-        for inst in instances:
-            all_words += list(inst.input)
-        self.top_words = [w for w, w_count in Counter(all_words).most_common(self.num_top_words)
-                            if w.isalpha() and w not in stops]
+        inputs = [list(inst.input) for inst in instances]
+        words = [w for inp in inputs for w in inp] # flatten
+        ordered = [w for w, w_count in Counter(words).most_common()
+                    if w.isalpha() and w not in stops]
+        self.top_words = ordered[:self.num_top_words]
 
     def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
         self.num_params = 0 # change later
 
-        print "finding top words..."
         self.top_words(training_instances)
         print "top %d words: " % self.num_top_words
         print repr(self.top_words).decode('unicode_escape').encode('utf-8')
@@ -555,8 +573,6 @@ class ChineseLearner(Learner):
         # make features for training dataset
         print "making features for training dataset..."
         self.X_train = self.make_features(training_instances)
-
-        print self.X_train
 
         # transform outputs into one-hot vectors
         training_targets = np.zeros(3 * len(training_instances))

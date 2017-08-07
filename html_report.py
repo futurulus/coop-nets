@@ -258,7 +258,8 @@ def format_error_analysis(output, compare=None, per_token=False, only_differing=
     tables = [
         ('Worst', score_order[:100]),
         ('Best', reversed(score_order[-100:])),
-        ('Head', collated[:100]),
+        # ('Head', collated[:100]),
+        ('All', collated)
     ]
     if compare:
         if only_differing:
