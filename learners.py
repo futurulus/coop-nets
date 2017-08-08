@@ -415,6 +415,9 @@ class BaselineLearner(Learner):
     def top_words(self, instances):
         self.num_top_words = 100
         stops = set(stopwords.words("english"))
+        with open('behavioralAnalysis/stopwords-en.txt') as f:
+            additional_stops = f.readlines()
+        stops = stops | set([x.strip() for x in additional_stops])
         all_words = []
         for inst in instances:
             all_words += map(lambda s : s.lower(), inst.input.split())
@@ -482,7 +485,7 @@ class ChineseLearner(Learner):
         self.val_dict = {'墨' : 0, '深' : 25, '暗' : 25, '肝' : 25,
                         '淡' : 75, '浅' : 75}
         # epsilon - the interval around the representative values
-        self.hue_eps = 50
+        self.hue_eps = 55
         self.sat_eps = 30
         self.val_eps = 30
 
@@ -508,9 +511,9 @@ class ChineseLearner(Learner):
         else:
             return False
 
-    def char_multiplier(self, inp, char, multiplier, row):
-        if char in inp:
-            split = inp.split(char)[1:]
+    def negate(self, inp, row):
+        if  u'不' in inp:
+            split = inp.split(u'不')[1:]
             for s in split:
                 for w in list(s):
                     if w in self.top_words:
@@ -518,7 +521,7 @@ class ChineseLearner(Learner):
                         n = len(self.hue_dict.keys() + self.sat_dict.keys()
                                 + self.val_dict.keys())
                         for l in xrange(k * n, k * n + n):
-                            row[l] *= multiplier
+                            row[l] *= -1
 
     def subchar_feats(self, inp, H, row):
         for c in self.subchars:
@@ -532,11 +535,35 @@ class ChineseLearner(Learner):
         X = [[] for x in xrange(len(instances) * 3)]
         for i, inst in enumerate(instances):
             inp, alt = inst.input, inst.alt_outputs
+            closest = None
+            # if u'最' in inp:
+            #     s = inp.split(u'最')[1]
+            #     for word in s: # each word in the substring after '最'
+            #         w = word.encode('utf-8')
+            #         if w in self.hue_dict.keys():
+            #             closest = np.argmin([abs(alt[j][0] - self.hue_dict[w])
+            #                                 for j in xrange(3)])
+            #             break
+            #         elif w in self.sat_dict.keys():
+            #             closest = np.argmin([abs(alt[j][1] - self.sat_dict[w])
+            #                                 for j in xrange(3)])
+            #             break
+            #         elif w in self.val_dict.keys():
+            #             closest = np.argmin([abs(alt[j][2] - self.val_dict[w])
+            #                                 for j in xrange(3)])
+            #             break
             # go through each color
             for j in xrange(3):
                 H, S, V = alt[j][:]
                 row = X[3 * i + j]
                 for w in self.top_words:
+                #     if w in inp:
+                #         if j == closest:
+                #             w_indicator = 3
+                #         else:
+                #             w_indicator = 1
+                #     else:
+                #         w_indicator = -1
                     w_indicator = 1 if w in inp else -1
                     h_feats = [w_indicator * self.in_range(H, h, 'hue')
                                 for h in self.hue_dict.keys()]
@@ -545,29 +572,28 @@ class ChineseLearner(Learner):
                     v_feats = [w_indicator * self.in_range(V, v, 'val')
                                 for v in self.val_dict.keys()]
                     row += h_feats + s_feats + v_feats
-                # check for superlative and negation
-                self.char_multiplier(inp, u'最', 2, row)
-                self.char_multiplier(inp, u'不', -1, row)
+                # check for negation
+                self.negate(inp, row)
                 # check for subchars and relationship with hue
                 # self.subchar_feats(inp, H, row)
         return X
 
-    def top_words(self, instances):
-        self.num_top_words = 15
+    def top_words(self, instances, num_top_words):
         with open('behavioralAnalysis/stopwords-zh.txt') as f:
             stops = f.readlines()
         stops = set([x.strip().decode('utf-8') for x in stops])
         inputs = [list(inst.input) for inst in instances]
         words = [w for inp in inputs for w in inp] # flatten
-        ordered = [w for w, w_count in Counter(words).most_common()
+        ordered = [w for (w, w_count) in Counter(words).most_common()
                     if w.isalpha() and w not in stops]
-        self.top_words = ordered[:self.num_top_words]
+        self.top_words = ordered[:num_top_words]
 
     def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
         self.num_params = 0 # change later
 
-        self.top_words(training_instances)
-        print "top %d words: " % self.num_top_words
+        num_top_words = 50
+        self.top_words(training_instances, num_top_words)
+        print "top %d words: " % num_top_words
         print repr(self.top_words).decode('unicode_escape').encode('utf-8')
 
         # make features for training dataset

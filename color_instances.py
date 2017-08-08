@@ -569,7 +569,7 @@ def filtered(listener=False):
     FILTERED_DATASET_SPEAKER = [inst.inverted() for inst in FILTERED_DATASET_LISTENER]
 
     if listener:
-        return FILTERED_DATASET_LISTENER
+        return FILTERED_DATASET_LISTENER #[:206]
     else:
         return FILTERED_DATASET_SPEAKER
 
