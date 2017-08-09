@@ -8,10 +8,12 @@ ZH_MSG_FILE = '../hawkins_data/colorReferenceMessageChinese.csv'
 ZH_CLICK_FILE = '../hawkins_data/colorReferenceClicksChinese.csv'
 EN_MSG_FILE = '../behavioralAnalysis/humanOutput/filteredCorpus.csv'
 PUNCTUATION = ['~',',','.','?','!','。','，','？','！','”']
+ZH_COLOR = '#EE3224'
+EN_COLOR = '#F78F1E'
 
 def msg_lengths(lang='english'):
     '''
-    Returns the average length of the messages sent for a given language
+    Returns the lengths of the messages sent for a given language
     (English or Chinese). For English, it counts the number of words
     (after removing punctuation and splitting on whitespaces), and for Chinese,
     it counts the number of chars (after removing punctuation, whitespaces,
@@ -37,34 +39,25 @@ def msg_lengths(lang='english'):
 
 def dlg_lengths(lang='english'):
     '''
-    Returns the average number of messages exchanged for a single round
+    Returns the numbers of messages exchanged for each round
     for a given language (English or Chinese).
     '''
     msg_file = ZH_MSG_FILE if lang == 'chinese' else EN_MSG_FILE
-    dlg_lengths = []
     with open(msg_file, 'r') as f:
         counts, gameid = {}, None
         for row in csv.DictReader(f):
-            if gameid == row['gameid']:
-                try:
-                    counts[row['roundNum']] += 1
-                except KeyError:
-                    counts[row['roundNum']] = 1
-            else:
-                avg_round_length = np.mean(counts.values()) if counts.values() else 0
-                dlg_lengths.append(avg_round_length)
-                counts, gameid = {}, row['gameid']
-    return dlg_lengths
+            roundid = str(row['gameid']) + str(row['roundNum'])
+            try:
+                counts[roundid] += 1
+            except KeyError:
+                counts[roundid] = 1
+    return counts.values()
 
-def superlative_usage(lang='english'):
-    '''
-    Returns how often superlatives are used on each of the three conditions
-    (far, split, close) for a given language (English or Chinese).
-    '''
-    msg_file = ZH_MSG_FILE if lang == 'chinese' else EN_MSG_FILE
+def usage(word='superlative', lang='english'):
     click_file = ZH_CLICK_FILE if lang == 'chinese' else EN_MSG_FILE
     if lang == 'chinese':
-        sups = {'further': [], 'closer': [], 'equal' : []}
+        msg_file = ZH_MSG_FILE
+        counts = {'further': [], 'closer': [], 'equal' : []}
         click_rows, msg_rows = [], []
         with open(click_file, 'r') as click_f:
             for click_row in csv.DictReader(click_f):
@@ -73,103 +66,46 @@ def superlative_usage(lang='english'):
             for msg_row in csv.DictReader(msg_f):
                 msg_rows.append(msg_row)
         for click_row in click_rows:
-            cond = click_row['condition']
-            gameid = click_row['gameid']
+            cond, gameid = click_row['condition'], click_row['gameid']
             game_msgs = [x['contents'] for x in msg_rows if x['gameid'] == gameid]
             for msg in game_msgs:
-                if '最' in msg:
-                    sups[cond].append(1)
+                if condition(msg, word=word, lang=lang):
+                    counts[cond].append(1)
                 else:
-                    sups[cond].append(0)
-        return np.mean(sups['further']), np.mean(sups['closer']), np.mean(sups['equal'])
+                    counts[cond].append(0)
+        return np.mean(counts['further']), np.mean(counts['closer']), np.mean(counts['equal'])
     else:
-        sups = {'far': [], 'split': [], 'close' : []}
+        counts = {'far': [], 'split': [], 'close' : []}
         with open(click_file, 'r') as f:
             for row in csv.DictReader(f):
                 cond = row['condition']
-                if 'est' in row['contents'] or ('most' in row['contents']
-                                            and 'almost' not in row['contents']):
-                    sups[cond].append(1)
+                if condition(row['contents'], word=word, lang=lang):
+                    counts[cond].append(1)
                 else:
-                    sups[cond].append(0)
-        return np.mean(sups['far']), np.mean(sups['split']), np.mean(sups['close'])
+                    counts[cond].append(0)
+        return np.mean(counts['far']), np.mean(counts['split']), np.mean(counts['close'])
 
-def comparative_usage(lang='english'):
-    '''
-    Returns how often comparatives are used on each of the three conditions
-    (far, split, close) for a given language (English or Chinese).
-    '''
-    msg_file = ZH_MSG_FILE if lang == 'chinese' else EN_MSG_FILE
-    click_file = ZH_CLICK_FILE if lang == 'chinese' else EN_MSG_FILE
-    if lang == 'chinese':
-        comps = {'further': [], 'closer': [], 'equal' : []}
-        click_rows, msg_rows = [], []
-        with open(click_file, 'r') as click_f:
-            for click_row in csv.DictReader(click_f):
-                click_rows.append(click_row)
-        with open(msg_file, 'r') as msg_f:
-            for msg_row in csv.DictReader(msg_f):
-                msg_rows.append(msg_row)
-        for click_row in click_rows:
-            cond = click_row['condition']
-            gameid = click_row['gameid']
-            game_msgs = [x['contents'] for x in msg_rows if x['gameid'] == gameid]
-            for msg in game_msgs:
-                if '更' in msg or '多' in msg or '少' in msg: # '比较' in msg
-                    comps[cond].append(1)
-                else:
-                    comps[cond].append(0)
-        return np.mean(comps['further']), np.mean(comps['closer']), np.mean(comps['equal'])
-    else:
-        comps = {'far': [], 'split': [], 'close' : []}
-        with open(click_file, 'r') as f:
-            for row in csv.DictReader(f):
-                cond = row['condition']
-                if ('er ' in row['contents'] and 'other ' not in row['contents'] \
-                                            and 'water' not in row['contents'] \
-                                            and 'hunter' not in row['contents']) \
-                    or 'more' in row['contents'] or 'less ' in row['contents']:
-                    comps[cond].append(1)
-                else:
-                    comps[cond].append(0)
-    return np.mean(comps['far']), np.mean(comps['split']), np.mean(comps['close'])
-
-def negation_usage(lang='english'):
-    '''
-    Returns how often negations are used on each of the three conditions
-    (far, split, close) for a given language (English or Chinese).
-    '''
-    msg_file = ZH_MSG_FILE if lang == 'chinese' else EN_MSG_FILE
-    click_file = ZH_CLICK_FILE if lang == 'chinese' else EN_MSG_FILE
-    if lang == 'chinese':
-        negs = {'further': [], 'closer': [], 'equal' : []}
-        click_rows, msg_rows = [], []
-        with open(click_file, 'r') as click_f:
-            for click_row in csv.DictReader(click_f):
-                click_rows.append(click_row)
-        with open(msg_file, 'r') as msg_f:
-            for msg_row in csv.DictReader(msg_f):
-                msg_rows.append(msg_row)
-        for click_row in click_rows:
-            cond = click_row['condition']
-            gameid = click_row['gameid']
-            game_msgs = [x['contents'] for x in msg_rows if x['gameid'] == gameid]
-            for msg in game_msgs:
-                if '不' in msg:
-                    negs[cond].append(1)
-                else:
-                    negs[cond].append(0)
-        return np.mean(negs['further']), np.mean(negs['closer']), np.mean(negs['equal'])
-    else:
-        negs = {'far': [], 'split': [], 'close' : []}
-        with open(click_file, 'r') as f:
-            for row in csv.DictReader(f):
-                cond = row['condition']
-                if 'not' in row['contents']:
-                    negs[cond].append(1)
-                else:
-                    negs[cond].append(0)
-        return np.mean(negs['far']), np.mean(negs['split']), np.mean(negs['close'])
+def condition(msg, word='superlative', lang='english'):
+    if word == 'superlative':
+        if lang == 'english':
+            return 'est' in msg \
+                    or ('most' in msg and 'almost' not in msg)
+        elif lang == 'chinese':
+            return '最' in msg
+    if word == 'comparative':
+        if lang == 'english':
+            return 'er ' in msg and 'other ' not in msg \
+                    and 'water' not in msg \
+                    and 'hunter' not in msg \
+                    or 'more' in msg or 'less ' in msg
+        elif lang == 'chinese':
+            zh_comps = ['更', '多', '少']
+            return any([x in msg for x in zh_comps])
+    if word == 'negation':
+        if lang == 'english':
+            return 'not' in msg
+        elif lang == 'chinese':
+            return '不' in msg
 
 def specificity(lang='english'):
     '''
@@ -183,12 +119,12 @@ def boxplot(data, plot_file, xticks=[], xlabel='', ylabel='', title=''):
     fig = plt.figure(1, figsize=(8,6))
     ax = fig.add_subplot(111)
     bp = ax.boxplot(data, patch_artist=True, showmeans=True)
-    for box in bp['boxes']:
-        box.set(facecolor = '#c7d3d8')
+    bp['boxes'][0].set(facecolor=ZH_COLOR, alpha=0.5)
+    bp['boxes'][1].set(facecolor=EN_COLOR, alpha=0.5)
     for median in bp['medians']:
-        median.set(color='#a80101')
+        median.set(color='#75e3ff')
     for mean in bp['means']:
-        mean.set(color='#a80101', marker='.')
+        mean.set(marker='.')
     for flier in bp['fliers']:
         flier.set(marker='.', color='#e7298a', alpha=0.5)
     for i in xrange(len(data)):
@@ -209,16 +145,15 @@ def show_values(ax, rects):
         ax.text(rect.get_x() + rect.get_width()/2., height+0.0005,
                 '%.3f' % height, ha='center', va='bottom')
 
-# expect list of lists for data
 def bargraph(data, plot_file, xticks=[], series_names=[], xlabel='', ylabel='', title=''):
     pos = np.arange(len(data[0]))
     width = 0.25
     fig, ax = plt.subplots(figsize=(8,6))
 
-    rects1 = ax.bar(pos, data[0], width, alpha=0.5, color='#EE3224')
-    rects2 = ax.bar(pos+width, data[1], width, alpha=0.5, color='#F78F1E')
-    show_values(ax, rects1)
-    show_values(ax, rects2)
+    zh_rects = ax.bar(pos, data[0], width, alpha=0.5, color=ZH_COLOR)
+    en_rects = ax.bar(pos + width, data[1], width, alpha=0.5, color=EN_COLOR)
+    show_values(ax, zh_rects)
+    show_values(ax, en_rects)
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
@@ -229,7 +164,7 @@ def bargraph(data, plot_file, xticks=[], series_names=[], xlabel='', ylabel='', 
     plt.legend(series_names, loc='upper left')
     fig.savefig(plot_file, dpi=300)
 
-def compare(attributeid='', verbose=False, plot=True):
+def compare(attributeid='', verbose=True, plot=True):
     if attributeid == 'msg_length':
         zh_msg_lengths = msg_lengths(lang='chinese')
         en_msg_lengths = msg_lengths(lang='english')
@@ -255,10 +190,10 @@ def compare(attributeid='', verbose=False, plot=True):
             ylabel='Messages sent per round',
             title='Dialogue lengths for Chinese and English')
     elif attributeid == 'sup_usage':
-        zh_sups = superlative_usage(lang='chinese')
-        en_sups = superlative_usage(lang='english')
+        zh_sups = usage(word='superlative',lang='chinese')
+        en_sups = usage(word='superlative',lang='english')
         if verbose:
-            print 'percentage of messages using superlatives'
+            print 'proportion of messages using superlatives'
             print ' * ZH: ', zh_sups
             print ' * EN: ', en_sups
         if plot:
@@ -268,10 +203,10 @@ def compare(attributeid='', verbose=False, plot=True):
                 ylabel='Proportion of messages containing superlative',
                 title='Superlative usage for Chinese and English')
     elif attributeid == 'comp_usage':
-        zh_comps = comparative_usage(lang='chinese')
-        en_comps = comparative_usage(lang='english')
+        zh_comps = usage(word='comparative',lang='chinese')
+        en_comps = usage(word='comparative',lang='english')
         if verbose:
-            print 'percentage of messages using comparatives'
+            print 'proportion of messages using comparatives'
             print ' * ZH: ', zh_comps
             print ' * EN: ', en_comps
         if plot:
@@ -281,10 +216,10 @@ def compare(attributeid='', verbose=False, plot=True):
                 ylabel='Proportion of messages containing comparative',
                 title='Comparative usage for Chinese and English')
     elif attributeid == 'neg_usage':
-        zh_negs = negation_usage(lang='chinese')
-        en_negs = negation_usage(lang='english')
+        zh_negs = usage(word='negation',lang='chinese')
+        en_negs = usage(word='negation',lang='english')
         if verbose:
-            print 'percentage of messages using negation'
+            print 'proportion of messages using negation'
             print ' * ZH: ', zh_negs
             print ' * EN: ', en_negs
         if plot:
