@@ -591,7 +591,7 @@ class ChineseLearner(Learner):
     def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
         self.num_params = 0 # change later
 
-        num_top_words = 50
+        num_top_words = 70
         self.top_words(training_instances, num_top_words)
         print "top %d words: " % num_top_words
         print repr(self.top_words).decode('unicode_escape').encode('utf-8')
