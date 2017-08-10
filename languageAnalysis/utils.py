@@ -27,16 +27,22 @@ def dicts_from_file(file_path):
             dicts.append(row)
     return dicts
 
-def verbose_msg(heading, zh_data=[], en_data=[]):
-    print heading
-    print ' * ZH: ', zh_data
-    print ' * EN: ', en_data
+def CONDNAME(cond):
+    if cond == 'equal' or cond == 'far':
+        return 'equal/far'
+    elif cond == 'further' or cond == 'split':
+        return 'further/split'
+    else:
+        return 'closer/close'
+
+def LANGNAME(L):
+    return 'English' if L == 'en' else 'Chinese'
 
 ############################################################################
 # Helper functions for message lengths and dialogue lengths
 ############################################################################
 
-def msg_lengths(msg_rows, L='english'):
+def msg_lengths(msg_rows, L='en'):
     '''
     Returns a list of the length of each message sent for a given language
     (English or Chinese). First, punctuation is removed from the message.
@@ -51,16 +57,16 @@ def msg_lengths(msg_rows, L='english'):
         for c in PUNCTUATION:
             msg = msg.replace(c, '')
         # disregard any message that is empty or has roman letters
-        if L == 'chinese' and msg and not re.search('[a-zA-Z]', msg):
+        if L == 'zh' and msg and not re.search('[a-zA-Z]', msg):
             tokens = jieba_tokenize(unicode(msg.decode('utf8')))
             num_tokens = sum([1 for t in tokens])
-            msg_lengths.append(num_tokens)
-        elif L == 'english' and msg:
+            msg_lengths.append([num_tokens,'Chinese'])
+        elif L == 'en' and msg:
             tokens = word_tokenize(msg)
-            msg_lengths.append(len(tokens))
+            msg_lengths.append([len(tokens),'English'])
     return msg_lengths
 
-def dlg_lengths(msg_rows):
+def dlg_lengths(msg_rows, L='en'):
     '''
     Returns a list of the number of messages exchanged for each round
     for a given language (English or Chinese).
@@ -72,7 +78,7 @@ def dlg_lengths(msg_rows):
             counts[roundid] += 1
         except KeyError:
             counts[roundid] = 1
-    return counts.values()
+    return map(lambda v : [v, LANGNAME(L)], counts.values())
 
 ############################################################################
 # Helper functions for checking superlatives, comparatives, and negations
@@ -95,7 +101,7 @@ def check_attribute(msg, attribute, L):
     Returns true if the given attribute (superlative, comparative, negation)
     is present in the message for a given language (English or Chinese).
     '''
-    if L == 'english':
+    if L == 'en':
         tokens = word_tokenize(msg)
         if attribute == 'negation':
             return 'not' in tokens or 'n\'t' in tokens
@@ -105,7 +111,7 @@ def check_attribute(msg, attribute, L):
                 return any([is_superlative(x) for x in pos_list])
             elif attribute == 'comparative':
                 return any([is_comparative(x) for x in pos_list])
-    elif L == 'chinese':
+    elif L == 'zh':
         if attribute == 'negation':
             return '不' in msg or '没' in msg
         elif attribute == 'superlative':
@@ -115,7 +121,7 @@ def check_attribute(msg, attribute, L):
             return any([x in msg for x in zh_comps])
 
 ############################################################################
-# Stuff for specificity
+# Helper functions for specificity
 ############################################################################
 
 def nounify(adj_word):
@@ -163,7 +169,7 @@ def translate(msg, dest='en'):
     '''
     return Translator().translate(msg, dest=dest).text
 
-def specificity(msg, L='english'):
+def specificity(msg, L='en'):
     '''
     Returns the maximal specificity for messages exchanged on each of the
     three conditions (far, split, close). Uses English WordNet and
