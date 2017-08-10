@@ -1,31 +1,49 @@
 import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 
 ZH_COLOR = '#EE3224'
 EN_COLOR = '#F78F1E'
 
-def boxplot(data, plot_file, xticks=[], xlabel='', ylabel='', title=''):
-    fig = plt.figure(1, figsize=(8,6))
-    ax = fig.add_subplot(111)
-    bp = ax.boxplot(data, patch_artist=True, showmeans=True)
-    bp['boxes'][0].set(facecolor=ZH_COLOR, alpha=0.5)
-    bp['boxes'][1].set(facecolor=EN_COLOR, alpha=0.5)
-    for median in bp['medians']:
-        median.set(color='#75e3ff')
-    for mean in bp['means']:
-        mean.set(marker='.')
-    for flier in bp['fliers']:
-        flier.set(marker='.', color='#e7298a', alpha=0.5)
-    for i in xrange(len(data)):
-        d = data[i]
-        x, y = bp['medians'][i].get_xydata()[1]
-        ax.annotate('median=%.3f,\nmean=%.3f' % (np.median(d), np.mean(d)),
-                    (x,y), (x+0.05,1))
+# def boxplot(data, plot_file, xticks=[], xlabel='', ylabel='', title=''):
+    # fig = plt.figure(1, figsize=(8,6))
+    # ax = fig.add_subplot(111)
+    # bp = ax.boxplot(data, patch_artist=True, showmeans=True)
+    # bp['boxes'][0].set(facecolor=ZH_COLOR, alpha=0.5)
+    # bp['boxes'][1].set(facecolor=EN_COLOR, alpha=0.5)
+    # for median in bp['medians']:
+    #     median.set(color='#75e3ff')
+    # for mean in bp['means']:
+    #     mean.set(marker='.')
+    # for flier in bp['fliers']:
+    #     flier.set(marker='.', color='#e7298a', alpha=0.5)
+    # for i in xrange(len(data)):
+    #     d = data[i]
+    #     x, y = bp['medians'][i].get_xydata()[1]
+    #     ax.annotate('median=%.3f,\nmean=%.3f' % (np.median(d), np.mean(d)),
+    #                 (x,y), (x+0.05,1))
+    # ax.set_xticklabels(xticks)
+    # ax.set_xlabel(xlabel)
+    # ax.set_ylabel(ylabel)
+    # ax.set_title(title)
+    # fig.savefig(plot_file, bbox_inches='tight', dpi=300)
+    # plt.gcf().clear()
+
+def stripplot(data, plot_file, xticks=[], xlabel='', ylabel='', title=''):
+    sns.set_style('white')
+    ax = sns.stripplot(data=data, jitter=True, marker='.', alpha=0.1)
+    ax = sns.boxplot(data=data)
     ax.set_xticklabels(xticks)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title(title)
-    fig.savefig(plot_file, bbox_inches='tight', dpi=300)
+    plt.savefig(plot_file, dpi=300)
+    plt.gcf().clear()
+
+def barplot(data):
+    sns.set_style('white')
+    ax = sns.barplot(x='condition', y='usages', hue='language', data=data)
+    plt.savefig('TEST.png', dpi=300)
     plt.gcf().clear()
 
 def show_values(ax, rects):

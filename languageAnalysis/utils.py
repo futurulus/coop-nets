@@ -1,61 +1,122 @@
 #coding:utf8
+import re
 import csv
 import numpy as np
+
+from googletrans import Translator
+from jieba import tokenize as jieba_tokenize
+
+from nltk.tag import pos_tag
 from nltk.corpus import wordnet as wn
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 
+############################################################################
+# Helper functions for lists, files, printing, etc.
+############################################################################
+
+PUNCTUATION = ['~',',','.','?','!','。','，','？','！','”','(',')','…','=']
+
+def flatten(l) :
+    return [item for sublist in l for item in sublist]
+
 def dicts_from_file(file_path):
-    '''
-    Returns a list of dictionaries read from a csv file.
-    '''
     dicts = []
     with open(file_path, 'r') as f:
         for row in csv.DictReader(f):
             dicts.append(row)
     return dicts
 
-def attribute_in_msg(msg, attribute, lang):
+def verbose_msg(heading, zh_data=[], en_data=[]):
+    print heading
+    print ' * ZH: ', zh_data
+    print ' * EN: ', en_data
+
+############################################################################
+# Helper functions for message lengths and dialogue lengths
+############################################################################
+
+def msg_lengths(msg_rows, L='english'):
+    '''
+    Returns a list of the length of each message sent for a given language
+    (English or Chinese). First, punctuation is removed from the message.
+    For English, the message is then tokenized with nltk, and for Chinese,
+    the message is tokenized with jieba - but only if it doesn't contain
+    any Roman letters.
+    '''
+    msg_lengths = []
+    for row in msg_rows:
+        # get msg and remove punctuation (but not apostrophes)
+        msg = row['contents']
+        for c in PUNCTUATION:
+            msg = msg.replace(c, '')
+        # disregard any message that is empty or has roman letters
+        if L == 'chinese' and msg and not re.search('[a-zA-Z]', msg):
+            tokens = jieba_tokenize(unicode(msg.decode('utf8')))
+            num_tokens = sum([1 for t in tokens])
+            msg_lengths.append(num_tokens)
+        elif L == 'english' and msg:
+            tokens = word_tokenize(msg)
+            msg_lengths.append(len(tokens))
+    return msg_lengths
+
+def dlg_lengths(msg_rows):
+    '''
+    Returns a list of the number of messages exchanged for each round
+    for a given language (English or Chinese).
+    '''
+    counts = {}
+    for row in msg_rows:
+        roundid = str(row['gameid']) + str(row['roundNum'])
+        try:
+            counts[roundid] += 1
+        except KeyError:
+            counts[roundid] = 1
+    return counts.values()
+
+############################################################################
+# Helper functions for checking superlatives, comparatives, and negations
+############################################################################
+
+def is_superlative(lemma):
+    return lemma[1] == 'JJS' or lemma[1] == 'RBS' \
+           or (lemma[1] == 'NN' and lemma[0][-3:] == 'est' \
+                                and lemma[0] != 'forest')
+
+def is_comparative(lemma):
+    er_nouns = ['other', 'speaker', 'listener', 'partner', 'summer', 'closer',
+                'flower', 'hunter', 'water', 'together', 'copper', 'lavender']
+    return lemma[1] == 'JJR' or lemma[1] == 'RBR' \
+           or (lemma[1] == 'NN' and lemma[0][-2:] == 'er' \
+                                and lemma[0] not in er_nouns)
+
+def check_attribute(msg, attribute, L):
     '''
     Returns true if the given attribute (superlative, comparative, negation)
     is present in the message for a given language (English or Chinese).
     '''
-    if attribute == 'superlative':
-        if lang == 'english':
-            return 'est' in msg \
-                    or ('most' in msg and 'almost' not in msg)
-        elif lang == 'chinese':
+    if L == 'english':
+        tokens = word_tokenize(msg)
+        if attribute == 'negation':
+            return 'not' in tokens or 'n\'t' in tokens
+        else:
+            pos_list = pos_tag(tokens)
+            if attribute == 'superlative':
+                return any([is_superlative(x) for x in pos_list])
+            elif attribute == 'comparative':
+                return any([is_comparative(x) for x in pos_list])
+    elif L == 'chinese':
+        if attribute == 'negation':
+            return '不' in msg or '没' in msg
+        elif attribute == 'superlative':
             return '最' in msg
-    elif attribute == 'comparative':
-        if lang == 'english':
-            # import nltk
-            # text = nltk.word_tokenize(msg)
-            # pos_list = nltk.pos_tag(text)
-            # try:
-            #     adj = next(x for x in pos_list if x[1] == 'JJ')
-            #     return 'er' in adj[0]
-            # except StopIteration:
-            #     return False
-            er_words = ['other', 'hunter', 'water', 'different', 'wonderful',
-                        'partner', 'forever', 'there', 'were', 'are',
-                        'periwinkle', 'every', 'lavender', 'copper', 'berry',
-                        'very', 'where', 'person', 'here', 'speaker', 'silver',
-                        'listener', 'over']
-            return ('er' in msg and all([x not in msg.lower() for x in er_words])) \
-                    or 'more' in msg or 'less ' in msg
-        elif lang == 'chinese':
+        elif attribute == 'comparative':
             zh_comps = ['更', '多', '少', '比', '那么']
             return any([x in msg for x in zh_comps])
-    elif attribute == 'negation':
-        if lang == 'english':
-            return 'not' in msg and 'another' not in msg
-        elif lang == 'chinese':
-            return '不' in msg or '没' in msg
-    else:
-        raise NameError('ATTRIBUTE: try \'superlative\', \'comparative\', or \'negation\'.')
 
-def flatten(l) :
-    return [item for sublist in l for item in sublist]
+############################################################################
+# Stuff for specificity
+############################################################################
 
 def nounify(adj_word):
     """ Transform an adjective to the closest noun: dead -> death """
@@ -95,28 +156,20 @@ def get_informativity(text):
         res += [s.min_depth() for s in colorSynsets][:1] if colorSynsets else []
     return np.max(res) if res else None
 
-def translate(target, msg):
+def translate(msg, dest='en'):
     '''
-    Translates a given string into the specified target language.
-    Uses Google Translate.
+    Translates a string into the target language using Google Translate.
+    Defaults to English as target.
     '''
-    from googletrans import Translator
-    translator = Translator()
-    return translator.translate(msg, dest=target).text
+    return Translator().translate(msg, dest=dest).text
 
-def specificity(msg):
+def specificity(msg, L='english'):
     '''
     Returns the maximal specificity for messages exchanged on each of the
     three conditions (far, split, close). Uses English WordNet and
     Google Translate.
     '''
-    # en_msg = translate('en', msg)
-    en_msg = msg
-    informativities = [get_informativity(x) for x in en_msg.split()]
-    cleaned = filter(lambda x : x, informativities)
-    return max(cleaned) if cleaned else None
-
-def verbose_msg(heading, zh_data=[], en_data=[]):
-    print heading
-    print ' * ZH: ', zh_data
-    print ' * EN: ', en_data
+    en_msg = msg if lang == 'english' else translate(msg)
+    depths = [get_informativity(x) for x in en_msg.split()]
+    depths = filter(lambda x : x, depths)
+    return max(depths) if depths else None
