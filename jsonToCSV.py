@@ -43,6 +43,7 @@ def COLORSjsonToCSV(header, infile, outfile, strip):
     with open(infile) as json_data:
         json_objs = json_data.readlines()
         with open(outfile, 'wb') as out:
+            print 'Writing to ', outfile
             csvOut = UnicodeWriter(out)
             csvOut.writerow(header)
             for obj in json_objs:
