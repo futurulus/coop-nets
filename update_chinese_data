@@ -6,6 +6,12 @@
 # terminate if fail
 set -e 
 
+if [[ ! -f mlab_auth ]] ; then
+    echo 'File "mlab_auth" not found. Please create an authentication file before proceeding.'
+		echo 'Format the authention file with the user, a space, then the password. E.g. "user password"'
+    exit 1
+fi
+
 read -p "WARNING: Previous data will be overwritten. Do you wish to continue? (y/n): " CONT
 
 if [ "$CONT" = "y" ]
