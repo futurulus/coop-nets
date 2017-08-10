@@ -33,6 +33,8 @@ then
 	# convert to csv
 	python jsonToCSV.py
 
+	cp hawkins_data/*Chinese* languageAnalysis/
+
 else
 	exit 1
 fi
