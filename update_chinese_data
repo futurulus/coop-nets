@@ -16,6 +16,7 @@ read -p "WARNING: Previous data will be overwritten. Do you wish to continue? (y
 
 if [ "$CONT" = "y" ]
 then 
+	echo Downloading files as json
 	# read authentication file for mongo
 	auth="mlab_auth"
 	while read -r user password
@@ -31,9 +32,13 @@ then
 	done < "$auth"
 
 	# convert to csv
+	echo Converting json to csv
 	python jsonToCSV.py
+	echo Conversion done
 
+	echo Copying to languageAnalysis/
 	cp hawkins_data/*Chinese* languageAnalysis/
+	echo Done
 
 else
 	exit 1
