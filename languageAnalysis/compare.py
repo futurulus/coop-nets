@@ -1,5 +1,4 @@
 #coding:utf-8
-
 import plots
 import utils
 import numpy as np
@@ -8,7 +7,7 @@ import csv
 
 ZH_MSG_FILE = 'colorReferenceMessageChinese.csv'
 ZH_CLICK_FILE = 'colorReferenceClicksChinese.csv'
-ZH_CONDITIONS = ['further', 'closer', 'equal']
+ZH_CONDITIONS = ['equal', 'further', 'closer']
 EN_FILE = '../behavioralAnalysis/humanOutput/filteredCorpus.csv'
 EN_CONDITIONS = ['far', 'split', 'close']
 PUNCTUATION = ['~',',','.','?','!','。','，','？','！','”','(',')','…','=']
@@ -21,20 +20,15 @@ def msg_lengths(lang='english'):
     it counts the number of chars (after removing punctuation, whitespaces,
     and any messages containing English).
     '''
-    if lang == 'chinese':
-        msg_file = ZH_MSG_FILE
-        d = enchant.Dict('en_US')
-    else:
-        msg_file = EN_FILE
+    msg_file = ZH_MSG_FILE if lang == 'chinese' else EN_FILE
+    d = enchant.Dict('en_US')
     msg_lengths = []
     with open(msg_file, 'r') as f:
         for row in csv.DictReader(f):
             msg = row['contents']
-            # remove punctuation marks (primarily for chinese)
             for c in PUNCTUATION:
                 msg = msg.replace(c, '')
             if lang == 'chinese':
-                # get rid of all messages containing english and remove spaces
                 msg = '' if any([d.check(s) for s in msg.split()]) \
                         else msg.replace(' ', '')
                 msg_lengths.append(len(msg.decode('utf8')))
@@ -84,60 +78,93 @@ def usage(attribute='superlative', lang='english'):
     for row in click_rows:
         cond, gameid, roundNum = row['condition'], row['gameid'], row['roundNum']
         if lang == 'english':
-            counts[cond].append(int(utils.attribute_in_msg(row['contents'],
-                                attribute, lang)))
+            if attribute == 'specificity':
+                s = utils.specificity(row['contents'])
+                if s:
+                    counts[cond].append(s)
+            else:
+                counts[cond].append(int(utils.attribute_in_msg(row['contents'],
+                                    attribute, lang)))
         else:
             round_msgs = [x['contents'] for x in msg_rows
                                         if x['gameid'] == gameid
                                         and x['roundNum'] == roundNum]
-            counts[cond] += [int(utils.attribute_in_msg(msg, attribute, lang))
-                            for msg in round_msgs]
+            if attribute == 'specificity':
+                data = [utils.specificity(msg) for msg in round_msgs
+                                               if utils.specificity(msg)]
+            else:
+                data = [int(utils.attribute_in_msg(msg, attribute, lang))
+                        for msg in round_msgs]
+            counts[cond] += data
     return [np.mean(counts[cond]) for cond in cond_names] # ensures order
 
-def specificity(lang='english'):
-    '''
-    Returns the average specificity for messages exchanged on each of the
-    three conditions (far, split, close) for a given language (English or
-    Chinese). Uses WordNet.
-    '''
-    pass
-
-def compare(metric, attribute, verbose=True, plot=True):
-    if metric == 'length':
+def compare(attribute, verbose=True, plot=True):
+    if attribute == 'message' or attribute == 'dialogue':
         zh_lengths = lengths(attribute, 'chinese')
         en_lengths = lengths(attribute, 'english')
         ylabel = 'words per message' if attribute == 'message' \
                                      else 'messages sent per round'
         if verbose:
-            print 'Average %s lengths:' % attribute
-            print ' * ZH: ', np.mean(zh_lengths)
-            print ' * EN: ', np.mean(en_lengths)
+            utils.verbose_msg('Average %s lengths:' % attribute,
+                        np.mean(zh_lengths), np.mean(en_lengths))
         if plot:
             plots.boxplot([zh_lengths, en_lengths],
                     'plots/%s_lengths.png' % attribute,
                     xticks=['Chinese', 'English'], xlabel='Language',
                     ylabel='Number of %s' % ylabel,
                     title='Length of %s for Chinese and English' % attribute)
-    elif metric == 'usage':
-        zh_usage = usage(attribute, 'chinese')
+    else:
+        # zh_usage = usage(attribute, 'chinese')
+        zh_usage = None
         en_usage = usage(attribute, 'english')
         if verbose:
-            print 'Proportion of messages using %s:' % attribute
-            print ' * ZH: ', zh_usage
-            print ' * EN: ', en_usage
-        if plot:
-            plots.bargraph([list(zh_usage), list(en_usage)],
-                    'plots/%s_usage.png' % attribute,
-                    xticks=['further/far', 'closer/split', 'equal/close'],
-                    series_names=['Chinese', 'English'], xlabel='Condition',
-                    ylabel='Proportion of messages containing %s' % attribute,
-                    title='Usage of %s for Chinese and English' % attribute)
-    else:
-        raise NameError('Invalid metric: try \'length\' or \'usage\'.')
+            heading = None
+            if attribute == 'specificity':
+                heading = 'Average maximal specificity in all messages:'
+            else:
+                heading = 'Proportion of messages using %s:' % attribute
+            utils.verbose_msg(heading, zh_usage, en_usage)
+        # if plot:
+        #     plot_file, ylabel, title = None, None, None
+        #     if attribute == 'specificity':
+        #         plot_file = 'plots/specificity.png'
+        #         ylabel = 'Average maximal WordNet specificity'
+        #         title = 'WordNet specificity for Chinese and English'
+        #     else:
+        #         plot_file = 'plots/%s_usage.png' % attribute
+        #         ylabel = 'Proportion of messages containing %s' % attribute
+        #         title = 'Usage of %s for Chinese and English' % attribute
+        #     plots.bargraph([list(zh_usage), list(en_usage)], plot_file,
+        #             xticks=['equal/far', 'further/split', 'closer/close'],
+        #             series_names=['Chinese', 'English'], xlabel='Condition',
+        #             ylabel=ylabel, title=title)
 
 if __name__ == '__main__':
-    compare('length', 'message')
-    compare('length', 'dialogue')
-    compare('usage', 'superlative')
-    compare('usage', 'comparative')
-    compare('usage', 'negation')
+    # compare('message')
+    # compare('dialogue')
+    # compare('superlative')
+    # compare('comparative')
+    # compare('negation')
+    compare('specificity')
+
+    # zh_usage = [6.7184466019417473, 6.6880341880341883, 6.7615384615384615]
+    # [7.035610710190868, 7.0520575740282796, 7.0389788293897881]
+    #
+    # plot_file = 'plots/specificity.png'
+    # ylabel = 'Average specificity'
+    # title = 'WordNet specificity for Chinese and English'
+    # plots.bargraph([zh_usage, en_usage], plot_file,
+    #         xticks=['equal/far', 'further/split', 'closer/close'],
+    #         series_names=['Chinese', 'English'], xlabel='Condition',
+    #         ylabel=ylabel, title=title)
+
+    # print specificity('color')
+    # print specificity('red')
+    # print specificity('crimson')
+    # print specificity('the')
+    # print specificity('grass')
+    # print specificity('this color is a bright turquoise')
+    # print specificity('blue')
+    # print specificity('绿')
+    # print specificity('草')
+    # print specificity('接近草的颜色，可是没那么绿')

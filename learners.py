@@ -479,9 +479,9 @@ class ChineseLearner(Learner):
         self.subchars = ['纟', '氵', '水', '火', '灬',
                         '艹', '木', '土', '日', '米', '女']
         # dictionaries for representative values
-        self.hue_dict = {'红' : 0, '土' : 30, '黄' : 60, '绿' : 120,
+        self.hue_dict = {'红' : 0, '橙' : 30, '黄' : 60, '绿' : 120,
                         '海' : 180, '蓝' : 240, '紫' : 270, '粉' : 370}
-        self.sat_dict = {'灰' : 25, '淡' : 50, '亮' : 100}
+        self.sat_dict = {'土' : 0, '灰' : 25, '淡' : 50, '亮' : 100}
         self.val_dict = {'墨' : 0, '深' : 25, '暗' : 25, '肝' : 25,
                         '淡' : 75, '浅' : 75}
         # epsilon - the interval around the representative values
@@ -576,6 +576,7 @@ class ChineseLearner(Learner):
                 self.negate(inp, row)
                 # check for subchars and relationship with hue
                 # self.subchar_feats(inp, H, row)
+        # TODO: feature names
         return X
 
     def top_words(self, instances, num_top_words):
@@ -608,6 +609,9 @@ class ChineseLearner(Learner):
         # learn the parameters for the model
         print "training..."
         self.model.fit(self.X_train, training_targets)
+
+        weights = self.model.coef_
+
 
     def predict_and_score(self, eval_instances):
         num_instances = len(eval_instances)
