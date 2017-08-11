@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+function join() {
+    local IFS=$1
+    shift
+    echo "$*"
+}
+
+function tag() {
+    for d in $@; do
+        echo "$(basename $d):$d"
+    done
+}
+
+tensorboard --logdir=$(join ',' $(tag $@))

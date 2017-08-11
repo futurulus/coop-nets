@@ -1,4 +1,5 @@
 import re
+from jieba import tokenize as jieba_tokenize
 
 WORD_RE_STR = r"""
 (?:[a-z][a-z'\-_]+[a-z])       # Words with apostrophes or dashes.
@@ -44,9 +45,13 @@ def whitespace_tokenizer(s, lower=True):
         s = s.lower()
     return s.split()
 
+def chinese_tokenizer(s, lower='ignored'):
+    return [t[0] for t in jieba_tokenize(unicode(s))]
+
 
 TOKENIZERS = {
     'unigram': basic_unigram_tokenizer,
     'ending': heuristic_ending_tokenizer,
     'whitespace': whitespace_tokenizer,
+    'chinese': chinese_tokenizer
 }
