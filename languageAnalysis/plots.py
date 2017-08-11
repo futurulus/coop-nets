@@ -13,13 +13,13 @@ def show_stats(data, by, yvals, ax):
     pos = range(len(medians))
     for tick,label in zip(pos, ax.get_xticklabels()):
         ax.text(pos[tick], medians[tick] + 0.5, stats_labels[tick],
-                horizontalalignment='center', size='x-small') # color='w',
+                ha='center', size='x-small')
 
 def show_vals(ax):
     for p in ax.patches:
         height = p.get_height()
         ax.text(p.get_x() + p.get_width()/2., height + 0.005,
-                '%.3f' % height, ha="center")
+                '%.3f' % height, ha='center')
 
 ############################################################################
 # Functions for box-/strip- and barplots

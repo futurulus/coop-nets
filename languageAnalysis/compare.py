@@ -40,10 +40,9 @@ def usage(attribute='superlative', L='en'):
         if L == 'en':
             msg = row['contents']
             if attribute == 'specificity':
-                # s = utils.specificity(msg, L)
-                # if s:
-                #     counts[cond].append(s)
-                pass
+                x = utils.specificity(msg, L)
+                if x is not None:
+                    data.append([x, utils.CONDNAME(cond), utils.LANGNAME(L)])
             else:
                 x = int(utils.check_attribute(msg, attribute, L))
                 data.append([x, utils.CONDNAME(cond), utils.LANGNAME(L)])
@@ -52,9 +51,10 @@ def usage(attribute='superlative', L='en'):
                                         if x['gameid'] == gameid
                                         and x['roundNum'] == roundNum]
             if attribute == 'specificity':
-                # data = [utils.specificity(msg, L) for msg in round_msgs]
-                # data = filter(lambda x : x, data)
-                pass
+                xs = [utils.specificity(msg, L) for msg in round_msgs]
+                xs = [x for x in xs if x is not None]
+                for x in xs:
+                    data.append([x, utils.CONDNAME(cond), utils.LANGNAME(L)])
             else:
                 xs = [int(utils.check_attribute(msg, attribute, L))
                         for msg in round_msgs]
@@ -88,7 +88,7 @@ def compare(attribute, verbose=True, plot=True):
         df = pd.DataFrame(data, columns=['Usage', 'Condition', 'Language'])
 
         if verbose:
-            print 'Done finding %s usage.' % attribute
+            print 'Done comparing %s.' % attribute
         if plot:
             if attribute == 'specificity':
                 df.to_csv('data/specificity.csv')

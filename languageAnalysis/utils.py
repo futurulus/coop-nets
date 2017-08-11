@@ -175,7 +175,10 @@ def specificity(msg, L='en'):
     three conditions (far, split, close). Uses English WordNet and
     Google Translate.
     '''
-    en_msg = msg if lang == 'english' else translate(msg)
+    en_msg = msg if L == 'en' else translate(msg)
     depths = [get_informativity(x) for x in en_msg.split()]
     depths = filter(lambda x : x, depths)
-    return max(depths) if depths else None
+    if depths:
+        return 1 if max(depths) > 7 else 0
+    else:
+        return None
