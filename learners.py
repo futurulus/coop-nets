@@ -483,7 +483,7 @@ class ChineseLearner(Learner):
                         '海' : 180, '蓝' : 240, '紫' : 270, '粉' : 370}
         self.sat_dict = {'土' : 15, '灰' : 25, '淡' : 50, '亮' : 100}
         self.val_dict = {'墨' : 0, '深' : 25, '暗' : 25, '肝' : 25,
-                        '淡' : 75, '浅' : 75}
+                        '淡' : 75, '浅' : 75, '鲜艳': 100}
         # epsilon - the interval around the representative values
         self.hue_eps = 55
         self.sat_eps = 30
@@ -592,7 +592,7 @@ class ChineseLearner(Learner):
     def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
         self.num_params = 0 # change later
 
-        num_top_words = 75
+        num_top_words = 90
         self.top_words(training_instances, num_top_words)
         print "top %d words: " % num_top_words
         print repr(self.top_words).decode('unicode_escape').encode('utf-8')

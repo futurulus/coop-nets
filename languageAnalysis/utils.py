@@ -15,7 +15,8 @@ from nltk.stem import WordNetLemmatizer
 # Helper functions for lists, files, printing, etc.
 ############################################################################
 
-PUNCTUATION = ['~',',','.','?','!','。','，','？','！','”','(',')','…','=']
+PUNCTUATION = ['~',',','.','?','!','。','，','、',':',
+                '？','！','”','(',')','…','=','-','_','～']
 
 def flatten(l) :
     return [item for sublist in l for item in sublist]
@@ -42,7 +43,7 @@ def LANGNAME(L):
 # Helper functions for message lengths and dialogue lengths
 ############################################################################
 
-def msg_lengths(msg_rows, L='en'):
+def msg_lengths(msg_dicts, L='en'):
     '''
     Returns a list of the length of each message sent for a given language
     (English or Chinese). First, punctuation is removed from the message.
@@ -50,35 +51,34 @@ def msg_lengths(msg_rows, L='en'):
     the message is tokenized with jieba - but only if it doesn't contain
     any Roman letters.
     '''
-    msg_lengths = []
-    for row in msg_rows:
+    data = []
+    for m in msg_dicts:
         # get msg and remove punctuation (but not apostrophes)
-        msg = row['contents']
-        for c in PUNCTUATION:
-            msg = msg.replace(c, '')
+        msg = m['contents']
+        for p in PUNCTUATION:
+            msg = msg.replace(p, '')
         # disregard any message that is empty or has roman letters
         if L == 'zh' and msg and not re.search('[a-zA-Z]', msg):
-            tokens = jieba_tokenize(unicode(msg.decode('utf8')))
-            num_tokens = sum([1 for t in tokens])
-            msg_lengths.append([num_tokens,'Chinese'])
+            tokens = list(jieba_tokenize(unicode(msg.decode('utf8'))))
+            data.append([len(tokens), LANGNAME(L), msg])
         elif L == 'en' and msg:
             tokens = word_tokenize(msg)
-            msg_lengths.append([len(tokens),'English'])
-    return msg_lengths
+            data.append([len(tokens), LANGNAME(L), msg])
+    return data
 
-def dlg_lengths(msg_rows, L='en'):
+def dlg_lengths(msg_dicts, L='en'):
     '''
     Returns a list of the number of messages exchanged for each round
     for a given language (English or Chinese).
     '''
     counts = {}
-    for row in msg_rows:
-        roundid = str(row['gameid']) + str(row['roundNum'])
+    for m in msg_dicts:
+        roundid = '{}.{}'.format(m['gameid'], m['roundNum'])
         try:
             counts[roundid] += 1
         except KeyError:
             counts[roundid] = 1
-    return map(lambda v : [v, LANGNAME(L)], counts.values())
+    return [[counts[roundid], LANGNAME(L), roundid] for roundid in counts.keys()]
 
 ############################################################################
 # Helper functions for checking superlatives, comparatives, and negations
@@ -117,8 +117,21 @@ def check_attribute(msg, attribute, L):
         elif attribute == 'superlative':
             return '最' in msg
         elif attribute == 'comparative':
-            zh_comps = ['更', '多', '少', '比', '那么']
-            return any([x in msg for x in zh_comps])
+            if '更' in msg or '比' in msg:
+                return True
+            else:
+                return ('多' in msg and '最' not in msg) \
+                        or ('少' in msg and '最' not in msg)
+            # zh_comps = ['更', '多', '少', '比']
+            # return any([x in msg for x in zh_comps])
+
+def update(data, msg, cond, attribute='superlative', L='en'):
+    if attribute == 'specificity':
+        x = specificity(msg, L)
+    else:
+        x = int(check_attribute(msg, attribute, L))
+    if x is not None:
+        data.append([x, CONDNAME(cond), LANGNAME(L), msg])
 
 ############################################################################
 # Helper functions for specificity

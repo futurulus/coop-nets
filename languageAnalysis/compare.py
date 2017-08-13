@@ -7,19 +7,17 @@ import pandas as pd
 ZH_MSG_FILE = 'colorReferenceMessageChinese.csv'
 ZH_CLICK_FILE = 'colorReferenceClicksChinese.csv'
 EN_FILE = '../behavioralAnalysis/humanOutput/filteredCorpus.csv'
-ZH_CONDITIONS = ['equal', 'further', 'closer']
-EN_CONDITIONS = ['far', 'split', 'close']
 
 def lengths(attribute='message', L='en'):
     '''
     Returns message lengths or dialogue lengths for the specified language.
     '''
     msg_file = ZH_MSG_FILE if L == 'zh' else EN_FILE
-    msg_rows = utils.dicts_from_file(msg_file)
+    msg_dicts = utils.dicts_from_file(msg_file)
     if attribute == 'message':
-        return utils.msg_lengths(msg_rows, L)
+        return utils.msg_lengths(msg_dicts, L)
     elif attribute == 'dialogue':
-        return utils.dlg_lengths(msg_rows, L)
+        return utils.dlg_lengths(msg_dicts, L)
     else:
         raise NameError('ATTRIBUTE: try \'message\' or \'dialogue\'.')
 
@@ -30,36 +28,18 @@ def usage(attribute='superlative', L='en'):
     (far, split, close) in a given language (English or Chinese).
     '''
     click_file = ZH_CLICK_FILE if L == 'zh' else EN_FILE
-    cond_names = ZH_CONDITIONS if L == 'zh' else EN_CONDITIONS
-    msg_rows = utils.dicts_from_file(ZH_MSG_FILE)
-    click_rows = utils.dicts_from_file(click_file)
+    msg_dicts = utils.dicts_from_file(ZH_MSG_FILE)
+    click_dicts = utils.dicts_from_file(click_file)
 
     data = []
-    for row in click_rows:
-        cond, gameid, roundNum = row['condition'], row['gameid'], row['roundNum']
+    for c in click_dicts:
+        cond, gameid, roundNum = c['condition'], c['gameid'], c['roundNum']
         if L == 'en':
-            msg = row['contents']
-            if attribute == 'specificity':
-                x = utils.specificity(msg, L)
-                if x is not None:
-                    data.append([x, utils.CONDNAME(cond), utils.LANGNAME(L)])
-            else:
-                x = int(utils.check_attribute(msg, attribute, L))
-                data.append([x, utils.CONDNAME(cond), utils.LANGNAME(L)])
+            utils.update(data, c['contents'], cond, attribute, L)
         else:
-            round_msgs = [x['contents'] for x in msg_rows
-                                        if x['gameid'] == gameid
-                                        and x['roundNum'] == roundNum]
-            if attribute == 'specificity':
-                xs = [utils.specificity(msg, L) for msg in round_msgs]
-                xs = [x for x in xs if x is not None]
-                for x in xs:
-                    data.append([x, utils.CONDNAME(cond), utils.LANGNAME(L)])
-            else:
-                xs = [int(utils.check_attribute(msg, attribute, L))
-                        for msg in round_msgs]
-                for x in xs:
-                    data.append([x, utils.CONDNAME(cond), utils.LANGNAME(L)])
+            for m in msg_dicts:
+                if m['gameid'] == gameid and m['roundNum'] == roundNum:
+                    utils.update(data, m['contents'], cond, attribute, L)
     return data
 
 def compare(attribute, verbose=True, plot=True):
@@ -67,7 +47,8 @@ def compare(attribute, verbose=True, plot=True):
         zh_lengths = lengths(attribute, 'zh')
         en_lengths = lengths(attribute, 'en')
         data = zh_lengths + en_lengths
-        df = pd.DataFrame(data, columns=['Length', 'Language'])
+        thirdcol = 'Messsage' if attribute == 'message' else 'roundid'
+        df = pd.DataFrame(data, columns=['Length', 'Language', thirdcol])
         df.to_csv('data/%s_lengths.csv' % attribute)
 
         if verbose:
@@ -77,6 +58,7 @@ def compare(attribute, verbose=True, plot=True):
                 ylabel = 'Number of words per message'
             else:
                 ylabel = 'Number of messages sent per round'
+            df.drop(thirdcol, axis=1, inplace=True)
             plots.boxplot(df, 'plots/%s_lengths_SEABORN.png' % attribute,
                           ylabel=ylabel, strip=True,
                           title='Length of %s for Chinese and English' % attribute)
@@ -85,7 +67,7 @@ def compare(attribute, verbose=True, plot=True):
         zh_usage = usage(attribute, 'zh')
         en_usage = usage(attribute, 'en')
         data = zh_usage + en_usage
-        df = pd.DataFrame(data, columns=['Usage', 'Condition', 'Language'])
+        df = pd.DataFrame(data, columns=['Usage', 'Condition', 'Language', 'Message'])
 
         if verbose:
             print 'Done comparing %s.' % attribute
@@ -100,12 +82,13 @@ def compare(attribute, verbose=True, plot=True):
                 plot_file = 'plots/%s_usage_SEABORN.png' % attribute
                 ylabel = 'Proportion of messages containing %s' % attribute
                 title = 'Usage of %s for Chinese and English' % attribute
+            df.drop('Message', axis=1, inplace=True)
             plots.barplot(df, plot_file, ylabel, title)
 
 if __name__ == '__main__':
     # compare('message')
     # compare('dialogue')
-    # compare('superlative')
-    # compare('comparative')
-    # compare('negation')
-    # compare('specificity')
+    compare('superlative')
+    compare('comparative')
+    compare('negation')
+    compare('specificity')

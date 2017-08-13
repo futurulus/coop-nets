@@ -34,17 +34,17 @@ def boxplot(data, plot_file, ylabel, title='', strip=True):
     show_stats(data, 'Language', 'Length', ax)
     ax.set_ylabel(ylabel)
     ax.set_title(title)
-    plt.savefig(plot_file, dpi=300)
+    plt.savefig(plot_file, transparent=True, dpi=300)
     plt.gcf().clear()
 
 def barplot(data, plot_file, ylabel, title=''):
     sns.set_style('white')
     ax = sns.barplot(x='Condition', y='Usage', hue='Language',
                      order=['equal/far', 'further/split', 'closer/close'],
-                     data=data)
+                     errcolor='#d1d1d1', data=data)
     show_vals(ax)
     ax.set_ylabel(ylabel)
     ax.set_title(title)
-    plt.savefig(plot_file, dpi=300)
+    plt.savefig(plot_file, transparent=True, dpi=300)
     plt.legend(loc='upper left')
     plt.gcf().clear()
