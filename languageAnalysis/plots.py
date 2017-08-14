@@ -37,9 +37,29 @@ def boxplot(data, plot_file, ylabel, title='', strip=True):
     plt.savefig(plot_file, transparent=True, dpi=300)
     plt.gcf().clear()
 
+def histogram(data, plot_file, ylabel, title=''):
+    sns.set_style('white')
+    fig, (ax_zh, ax_en) = plt.subplots(ncols=2, sharey=False)
+
+    zh = data.loc[data['Language'] == 'Chinese']['Length'].tolist()
+    en = data.loc[data['Language'] == 'English']['Length'].tolist()
+
+    sns.distplot(zh, kde=False, rug=True, ax=ax_zh)
+    sns.distplot(en, kde=False, rug=True, ax=ax_en)
+
+    ax_zh.set_title('Chinese')
+    ax_en.set_title('English')
+    ax_zh.set_xlabel('Number of messages sent per round')
+    ax_en.set_xlabel('Number of messages sent per round')
+    ax_zh.set_ylabel('Frequency')
+
+    fig.suptitle(title)
+    plt.savefig(plot_file, transparent=True, dpi=300)
+    plt.gcf().clear()
+
 def barplot(data, plot_file, ylabel, title=''):
     sns.set_style('white')
-    ax = sns.barplot(x='Condition', y='Usage', hue='Language',
+    ax = sns.barplot(x='Condition', y=data.columns.values[0], hue='Language',
                      order=['equal/far', 'further/split', 'closer/close'],
                      errcolor='#d1d1d1', data=data)
     show_vals(ax)

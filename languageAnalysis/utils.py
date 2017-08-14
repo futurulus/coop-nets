@@ -1,7 +1,9 @@
 #coding:utf8
 import re
 import csv
+import plots
 import numpy as np
+import pandas as pd
 
 from googletrans import Translator
 from jieba import tokenize as jieba_tokenize
@@ -15,18 +17,45 @@ from nltk.stem import WordNetLemmatizer
 # Helper functions for lists, files, printing, etc.
 ############################################################################
 
-PUNCTUATION = ['~',',','.','?','!','。','，','、',':',
-                '？','！','”','(',')','…','=','-','_','～']
-
 def flatten(l) :
     return [item for sublist in l for item in sublist]
 
-def dicts_from_file(file_path):
+def dicts_from_file(infile):
     dicts = []
-    with open(file_path, 'r') as f:
+    with open(infile, 'r') as f:
         for row in csv.DictReader(f):
             dicts.append(row)
     return dicts
+
+def list_to_csv(data, outfile, col_names):
+    with open(outfile, 'wb') as f:
+        w = csv.writer(f)
+        w.writerow(col_names)
+        for row in data:
+            w.writerow(row)
+
+def generate_csv(attribute, L):
+    data = col_names = None
+    if attribute == 'dialogue':
+        data = lengths(attribute, L)
+        col_names = ['Length', 'Language', 'roundid']
+    else:
+        data = usage(attribute, L)
+        col_names = [attribute, 'Condition', 'Language', 'Message']
+    list_to_csv(data, 'data/{}_{}.csv'.format(attribute, L), col_names)
+
+def plot_csvs(zh_file, en_file, plot_type, plot_file, ylabel, title):
+    zh_df = pd.read_csv(zh_file)
+    en_df = pd.read_csv(en_file)
+    df = zh_df.append(en_df)
+    col_to_drop = df.columns[2] if plot_type == 'hist' else 'Message'
+    plot_fun = plots.histogram if plot_type == 'hist' else plots.barplot
+    df.drop(col_to_drop, axis=1, inplace=True)
+    plot_fun(df, plot_file, ylabel, title)
+
+############################################################################
+# Helper functions for mapping keys to values
+############################################################################
 
 def CONDNAME(cond):
     if cond == 'equal' or cond == 'far':
@@ -39,32 +68,57 @@ def CONDNAME(cond):
 def LANGNAME(L):
     return 'English' if L == 'en' else 'Chinese'
 
+def YLABEL(attribute):
+    if attribute == 'tokens':
+        return 'Number of tokens per message'
+    elif attribute == 'dialogue':
+        return 'Number of messages exchanged per round'
+    else:
+        return 'Proportion of messages containing %s' % attribute
+
+def PLOTTITLE(attribute):
+    if attribute == 'tokens':
+        return 'Length of messages for Chinese and English'
+    elif attribute == 'dialogue':
+        return 'Length of dialogue for Chinese and English'
+    else:
+        return 'Usage of %s for Chinese and English' % attribute
+
+def PLOTTYPE(attribute):
+    if attribute == 'dialogue':
+        return 'hist'
+    else:
+        return 'bar'
+
 ############################################################################
 # Helper functions for message lengths and dialogue lengths
 ############################################################################
 
-def msg_lengths(msg_dicts, L='en'):
-    '''
-    Returns a list of the length of each message sent for a given language
-    (English or Chinese). First, punctuation is removed from the message.
-    For English, the message is then tokenized with nltk, and for Chinese,
-    the message is tokenized with jieba - but only if it doesn't contain
-    any Roman letters.
-    '''
-    data = []
-    for m in msg_dicts:
-        # get msg and remove punctuation (but not apostrophes)
-        msg = m['contents']
-        for p in PUNCTUATION:
-            msg = msg.replace(p, '')
-        # disregard any message that is empty or has roman letters
-        if L == 'zh' and msg and not re.search('[a-zA-Z]', msg):
-            tokens = list(jieba_tokenize(unicode(msg.decode('utf8'))))
-            data.append([len(tokens), LANGNAME(L), msg])
-        elif L == 'en' and msg:
-            tokens = word_tokenize(msg)
-            data.append([len(tokens), LANGNAME(L), msg])
-    return data
+# def msg_lengths(msg_dicts, L='en'):
+#     '''
+#     Returns a list of the length of each message sent for a given language
+#     (English or Chinese). First, punctuation is removed from the message.
+#     For English, the message is then tokenized with nltk, and for Chinese,
+#     the message is tokenized with jieba - but only if it doesn't contain
+#     any Roman letters.
+#     '''
+#     data = []
+#     for m in msg_dicts:
+#         # get msg and remove punctuation (but not apostrophes)
+#         msg = m['contents']
+#         for p in PUNCTUATION:
+#             msg = msg.replace(p, '')
+#         # disregard any message that is empty or has roman letters
+#         if L == 'zh' and msg and not re.search('[a-zA-Z]', msg):
+#             tokens = list(jieba_tokenize(unicode(msg.decode('utf8'))))
+#             data.append([len(tokens), LANGNAME(L), msg])
+#         elif L == 'en' and msg:
+#             tokens = word_tokenize(msg)
+#             data.append([len(tokens), LANGNAME(L), msg])
+#     return data
+
+PUNCTUATION = ['~',',','.','?','!','。','，','、',':',
+                '？','！','”','(',')','…','=','-','_','～']
 
 def dlg_lengths(msg_dicts, L='en'):
     '''
@@ -126,12 +180,52 @@ def check_attribute(msg, attribute, L):
             # return any([x in msg for x in zh_comps])
 
 def update(data, msg, cond, attribute='superlative', L='en'):
-    if attribute == 'specificity':
+    x = None
+    if attribute == 'tokens':
+        for p in PUNCTUATION:
+            msg = msg.replace(p, '')
+        # disregard any message that is empty or has roman letters
+        if L == 'zh' and msg and not re.search('[a-zA-Z]', msg):
+            tokens = list(jieba_tokenize(unicode(msg.decode('utf8'))))
+            x = len(tokens)
+        elif L == 'en' and msg:
+            tokens = word_tokenize(msg)
+            x = len(tokens)
+    elif attribute == 'specificity':
         x = specificity(msg, L)
     else:
         x = int(check_attribute(msg, attribute, L))
     if x is not None:
         data.append([x, CONDNAME(cond), LANGNAME(L), msg])
+
+############################################################################
+# Helper functions for checking superlatives, comparatives, and negations
+############################################################################
+
+ZH_MSG_FILE = 'colorReferenceMessageChinese.csv'
+ZH_CLICK_FILE = 'colorReferenceClicksChinese.csv'
+EN_FILE = '../behavioralAnalysis/humanOutput/filteredCorpus.csv'
+
+def usage(attribute='superlative', L='en'):
+    '''
+    Returns the proportion of messages that use the specified type of word
+    (superlative, comparative, negation) for each of the three conditions
+    (far, split, close) in a given language (English or Chinese).
+    '''
+    click_file = ZH_CLICK_FILE if L == 'zh' else EN_FILE
+    msg_dicts = dicts_from_file(ZH_MSG_FILE)
+    click_dicts = dicts_from_file(click_file)
+
+    data = []
+    for c in click_dicts:
+        cond, gameid, roundNum = c['condition'], c['gameid'], c['roundNum']
+        if L == 'en':
+            update(data, c['contents'], cond, attribute, L)
+        else:
+            for m in msg_dicts:
+                if m['gameid'] == gameid and m['roundNum'] == roundNum:
+                    update(data, m['contents'], cond, attribute, L)
+    return data
 
 ############################################################################
 # Helper functions for specificity
