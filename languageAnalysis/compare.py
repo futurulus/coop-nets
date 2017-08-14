@@ -86,8 +86,8 @@ def compare(attribute, verbose=True, plot=True):
             plots.barplot(df, plot_file, ylabel, title)
 
 if __name__ == '__main__':
-    # compare('message')
-    # compare('dialogue')
+    compare('message')
+    compare('dialogue')
     compare('superlative')
     compare('comparative')
     compare('negation')

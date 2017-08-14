@@ -485,9 +485,9 @@ class ChineseLearner(Learner):
         self.val_dict = {'墨' : 0, '深' : 25, '暗' : 25, '肝' : 25,
                         '淡' : 75, '浅' : 75, '鲜艳': 100}
         # epsilon - the interval around the representative values
-        self.hue_eps = 55
-        self.sat_eps = 30
-        self.val_eps = 30
+        self.hue_eps = 50
+        self.sat_eps = 20
+        self.val_eps = 20
 
     # returns 1 if X is within x_eps around x's value in x_dict, else -1
     def in_range(self, X, x, attributeid):
@@ -592,7 +592,7 @@ class ChineseLearner(Learner):
     def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
         self.num_params = 0 # change later
 
-        num_top_words = 90
+        num_top_words = 95
         self.top_words(training_instances, num_top_words)
         print "top %d words: " % num_top_words
         print repr(self.top_words).decode('unicode_escape').encode('utf-8')
