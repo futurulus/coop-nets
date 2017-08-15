@@ -49,6 +49,7 @@ def plot_csvs(zh_file, en_file, plot_type, plot_file, ylabel, title):
     en_df = pd.read_csv(en_file)
     df = zh_df.append(en_df)
     col_to_drop = df.columns[2] if plot_type == 'hist' else 'Message'
+    # col_to_drop = 'Message'
     plot_fun = plots.histogram if plot_type == 'hist' else plots.barplot
     df.drop(col_to_drop, axis=1, inplace=True)
     plot_fun(df, plot_file, ylabel, title)
@@ -73,6 +74,8 @@ def YLABEL(attribute):
         return 'Number of tokens per message'
     elif attribute == 'dialogue':
         return 'Number of messages exchanged per round'
+    elif attribute == 'specificity':
+        return 'Average value of specificity indicator'
     else:
         return 'Proportion of messages containing %s' % attribute
 
@@ -81,6 +84,8 @@ def PLOTTITLE(attribute):
         return 'Length of messages for Chinese and English'
     elif attribute == 'dialogue':
         return 'Length of dialogue for Chinese and English'
+    elif attribute == 'specificity':
+        return 'WordNet specificity for Chinese and English'
     else:
         return 'Usage of %s for Chinese and English' % attribute
 
