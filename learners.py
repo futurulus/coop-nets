@@ -476,8 +476,9 @@ class ChineseLearner(Learner):
     def __init__(self):
         self.model = LogisticRegression()
         # subcharacters to look for
-        self.subchars = ['纟', '氵', '水', '火', '灬',
-                        '艹', '木', '土', '日', '米', '女']
+        # self.subchars = ['纟', '氵', '水', '火', '灬',
+        #                 '艹', '木', '土', '日', '米', '女']
+        self.subchars = ['纟', '氵', '灬', '艹']
         # dictionaries for representative values
         self.hue_dict = {'红' : 0, '橙' : 30, '黄' : 60, '绿' : 120,
                         '海' : 180, '蓝' : 240, '紫' : 270, '粉' : 370}
@@ -525,11 +526,12 @@ class ChineseLearner(Learner):
 
     def subchar_feats(self, inp, H, row):
         for c in self.subchars:
-            c_indicator = 1 if any([self.is_subchar(s, c)
-                                    for s in inp]) else -1
-            h_feats = [c_indicator * self.in_range(H, h, 'hue')
-                        for h in self.hue_dict.keys()]
-            row += h_feats
+            row.append(1 if any([self.is_subchar(s, c) for s in inp]) else -1)
+            # c_indicator = 1 if any([self.is_subchar(s, c)
+            #                         for s in inp]) else -1
+            # h_feats = [c_indicator * self.in_range(H, h, 'hue')
+            #             for h in self.hue_dict.keys()]
+            # row += h_feats
 
     def make_features(self, instances):
         X = [[] for x in xrange(len(instances) * 3)]
