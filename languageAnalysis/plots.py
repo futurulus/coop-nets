@@ -42,16 +42,17 @@ def histogram(data, plot_file, ylabel, title=''):
     fig, (ax_zh, ax_en) = plt.subplots(ncols=2, sharex=True, sharey=True)
     sns.despine()
 
-    zh = data.loc[data['Language'] == 'Chinese']['Length'].tolist()
-    en = data.loc[data['Language'] == 'English']['Length'].tolist()
-    # zh = data.loc[data['Language'] == 'Chinese']['tokens'].tolist()
-    # en = data.loc[data['Language'] == 'English']['tokens'].tolist()
+    zh = data.loc[data['Language'] == 'Chinese'][0].tolist()
+    en = data.loc[data['Language'] == 'English'][0].tolist()
 
-    sns.distplot(zh, bins=15, ax=ax_zh, kde=False, norm_hist=True, hist_kws={'alpha':0.75}) # , rug=True)
-    sns.distplot(en, bins=15, ax=ax_en, kde=False, norm_hist=True, hist_kws={'alpha':0.75}) # , rug=True)
+    sns.distplot(zh, bins=15, ax=ax_zh, kde=False, norm_hist=True,
+                 hist_kws={'alpha':0.75}) # , rug=True)
+    sns.distplot(en, bins=15, ax=ax_en, kde=False, norm_hist=True,
+                 hist_kws={'alpha':0.75}) # , rug=True)
 
     ax_zh.set_title('Chinese')
     ax_en.set_title('English')
+
     ax_zh.set_xlabel('Number of messages per round')
     ax_en.set_xlabel('Number of messages per round')
     ax_zh.set_ylabel('Proportion of rounds')
@@ -67,11 +68,11 @@ def barplot(data, plot_file, ylabel, title=''):
     sns.set_style('ticks')
     ax = sns.barplot(x='Condition', y=data.columns.values[0], hue='Language',
                      order=['equal/far', 'further/split', 'closer/close'],
-                     errcolor='#d1d1d1', data=data)
+                     errcolor='#d1d1d1', data=data, errwidth=1, capsize=0.05)
     sns.despine()
     show_vals(ax)
     ax.set_ylabel(ylabel)
     ax.set_title(title)
+    plt.legend(loc='best')
     plt.savefig(plot_file, dpi=300) # transparent=True
-    plt.legend(loc='upper left')
     plt.gcf().clear()
