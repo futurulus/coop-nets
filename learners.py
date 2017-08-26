@@ -476,18 +476,19 @@ class ChineseLearner(Learner):
     def __init__(self):
         self.model = LogisticRegression()
         # subcharacters to look for
-        self.subchars = ['纟', '氵', '水', '火', '灬',
-                        '艹', '木', '土', '日', '米', '女']
+        # self.subchars = ['纟', '氵', '水', '火', '灬',
+        #                 '艹', '木', '土', '日', '米', '女']
+        self.subchars = ['纟', '氵', '灬', '艹']
         # dictionaries for representative values
         self.hue_dict = {'红' : 0, '橙' : 30, '黄' : 60, '绿' : 120,
                         '海' : 180, '蓝' : 240, '紫' : 270, '粉' : 370}
         self.sat_dict = {'土' : 15, '灰' : 25, '淡' : 50, '亮' : 100}
         self.val_dict = {'墨' : 0, '深' : 25, '暗' : 25, '肝' : 25,
-                        '淡' : 75, '浅' : 75}
+                        '淡' : 75, '浅' : 75, '鲜艳': 100}
         # epsilon - the interval around the representative values
-        self.hue_eps = 55
-        self.sat_eps = 30
-        self.val_eps = 30
+        self.hue_eps = 50
+        self.sat_eps = 20
+        self.val_eps = 20
 
     # returns 1 if X is within x_eps around x's value in x_dict, else -1
     def in_range(self, X, x, attributeid):
@@ -525,11 +526,12 @@ class ChineseLearner(Learner):
 
     def subchar_feats(self, inp, H, row):
         for c in self.subchars:
-            c_indicator = 1 if any([self.is_subchar(s, c)
-                                    for s in inp]) else -1
-            h_feats = [c_indicator * self.in_range(H, h, 'hue')
-                        for h in self.hue_dict.keys()]
-            row += h_feats
+            row.append(1 if any([self.is_subchar(s, c) for s in inp]) else -1)
+            # c_indicator = 1 if any([self.is_subchar(s, c)
+            #                         for s in inp]) else -1
+            # h_feats = [c_indicator * self.in_range(H, h, 'hue')
+            #             for h in self.hue_dict.keys()]
+            # row += h_feats
 
     def make_features(self, instances):
         X = [[] for x in xrange(len(instances) * 3)]
@@ -592,7 +594,7 @@ class ChineseLearner(Learner):
     def train(self, training_instances, validation_instances='ignored', metrics='ignored'):
         self.num_params = 0 # change later
 
-        num_top_words = 75
+        num_top_words = 95
         self.top_words(training_instances, num_top_words)
         print "top %d words: " % num_top_words
         print repr(self.top_words).decode('unicode_escape').encode('utf-8')

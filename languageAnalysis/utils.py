@@ -1,84 +1,54 @@
 #coding:utf8
 import re
 import csv
-import numpy as np
-
-from googletrans import Translator
+import plots
+from maps import *
+import pandas as pd
+from specificity import *
+from nltk.tag import pos_tag
+from nltk.tokenize import word_tokenize
 from jieba import tokenize as jieba_tokenize
 
-from nltk.tag import pos_tag
-from nltk.corpus import wordnet as wn
-from nltk.tokenize import word_tokenize
-from nltk.stem import WordNetLemmatizer
-
 ############################################################################
-# Helper functions for lists, files, printing, etc.
+# Helper functions for files, plotting, etc.
 ############################################################################
 
-PUNCTUATION = ['~',',','.','?','!','。','，','？','！','”','(',')','…','=']
-
-def flatten(l) :
-    return [item for sublist in l for item in sublist]
-
-def dicts_from_file(file_path):
+def dicts_from_file(infile):
     dicts = []
-    with open(file_path, 'r') as f:
+    with open(infile, 'r') as f:
         for row in csv.DictReader(f):
             dicts.append(row)
     return dicts
 
-def CONDNAME(cond):
-    if cond == 'equal' or cond == 'far':
-        return 'equal/far'
-    elif cond == 'further' or cond == 'split':
-        return 'further/split'
-    else:
-        return 'closer/close'
+def list_to_csv(data, outfile, col_names):
+    with open(outfile, 'wb') as f:
+        w = csv.writer(f)
+        w.writerow(col_names)
+        for row in data:
+            w.writerow(row)
 
-def LANGNAME(L):
-    return 'English' if L == 'en' else 'Chinese'
+def generate_csv(attribute, L):
+    print 'Generating csv for {} ({})...'.format(attribute, L)
+    data = get_data(attribute, L)
+    s = 'roundid' if attribute == 'dialogue' \
+                  or attribute == 'success' else 'Message'
+    col_names = [attribute, 'Condition', 'Language', s]
+    list_to_csv(data, 'data/{}_{}.csv'.format(attribute, L), col_names)
 
-############################################################################
-# Helper functions for message lengths and dialogue lengths
-############################################################################
+def plot_csvs(zh_file, en_file, plot_type, plot_file, ylabel, title):
+    zh_df = pd.read_csv(zh_file)
+    en_df = pd.read_csv(en_file)
+    df = zh_df.append(en_df)
+    plot_fun = plots.histogram if plot_type == 'hist' else plots.barplot
+    df.drop(df.columns[-1], axis=1, inplace=True)
+    plot_fun(df, plot_file, ylabel, title)
 
-def msg_lengths(msg_rows, L='en'):
-    '''
-    Returns a list of the length of each message sent for a given language
-    (English or Chinese). First, punctuation is removed from the message.
-    For English, the message is then tokenized with nltk, and for Chinese,
-    the message is tokenized with jieba - but only if it doesn't contain
-    any Roman letters.
-    '''
-    msg_lengths = []
-    for row in msg_rows:
-        # get msg and remove punctuation (but not apostrophes)
-        msg = row['contents']
-        for c in PUNCTUATION:
-            msg = msg.replace(c, '')
-        # disregard any message that is empty or has roman letters
-        if L == 'zh' and msg and not re.search('[a-zA-Z]', msg):
-            tokens = jieba_tokenize(unicode(msg.decode('utf8')))
-            num_tokens = sum([1 for t in tokens])
-            msg_lengths.append([num_tokens,'Chinese'])
-        elif L == 'en' and msg:
-            tokens = word_tokenize(msg)
-            msg_lengths.append([len(tokens),'English'])
-    return msg_lengths
-
-def dlg_lengths(msg_rows, L='en'):
-    '''
-    Returns a list of the number of messages exchanged for each round
-    for a given language (English or Chinese).
-    '''
-    counts = {}
-    for row in msg_rows:
-        roundid = str(row['gameid']) + str(row['roundNum'])
-        try:
-            counts[roundid] += 1
-        except KeyError:
-            counts[roundid] = 1
-    return map(lambda v : [v, LANGNAME(L)], counts.values())
+def plot_for_attribute(a):
+    f_zh = 'data/{}_zh.csv'.format(a)
+    f_en = 'data/{}_en.csv'.format(a)
+    print 'Plotting for {}...'.format(a)
+    plot_csvs(f_zh, f_en, PLOTTYPE(a), 'plots/%s.png' % a,
+              ylabel=YLABEL(a), title=PLOTTITLE(a))
 
 ############################################################################
 # Helper functions for checking superlatives, comparatives, and negations
@@ -117,68 +87,89 @@ def check_attribute(msg, attribute, L):
         elif attribute == 'superlative':
             return '最' in msg
         elif attribute == 'comparative':
-            zh_comps = ['更', '多', '少', '比', '那么']
-            return any([x in msg for x in zh_comps])
+            return '更' in msg or '比' in msg
+            # return ('多' in msg and '最' not in msg) \
+            #         or ('少' in msg and '最' not in msg)
 
 ############################################################################
-# Helper functions for specificity
+# Helper functions for getting data for message- and round-based attributes
 ############################################################################
 
-def nounify(adj_word):
-    """ Transform an adjective to the closest noun: dead -> death """
-    adj_synsets = wn.synsets(adj_word, pos='a')
-    # Word not found
-    if not adj_synsets:
-        return []
-    # Get all adj lemmas of the word
-    adj_lemmas = [l for s in adj_synsets
-                  for l in s.lemmas()
-                  if (s.name().split('.')[1] == 'a' or
-                      s.name().split('.')[1] == 's')]
-    # Get related forms
-    derivationally_related_forms = [(l, l.derivationally_related_forms())
-                                    for l in adj_lemmas]
-    # filter only the nouns
-    related_noun_lemmas = [l for drf in derivationally_related_forms
-                           for l in drf[1]
-                           if l.synset().name().split('.')[1] == 'n']
-    synsets = [l.synset() for l in related_noun_lemmas]
-    return synsets
+PUNCTUATION = ['~', ',', '.', '?', '!', '。', '，', '、', ':',
+               '？', '！', '”', '(', ')', '…', '=', '-', '_', '～']
 
-def get_informativity(text):
-    wnl = WordNetLemmatizer()
-    try:
-        words = [wnl.lemmatize(word) for word in word_tokenize(text)]
-    except:
-        print(text)
-        raise
-    res = []
-    for word in words:
-        nounForms = wn.synsets(word, pos='n')
-        nounSynsets = nounForms if nounForms else nounify(word)
-        colorSynsets = [n for n in nounSynsets
-                        if 'color.n.01' in
-                        [s.name() for s in flatten(n.hypernym_paths())]]
-        res += [s.min_depth() for s in colorSynsets][:1] if colorSynsets else []
-    return np.max(res) if res else None
-
-def translate(msg, dest='en'):
-    '''
-    Translates a string into the target language using Google Translate.
-    Defaults to English as target.
-    '''
-    return Translator().translate(msg, dest=dest).text
-
-def specificity(msg, L='en'):
-    '''
-    Returns the maximal specificity for messages exchanged on each of the
-    three conditions (far, split, close). Uses English WordNet and
-    Google Translate.
-    '''
-    en_msg = msg if L == 'en' else translate(msg)
-    depths = [get_informativity(x) for x in en_msg.split()]
-    depths = filter(lambda x : x, depths)
-    if depths:
-        return 1 if max(depths) > 7 else 0
+def update_message_data_row(data, msg, cond, attribute, L):
+    x = None
+    if attribute == 'tokens':
+        for p in PUNCTUATION:
+            msg = msg.replace(p, '')
+        # disregard any message that is empty or has roman letters
+        if L == 'zh' and msg and not re.search('[a-zA-Z]', msg):
+            tokens = list(jieba_tokenize(unicode(msg.decode('utf8'))))
+            x = len(tokens)
+        elif L == 'en' and msg:
+            tokens = word_tokenize(msg)
+            x = len(tokens)
+    elif attribute == 'specificity':
+        x = specificity(msg, L)
     else:
-        return None
+        x = check_attribute(msg, attribute, L)
+    if x is not None:
+        data.append([x, CONDNAME(cond), LANGNAME(L), msg])
+
+def message_data(attribute, L, msg_dicts, click_dicts):
+    '''
+    Returns the proportion of messages that use the specified type of word
+    (superlative, comparative, negation) for each of the three conditions
+    (far, split, close) in a given language (English or Chinese).
+    '''
+    data = []
+    for c in click_dicts:
+        cond, gameid, roundNum = c['condition'], c['gameid'], c['roundNum']
+        if L == 'en':
+            update_message_data(data, c['contents'], cond, attribute, L)
+        elif L == 'zh':
+            for m in msg_dicts:
+                if m['gameid'] == gameid and m['roundNum'] == roundNum:
+                    update_message_data(data, m['contents'], cond, attribute, L)
+    return data
+
+def update_round_data(counts, conds, cond, roundid):
+    conds[roundid] = CONDNAME(cond)
+    counts[roundid] = counts[roundid] + 1 if roundid in counts.keys() else 1
+
+def round_data(attribute, L, msg_dicts, click_dicts):
+    counts, conds = {}, {}
+    for c in click_dicts:
+        cond, roundid = c['condition'], ROUNDID(c)
+        if attribute == 'success':
+            counts[roundid] = c['outcome']
+            conds[roundid] = CONDNAME(cond)
+        elif attribute == 'dialogue':
+            if L == 'en':
+                update_round_data(counts, conds, cond, roundid)
+            elif L == 'zh':
+                for m in msg_dicts:
+                    if m['gameid'] == c['gameid'] \
+                    and m['roundNum'] == c['roundNum']:
+                        update_round_data(counts, conds, cond, roundid)
+    return [[counts[roundid], conds[roundid], LANGNAME(L), roundid]
+            for roundid in sorted(counts)]
+
+############################################################################
+# The final get_data function
+############################################################################
+
+ZH_MSG_FILE = 'colorReferenceMessageChinese.csv'
+ZH_CLICK_FILE = 'colorReferenceClicksChinese.csv'
+EN_FILE = '../behavioralAnalysis/humanOutput/filteredCorpus.csv'
+
+def get_data(attribute, L):
+    click_file = ZH_CLICK_FILE if L == 'zh' else EN_FILE
+    msg_dicts = dicts_from_file(ZH_MSG_FILE)
+    click_dicts = dicts_from_file(click_file)
+
+    if attribute == 'dialogue' or attribute == 'success':
+        return round_data(attribute, L, msg_dicts, click_dicts)
+    else:
+        return message_data(attribute, L, msg_dicts, click_dicts)
