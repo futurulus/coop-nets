@@ -1,4 +1,4 @@
-#coding:utf-8
+# -*- coding: utf-8 -*-
 
 import colorsys
 import csv
@@ -357,6 +357,7 @@ def reference_game(insts, gen_func, listener=False):
 #     import codecs
 #     return codecs.open(filename, *args, encoding='utf-8', **kwargs)
 
+
 def hawkins_context(listener=False, speakerID='speaker', suffix=''):
     messages = defaultdict(list)
     with open('hawkins_data/colorReferenceMessage%s.csv' % suffix, 'r') as infile:
@@ -569,7 +570,7 @@ def filtered(listener=False):
     FILTERED_DATASET_SPEAKER = [inst.inverted() for inst in FILTERED_DATASET_LISTENER]
 
     if listener:
-        return FILTERED_DATASET_LISTENER #[:206]
+        return FILTERED_DATASET_LISTENER  # [:206]
     else:
         return FILTERED_DATASET_SPEAKER
 
@@ -629,6 +630,74 @@ def linear_hsv(color):
     return h * 360.0, s * 100.0, v * 100.0
 
 
+def bilingual_tag_instance(inst, lang, unicodify=None):
+    inp, out = inst.input, inst.output
+    if unicodify == 'input':
+        assert isinstance(inp, basestring), repr(inp)
+        inp = unicode(inp)
+    elif unicodify == 'output':
+        assert isinstance(out, basestring), repr(out)
+        out = unicode(out)
+    elif unicodify is not None:
+        raise ValueError('unicodify should be "input", "output", or None')
+
+    return Instance(input=(lang, inp),
+                    output=out,
+                    alt_inputs=inst.alt_inputs,
+                    alt_outputs=inst.alt_outputs,
+                    source=inst.source)
+
+
+def cycle_shuffled(insts):
+    '''
+    A generator that cycles through insts, but in a random order each time through the list.
+
+    Note: destructively modifies insts!
+    '''
+    while insts:
+        for inst in insts:
+            yield inst
+        rng.shuffle(insts)
+
+
+def bilingual_train(listener=False):
+    result = []
+    en_insts = filtered_train(listener=listener)
+    zh_insts = chinese_train(listener=listener)
+    for e, z in zip(en_insts, cycle_shuffled(zh_insts)):
+        result.append(bilingual_tag_instance(e, 'en', unicodify='input' if listener else 'output'))
+        result.append(bilingual_tag_instance(z, 'zh'))
+    return result
+
+
+def bilingual_en_dev(listener=False):
+    return [
+        bilingual_tag_instance(inst, 'en')
+        for inst in filtered_dev(listener=listener)
+    ]
+
+
+def bilingual_en_test(listener=False):
+    return [
+        bilingual_tag_instance(inst, 'en')
+        for inst in filtered_test(listener=listener)
+    ]
+
+
+def bilingual_zh_dev(listener=False):
+    return [
+        bilingual_tag_instance(inst, 'zh')
+        for inst in chinese_dev(listener=listener)
+    ]
+
+
+def bilingual_zh_test(listener=False):
+    return [
+        bilingual_tag_instance(inst, 'zh')
+        for inst in chinese_test(listener=listener)
+    ]
+
+
 DataSource = namedtuple('DataSource', ['train_data', 'test_data'])
 
 SOURCES = {
@@ -666,4 +735,8 @@ SOURCES = {
     'tuna_test': DataSource(tuna_instances.tuna08_train, tuna_instances.tuna08_test),
     'chinese_dev': DataSource(chinese_train, chinese_dev),
     'chinese_train': DataSource(chinese_train, chinese_test),
+    'bilingual_en_dev': DataSource(bilingual_train, bilingual_en_dev),
+    'bilingual_en_test': DataSource(bilingual_train, bilingual_en_test),
+    'bilingual_zh_dev': DataSource(bilingual_train, bilingual_zh_dev),
+    'bilingual_zh_test': DataSource(bilingual_train, bilingual_zh_test),
 }
