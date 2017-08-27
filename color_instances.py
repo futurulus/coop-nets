@@ -584,17 +584,17 @@ ACTION_NONE = 0
 ACTION_SPEAK = 1
 ACTION_CHOOSE = 2
 
-NEXT_ACTION_SPLIT = None
-NEXT_ACTION_DATASET = None
+NEXT_MESSAGE_SPLIT = None
+NEXT_MESSAGE_DATASET = None
 
 
-def next_action():
-    global NEXT_ACTION_DATASET, NEXT_ACTION_SPLIT
-    if NEXT_ACTION_DATASET is not None:
-        return NEXT_ACTION_DATASET
+def next_message():
+    global NEXT_MESSAGE_DATASET, NEXT_MESSAGE_SPLIT
+    if NEXT_MESSAGE_DATASET is not None:
+        return NEXT_MESSAGE_DATASET
 
-    NEXT_ACTION_SPLIT = []
-    NEXT_ACTION_DATASET = []
+    NEXT_MESSAGE_SPLIT = []
+    NEXT_MESSAGE_DATASET = []
 
     previous = []
     prev_key = None
@@ -603,27 +603,29 @@ def next_action():
         for row in csv.DictReader(infile):
             key = (row['gameid'], row['roundNum'])
 
-            if len(NEXT_ACTION_SPLIT) < len(FILTERED_SPLIT_IDS) and \
-                    key[0] == FILTERED_SPLIT_IDS[len(NEXT_ACTION_SPLIT)]:
-                NEXT_ACTION_SPLIT.append(len(NEXT_ACTION_DATASET))
+            if len(NEXT_MESSAGE_SPLIT) < len(FILTERED_SPLIT_IDS) and \
+                    key[0] == FILTERED_SPLIT_IDS[len(NEXT_MESSAGE_SPLIT)]:
+                NEXT_MESSAGE_SPLIT.append(len(NEXT_MESSAGE_DATASET))
+
+            if row['role'] == 'listener':
+                new_message = '| ' + row['contents']
+            else:
+                new_message = row['contents']
 
             if key != prev_key:
-                action = ACTION_CHOOSE
-            elif row['role'] == 'listener':
-                action = ACTION_SPEAK
+                output = None
             else:
-                action = ACTION_NONE
+                output = new_message
 
-            new_message = ('| ' if row['role'] == 'listener' else '') + row['contents']
             prev_message = ' ~ '.join(previous)
             context = context_from_row(row)
 
             if prev_key is not None:
                 target_idx, alt_colors = prev_context
 
-                NEXT_ACTION_DATASET.append(
-                    Instance(input=prev_message, output=action, alt_outputs=alt_colors,
-                             source=prev_key + (row['condition'], len(previous)))
+                NEXT_MESSAGE_DATASET.append(
+                    Instance(input=prev_message, output=output, alt_outputs=alt_colors,
+                             source=prev_key + (row['condition'], len(previous), target_idx))
                 )
 
             if key != prev_key:
@@ -632,7 +634,7 @@ def next_action():
             prev_key = key
             prev_context = context
 
-    return NEXT_ACTION_DATASET
+    return NEXT_MESSAGE_DATASET
 
 
 def context_from_row(row):
@@ -652,27 +654,77 @@ def context_from_row(row):
     return target_idx, alt_colors
 
 
-def next_action_train(listener='ignored'):
-    insts = next_action()
-    assert NEXT_ACTION_SPLIT[0] == 0
-    train_insts = insts[:NEXT_ACTION_SPLIT[1]]
+def next_message_train(listener='ignored'):
+    insts = next_message()
+    assert NEXT_MESSAGE_SPLIT[0] == 0
+    train_insts = insts[:NEXT_MESSAGE_SPLIT[1]]
     print('Training contexts: {}'.format(len(train_insts)))
     rng.shuffle(train_insts)
     return train_insts
 
 
-def next_action_dev(listener='ignored'):
-    insts = next_action()
-    dev_insts = insts[NEXT_ACTION_SPLIT[1]:NEXT_ACTION_SPLIT[2]]
+def next_message_dev(listener='ignored'):
+    insts = next_message()
+    dev_insts = insts[NEXT_MESSAGE_SPLIT[1]:NEXT_MESSAGE_SPLIT[2]]
     print('Dev contexts: {}'.format(len(dev_insts)))
     return dev_insts
 
 
-def next_action_test(listener='ignored'):
-    insts = next_action()
-    test_insts = insts[NEXT_ACTION_SPLIT[2]:]
+def next_message_test(listener='ignored'):
+    insts = next_message()
+    test_insts = insts[NEXT_MESSAGE_SPLIT[2]:]
     print('Test contexts: {}'.format(len(test_insts)))
     return test_insts
+
+
+def next_action_train(listener='ignored'):
+    return messages_to_actions(next_message_train())
+
+
+def next_action_dev(listener='ignored'):
+    return messages_to_actions(next_message_dev())
+
+
+def next_action_test(listener='ignored'):
+    return messages_to_actions(next_message_test())
+
+
+def messages_to_actions(insts):
+    result = []
+    for inst in insts:
+        if inst.output is None:
+            action = ACTION_CHOOSE
+        elif inst.output.startswith('| '):
+            action = ACTION_SPEAK
+        else:
+            action = ACTION_NONE
+        result.append(Instance(inst.input, action, alt_outputs=inst.alt_outputs,
+                               source=inst.source))
+    return result
+
+
+def next_speaker_message_train(listener='ignored'):
+    return speaker_messages(next_message_train())
+
+
+def next_speaker_message_dev(listener='ignored'):
+    return speaker_messages(next_message_dev())
+
+
+def next_speaker_message_test(listener='ignored'):
+    return speaker_messages(next_message_test())
+
+
+def speaker_messages(insts):
+    result = []
+    for inst in insts:
+        if inst.output is not None and not inst.output.startswith('| '):
+            result.append(Instance(input=inst.source[-1],        # target index
+                                   alt_inputs=inst.alt_outputs,  # colors
+                                   alt_outputs=inst.input,       # previous utterances
+                                   output=inst.output,           # next utterance
+                                   source=inst.source))
+    return result
 
 
 def uniform(color):
@@ -737,6 +789,8 @@ SOURCES = {
     'filtered_test': DataSource(filtered_train, filtered_test),
     'next_action_dev': DataSource(next_action_train, next_action_dev),
     'next_action_test': DataSource(next_action_train, next_action_test),
+    'next_speaker_message_dev': DataSource(next_speaker_message_train, next_speaker_message_dev),
+    'next_speaker_message_test': DataSource(next_speaker_message_train, next_speaker_message_test),
     'ams_literal': DataSource(amsterdam_literal_train, amsterdam_test),
     'ams_unambig': DataSource(amsterdam_unambiguous_train, amsterdam_test),
     'ams_1word': DataSource(amsterdam_1word_train, amsterdam_test),

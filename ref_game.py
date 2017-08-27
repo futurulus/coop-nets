@@ -664,7 +664,7 @@ parser.add_argument('--direct_base_uses_context', default=False, type=config.boo
                     help='If True, pass context and a target index through to the base learner. '
                          'Otherwise, extract the target color itself and discard remaining '
                          'context.')
-parser.add_argument('--direct_min_score', default=None, type=float,
+parser.add_argument('--direct_min_score', default=1.0, type=float,
                     help='The log likelihood of the base model will be capped from below to this '
                          'value. This prevents extreme-confidence wrong decisions, and '
                          'is roughly equivalent to postulating an a priori probability that a '

@@ -187,9 +187,12 @@ class SpeakerLearner(NeuralLearner):
             batch = list(batch)
 
             if self.use_color_mask:
-                (c, cm, _p, mask), (_y,) = self._data_to_arrays(batch, test=True)
+                inps, (_y,) = self._data_to_arrays(batch, test=True)
             else:
-                (c, _p, mask), (_y,) = self._data_to_arrays(batch, test=True)
+                inps, (_y,) = self._data_to_arrays(batch, test=True)
+            c = inps[0]
+            extras = inps[1:-2]
+            (_p, mask) = inps[-2:]
             assert mask.all()  # We shouldn't be masking anything in prediction
 
             beam_size = 1 if random else self.options.speaker_beam_size
@@ -201,15 +204,17 @@ class SpeakerLearner(NeuralLearner):
             beam_scores[:, 0] = 0.0
 
             c = np.repeat(c, beam_size, axis=0)
+            extras = [
+                np.repeat(e, beam_size, axis=0)
+                for e in extras
+            ]
             mask = np.repeat(mask, beam_size, axis=0)
-            if self.use_color_mask:
-                cm = np.repeat(cm, beam_size, axis=0)
 
             for length in range(1, self.seq_vec.max_len):
                 if done.all():
                     break
                 p = beam.reshape((beam.shape[0] * beam.shape[1], beam.shape[2]))[:, :-1]
-                inputs = [c, cm, p, mask] if self.use_color_mask else [c, p, mask]
+                inputs = [c] + extras + [p, mask]
                 probs = self.model.predict(inputs)
                 if random:
                     indices = sample(probs[:, length - 1, :])
@@ -367,6 +372,7 @@ class SpeakerLearner(NeuralLearner):
                                                                        not self.use_color_mask))
         if self.use_color_mask:
             input_vars.append(T.imatrix(id_tag + 'color_mask'))
+        input_vars.extend(self.additional_vars())
         input_vars.extend([
             T.imatrix(id_tag + 'previous'),
             T.imatrix(id_tag + 'mask')
@@ -378,6 +384,9 @@ class SpeakerLearner(NeuralLearner):
                                  loss=self.masked_loss(input_vars),
                                  optimizer=OPTIMIZERS[self.options.speaker_optimizer],
                                  learning_rate=self.options.speaker_learning_rate)
+
+    def additional_vars(self):
+        return []
 
     def train_priors(self, training_instances, listener_data=False):
         prior_class = PRIORS[self.options.speaker_prior]
@@ -704,11 +713,13 @@ class RecurrentContextSpeakerLearner(SpeakerLearner):
             tokenized = [['<s>'] + tokenize(get_utt(inst, inverted)) + ['</s>']
                          for inst in training_instances]
             self.seq_vec.add_all(tokenized)
+            self.init_context_vectorizers(training_instances, tokenize)
             unk_replaced = self.seq_vec.unk_replace_all(tokenized)
             config.dump(unk_replaced, 'unk_replaced.train.jsons', lines=True)
 
         colors = []
         cmask = []
+        contexts = []
         previous = []
         next_tokens = []
         if self.options.verbosity >= 9:
@@ -742,6 +753,7 @@ class RecurrentContextSpeakerLearner(SpeakerLearner):
 
             previous.append(prev)
             next_tokens.append(next)
+            contexts.append(self.extract_context(inst, inverted, tokenize))
 
         P = np.zeros((len(previous), self.seq_vec.max_len - 1), dtype=np.int32)
         mask = np.zeros((len(previous), self.seq_vec.max_len - 1), dtype=np.int32)
@@ -769,14 +781,26 @@ class RecurrentContextSpeakerLearner(SpeakerLearner):
             print('P: %s' % (repr(P),))
             print('mask: %s' % (repr(mask),))
             print('N: %s' % (repr(N),))
-        return [c, cm, P, mask], [N]
+        return [c, cm] + self.contexts_to_arrays(contexts) + [P, mask], [N]
+
+    def init_context_vectorizers(self, training_instances, tokenizer):
+        pass
+
+    def extract_context(self, inst, inverted):
+        return None
+
+    def contexts_to_arrays(self, contexts):
+        return []
 
     def _get_l_out(self, input_vars):
         check_options(self.options)
         id_tag = (self.id + '/') if self.id else ''
 
-        color_mask_var, prev_output_var, mask_var = input_vars[-3:]
-        color_input_vars = input_vars[:-3]
+        num_additional = len(self.additional_vars())
+        color_input_vars = input_vars[:-3 - num_additional]
+        color_mask_var = input_vars[-3 - num_additional]
+        extra_input_vars = input_vars[-2 - num_additional:-2]
+        prev_output_var, mask_var = input_vars[-2:]
 
         num_contexts = color_mask_var.shape[0]
         num_colors = color_mask_var.shape[1]
@@ -790,6 +814,7 @@ class RecurrentContextSpeakerLearner(SpeakerLearner):
         l_color_reshaped = ReshapeLayer(l_color_repr, (num_contexts, num_colors,
                                                        self.color_vec.output_size),
                                         name=id_tag + 'color_reshaped')
+        l_context, context_inputs = self.context_transform(l_color_reshaped, extra_input_vars)
         l_color_mask_in = InputLayer(shape=(None, None),
                                      input_var=color_mask_var,
                                      name=id_tag + 'color_mask')
@@ -805,7 +830,7 @@ class RecurrentContextSpeakerLearner(SpeakerLearner):
         if self.options.speaker_cell != 'GRU':
             cell_kwargs['nonlinearity'] = NONLINEARITIES[self.options.speaker_nonlinearity]
 
-        l_context_out = cell(l_color_reshaped, name=id_tag + 'reccontext',
+        l_context_out = cell(l_context, name=id_tag + 'reccontext',
                              only_return_final=True, **cell_kwargs)
         l_context_tiled = RepeatLayer(l_context_out, self.seq_vec.max_len - 1,
                                       name=id_tag + 'reccontext_tiled')
@@ -845,7 +870,70 @@ class RecurrentContextSpeakerLearner(SpeakerLearner):
         l_out = ReshapeLayer(l_softmax, (-1, self.seq_vec.max_len - 1, len(self.seq_vec.tokens)),
                              name=id_tag + 'out')
 
-        return l_out, color_inputs + [l_color_mask_in, l_prev_out, l_mask_in]
+        return l_out, color_inputs + [l_color_mask_in] + context_inputs + [l_prev_out, l_mask_in]
+
+    def context_transform(self, context_embed, extra_input_vars):
+        return context_embed, []
+
+
+class DialogueContextSpeakerLearner(RecurrentContextSpeakerLearner):
+    def additional_vars(self):
+        id_tag = (self.id + '/') if self.id else ''
+        if not hasattr(self, 'dialogue_vars'):
+            self.dialogue_vars = [T.imatrix(id_tag + 'dialogue')]
+        return self.dialogue_vars
+
+    def init_context_vectorizers(self, training_instances, tokenizer):
+        self.max_context_len = max(len(tokenizer(inst.alt_outputs)) + 2
+                                   for inst in training_instances)
+
+    def extract_context(self, inst, inverted, tokenizer):
+        history = inst.alt_outputs
+        history = tokenizer(history)
+        full = (['<s>'] + history + ['</s>'] +
+                ['<MASK>'] * (self.max_context_len - 1 - len(history)))
+        if self.options.verbosity >= 9:
+            print('history: %s' % full)
+        return full[:self.max_context_len]
+
+    def contexts_to_arrays(self, contexts):
+        return [self.seq_vec.vectorize_all(contexts)]
+
+    def context_transform(self, context_embed, extra_input_vars):
+        (history_var,) = extra_input_vars
+
+        id_tag = (self.id + '/') if self.id else ''
+        l_in = InputLayer(shape=(None, self.max_context_len), input_var=history_var,
+                          name=id_tag + 'history')
+        l_in_embed = EmbeddingLayer(l_in, input_size=len(self.seq_vec.tokens),
+                                    output_size=self.options.listener_cell_size,
+                                    name=id_tag + 'history_embed')
+
+        cell = CELLS[self.options.listener_cell]
+        cell_kwargs = {
+            'grad_clipping': self.options.listener_grad_clipping,
+            'num_units': self.options.listener_cell_size,
+        }
+        if self.options.listener_cell == 'LSTM':
+            cell_kwargs['forgetgate'] = Gate(b=Constant(self.options.listener_forget_bias))
+        if self.options.listener_cell != 'GRU':
+            cell_kwargs['nonlinearity'] = NONLINEARITIES[self.options.listener_nonlinearity]
+
+        l_rec1 = cell(l_in_embed, name=id_tag + 'rechistory1',
+                      only_return_final=True, **cell_kwargs)
+        if self.options.listener_bidi:
+            l_rec1_backwards = cell(l_in_embed, name=id_tag + 'rec1_back', backwards=True,
+                                    only_return_final=True, **cell_kwargs)
+            l_rec1 = ConcatLayer([l_rec1, l_rec1_backwards], axis=1,
+                                 name=id_tag + 'rechistory1_bidi_concat')
+        if self.options.listener_dropout > 0.0:
+            l_rec1_drop = DropoutLayer(l_rec1, p=self.options.listener_dropout,
+                                       name=id_tag + 'rechistory1_drop')
+        else:
+            l_rec1_drop = l_rec1
+        l_context = ConcatLayer([context_embed, l_rec1_drop], axis=1,
+                                name=id_tag + 'context_concat')
+        return l_context, [l_in]
 
 
 class AtomicSpeakerLearner(NeuralLearner):
@@ -999,5 +1087,6 @@ SPEAKERS = {
     'ContextSpeaker': ContextSpeakerLearner,
     'AtomicSpeaker': AtomicSpeakerLearner,
     'RecurrentContextSpeaker': RecurrentContextSpeakerLearner,
+    'DialogueContextSpeaker': DialogueContextSpeakerLearner,
 }
 SPEAKERS.update(data_aug.AGENTS)

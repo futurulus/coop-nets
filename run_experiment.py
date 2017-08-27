@@ -28,16 +28,16 @@ parser.add_argument('--load', metavar='MODEL_FILE', default=None,
                     help='If provided, skip training and instead load a pretrained model '
                          'from the specified path. If None or an empty string, train a '
                          'new model.')
-parser.add_argument('--train_size', type=int, default=[None], nargs='+',
+parser.add_argument('--train_size', type=int, default=[-1], nargs='+',
                     help='The number of examples to use in training. This number should '
-                         '*include* examples held out for validation. If None, use the '
+                         '*include* examples held out for validation. If None or negative, use the '
                          'whole training set.')
 parser.add_argument('--validation_size', type=int, default=[0], nargs='+',
                     help='The number of examples to hold out from the training set for '
                          'monitoring generalization error.')
-parser.add_argument('--test_size', type=int, default=[None], nargs='+',
+parser.add_argument('--test_size', type=int, default=[-1], nargs='+',
                     help='The number of examples to use in testing. '
-                         'If None, use the whole dev/test set.')
+                         'If None or negative, use the whole dev/test set.')
 parser.add_argument('--data_source', default=['dev'], nargs='+',
                     choices=color_instances.SOURCES.keys(),
                     help='The type of data to use. Can supply several for sequential training.')
@@ -80,6 +80,8 @@ def main():
                                                               options.train_size,
                                                               options.validation_size,
                                                               options.test_size):
+        if train_size < 0:
+            train_size = None
         train_insts = color_instances.SOURCES[source].train_data(
             listener=options.listener
         )[:train_size]
@@ -93,6 +95,9 @@ def main():
         else:
             validation_datasets.append(None)
         train_datasets.append(train_insts)
+
+        if test_size < 0:
+            test_size = None
         test_insts = color_instances.SOURCES[source].test_data(
             options.listener
         )[:test_size]
