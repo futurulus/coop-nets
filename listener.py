@@ -445,17 +445,21 @@ class ContextListenerLearner(ListenerLearner):
 
         input_var = (T.imatrix if multi_utt is None else T.itensor3)(id_tag + 'inputs')
         context_vars = self.color_vec.get_input_vars(self.id, recurrent=self.recurrent_context)
+        extra_vars = self.get_extra_vars() + context_vars
         target_var = T.ivector(id_tag + 'targets')
 
-        self.l_out, self.input_layers = self._get_l_out([input_var] + context_vars,
+        self.l_out, self.input_layers = self._get_l_out([input_var] + extra_vars,
                                                         multi_utt=multi_utt)
         self.loss = categorical_crossentropy
 
         self.model = model_class(
-            [input_var] + context_vars, [target_var], self.l_out,
+            [input_var] + extra_vars, [target_var], self.l_out,
             loss=self.loss, optimizer=OPTIMIZERS[self.options.listener_optimizer],
             learning_rate=self.options.listener_learning_rate,
             id=self.id)
+
+    def get_extra_vars(self):
+        return []
 
     def _data_to_arrays(self, training_instances,
                         init_vectorizer=False, test=False, inverted=False):
@@ -529,13 +533,11 @@ class ContextListenerLearner(ListenerLearner):
         id_tag = (self.id + '/') if self.id else ''
 
         input_var = input_vars[0]
-        context_vars = input_vars[1:]
+        extra_vars = input_vars[1:]
 
         l_in = InputLayer(shape=(None, self.seq_vec.max_len), input_var=input_var,
                           name=id_tag + 'desc_input')
-        l_in_embed = EmbeddingLayer(l_in, input_size=len(self.seq_vec.tokens),
-                                    output_size=self.options.listener_cell_size,
-                                    name=id_tag + 'desc_embed')
+        l_in_embed, context_vars = self.get_embedding_layer(l_in, extra_vars)
 
         # Context repr has shape (batch_size, seq_len, context_len * repr_size)
         l_context_repr, context_inputs = self.color_vec.get_input_layer(
@@ -590,6 +592,13 @@ class ContextListenerLearner(ListenerLearner):
                               name=id_tag + 'scores')
 
         return l_scores, [l_in] + context_inputs
+
+    def get_embedding_layer(self, l_in, extra_vars):
+        id_tag = (self.id + '/') if self.id else ''
+        return (EmbeddingLayer(l_in, input_size=len(self.seq_vec.tokens),
+                               output_size=self.options.listener_cell_size,
+                               name=id_tag + 'desc_embed'),
+                extra_vars)
 
 
 class TwoStreamListenerLearner(ContextListenerLearner):
@@ -677,7 +686,7 @@ class GaussianContextListenerLearner(ContextListenerLearner):
         id_tag = (self.id + '/') if self.id else ''
 
         input_var = input_vars[0]
-        context_vars = input_vars[1:]
+        extra_vars = input_vars[1:]
 
         if multi_utt is None:
             l_in = InputLayer(shape=(None, self.seq_vec.max_len), input_var=input_var,
@@ -688,9 +697,7 @@ class GaussianContextListenerLearner(ContextListenerLearner):
                               name=id_tag + 'desc_input')
             l_in_flattened = reshape(l_in, (-1, self.seq_vec.max_len),
                                      name=id_tag + 'input_flattened')
-        l_in_embed = EmbeddingLayer(l_in_flattened, input_size=len(self.seq_vec.tokens),
-                                    output_size=self.options.listener_cell_size,
-                                    name=id_tag + 'desc_embed')
+        l_in_embed, context_vars = self.get_embedding_layer(l_in_flattened, extra_vars)
 
         cell = CELLS[self.options.listener_cell]
         cell_kwargs = {
@@ -1027,3 +1034,5 @@ LISTENERS = {
     'AtomicListener': AtomicListenerLearner,
 }
 LISTENERS.update(data_aug.AGENTS)
+import multilingual
+LISTENERS.update(multilingual.AGENTS)

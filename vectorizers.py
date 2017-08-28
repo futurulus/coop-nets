@@ -24,11 +24,12 @@ class SymbolVectorizer(object):
     >>> vec.unvectorize_all([3, 3, 2])
     ['curly', 'curly', 'moe']
     '''
-    def __init__(self):
+    def __init__(self, use_unk=True):
         self.tokens = []
         self.token_indices = {}
         self.indices_token = {}
-        self.add('<unk>')
+        if use_unk:
+            self.add('<unk>')
 
     @property
     def num_types(self):
