@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import listener
+import theano
 import theano.tensor as T
-from lasagne.layers import InputLayer, EmbeddingLayer, DenseLayer, MergeLayer
+from lasagne.layers import InputLayer, EmbeddingLayer, NINLayer, MergeLayer, dimshuffle
 from lasagne.init import Normal
 import numpy as np
 
 from stanza.research import config
 
+from neural import SimpleLasagneModel
 from vectorizers import SymbolVectorizer
 
 parser = config.get_options_parser()
@@ -69,18 +71,40 @@ class BilingualGaussianListenerLearner(listener.GaussianContextListenerLearner):
                               output_size=en_embed_size,
                               W=en_embeddings,
                               name=id_tag + 'desc_embed_en')
-        l_en_transformed = DenseLayer(l_en, num_units=self.options.listener_cell_size,
-                                      name=id_tag + 'desc_embed_en_transformed')
+        print('l_en: {}'.format(l_en.output_shape))
+        l_en_transformed = dimshuffle(l_en, (0, 2, 1))
+        l_en_transformed = NINLayer(l_en_transformed, num_units=self.options.listener_cell_size,
+                                    nonlinearity=None,
+                                    name=id_tag + 'desc_embed_en_transformed')
+        l_en_transformed = dimshuffle(l_en_transformed, (0, 2, 1))
+        print('l_en_transformed: {}'.format(l_en_transformed.output_shape))
 
         l_zh = EmbeddingLayer(l_in, input_size=len(self.seq_vec.tokens),
                               output_size=zh_embed_size,
                               W=zh_embeddings,
                               name=id_tag + 'desc_embed_zh')
-        l_zh_transformed = DenseLayer(l_zh, num_units=self.options.listener_cell_size,
-                                      name=id_tag + 'desc_embed_zh_transformed')
+        print('l_zh: {}'.format(l_zh.output_shape))
+        l_zh_transformed = dimshuffle(l_zh, (0, 2, 1))
+        l_zh_transformed = NINLayer(l_zh_transformed, num_units=self.options.listener_cell_size,
+                                    nonlinearity=None,
+                                    name=id_tag + 'desc_embed_zh_transformed')
+        l_zh_transformed = dimshuffle(l_zh_transformed, (0, 2, 1))
+        print('l_zh_transformed: {}'.format(l_zh_transformed.output_shape))
         l_merged = SwitchLayer(l_lang, [l_en_transformed, l_zh_transformed],
                                name=id_tag + 'desc_embed_switch')
+        print('l_merged: {}'.format(l_merged.output_shape))
         return (l_merged, context_vars)
+
+    def unpickle(self, state, model_class=SimpleLasagneModel):
+        if isinstance(state, tuple) and isinstance(state[-1], SymbolVectorizer):
+            self.lang_vec = state[-1]
+            super(BilingualGaussianListenerLearner,
+                  self).unpickle(state[:-1], model_class=model_class)
+        else:
+            self.lang_vec = SymbolVectorizer(use_unk=False)
+            self.lang_vec.add_all(['en', 'zh'])
+            super(BilingualGaussianListenerLearner,
+                  self).unpickle(state, model_class=model_class)
 
 
 class SwitchLayer(MergeLayer):
@@ -98,14 +122,14 @@ class SwitchLayer(MergeLayer):
             'All alternatives for SwitchLayer must have the same shape; instead ' \
             'got {}.'.format(input_shapes[1:])
 
-        return input_shapes[0] + input_shapes[1]
+        return input_shapes[1]
 
     def get_output_for(self, inputs, **kwargs):
         switch = inputs[0]
         alternatives = inputs[1:]
 
         stacked = T.stack(alternatives, axis=0)
-        return stacked[switch, ...]
+        return stacked[switch, T.arange(T.shape(switch)[0]), ...]
 
 
 def load_embeddings(filename, seq_vec):
@@ -149,7 +173,7 @@ def load_embeddings(filename, seq_vec):
         else:
             mat.append(unk)
 
-    return np.array(mat)
+    return np.array(mat, dtype=theano.config.floatX)
 
 
 AGENTS = {

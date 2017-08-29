@@ -41,6 +41,10 @@ if [ ! -e hawkins_data ]; then
     ./aggregate_hawkins_data
 fi
 
+# Symlink included data to hawkins_data
+ln -sr languageAnalysis/colorReferenceClicksChinese.csv hawkins_data/colorReferenceClicksChinese.csv
+ln -sr languageAnalysis/colorReferenceMessageChinese.csv hawkins_data/colorReferenceMessageChinese.csv
+
 echo 'Installing NumPy, SciPy, Cython, and matplotlib (this could take a while)...'
 pip install numpy 'cython>=0.21' 'SciPy>=0.9'
 
