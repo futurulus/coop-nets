@@ -258,7 +258,8 @@ def format_error_analysis(output, compare=None, per_token=False, only_differing=
     tables = [
         ('Worst', score_order[:100]),
         ('Best', reversed(score_order[-100:])),
-        ('Head', collated[:100]),
+        # ('Head', collated[:100]),
+        ('All', collated)
     ]
     if compare:
         if only_differing:
@@ -297,7 +298,8 @@ def format_value(value, suppress_colors=False):
             value = [int(c) for c in value]
     else:
         color = '#fff'
-    return '<td bgcolor="{color}">{value!r}</td>'.format(color=color, value=value)
+    value_repr = repr(value).decode('unicode_escape').encode('utf-8')
+    return '<td bgcolor="{color}">{value}</td>'.format(color=color, value=value_repr)
 
 
 def format_alts(alts, num_alts):
