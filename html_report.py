@@ -352,6 +352,7 @@ def generate_html_reports(run_dir=None, compare_dir=None):
 
 
 def get_all_outputs(run_dir, compare_dir):
+    num_outputs = 0
     for filename in glob.glob(os.path.join(run_dir, 'data.*.jsons')):
         split = os.path.basename(filename).split('.')[-2]
         this_output = get_output(run_dir, split)
@@ -362,6 +363,11 @@ def get_all_outputs(run_dir, compare_dir):
 
         out_path = os.path.join(run_dir, 'report.%s.html' % split)
         yield this_output, compare, out_path
+
+        num_outputs += 1
+
+    if num_outputs == 0:
+        print('No data files found! Re-run with --output_test_data.')
 
 
 def get_output(run_dir, split):
