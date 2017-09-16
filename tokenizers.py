@@ -45,13 +45,27 @@ def whitespace_tokenizer(s, lower=True):
         s = s.lower()
     return s.split()
 
+
 def chinese_tokenizer(s, lower='ignored'):
     return [t[0] for t in jieba_tokenize(unicode(s))]
+
+
+TOKENIZER_MAP = {
+    'en': heuristic_ending_tokenizer,
+    'zh': chinese_tokenizer,
+}
+
+
+def multilingual_tokenizer(s, lower=True):
+    assert isinstance(s, tuple) and len(s) == 2, repr(s)
+    lang, utt = s
+    return TOKENIZER_MAP[lang](utt, lower=lower)
 
 
 TOKENIZERS = {
     'unigram': basic_unigram_tokenizer,
     'ending': heuristic_ending_tokenizer,
     'whitespace': whitespace_tokenizer,
-    'chinese': chinese_tokenizer
+    'chinese': chinese_tokenizer,
+    'multilingual': multilingual_tokenizer,
 }

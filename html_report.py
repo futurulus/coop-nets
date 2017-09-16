@@ -23,6 +23,9 @@ parser.add_argument('--per_token_prob', type=config.boolean, default=False,
 parser.add_argument('--only_differing_preds', type=config.boolean, default=False,
                     help='If True, only include examples that changed prediction in the '
                          '"biggest improvement/decline" tables.')
+parser.add_argument('--show_all', type=config.boolean, default=False,
+                    help='If True, replace the Head section with a section that shows '
+                         'all examples.')
 
 Output = namedtuple('Output', 'config,results,data,scores,predictions')
 
@@ -34,7 +37,7 @@ class NotPresent(object):
         return '&nbsp;'
 
 
-def html_report(output, compare=None, per_token=False, only_differing=False):
+def html_report(output, compare=None, per_token=False, only_differing=False, show_all=False):
     '''
     >>> config_dict = {'run_dir': 'runs/test', 'listener': True}
     >>> results_dict = {'dev.perplexity.gmean': 14.0}
@@ -45,6 +48,7 @@ def html_report(output, compare=None, per_token=False, only_differing=False):
     <html>
     <head>
     <link rel="stylesheet" href="http://web.stanford.edu/~wmonroe4/css/style.css" type="text/css">
+    <meta charset="UTF-8">
     <title>runs/test - Output report</title>
     </head>
     <body>
@@ -85,6 +89,7 @@ def html_report(output, compare=None, per_token=False, only_differing=False):
     main_template = '''<html>
 <head>
 <link rel="stylesheet" href="http://web.stanford.edu/~wmonroe4/css/style.css" type="text/css">
+<meta charset="UTF-8">
 <title>{run_dir} - Output report</title>
 </head>
 <body>
@@ -109,7 +114,8 @@ def html_report(output, compare=None, per_token=False, only_differing=False):
         config_opts=format_config_dict(output.config, compare.config if compare else None),
         results=format_results(output.results, compare.results if compare else None),
         error_analysis=format_error_analysis(output, compare, per_token=per_token,
-                                             only_differing=only_differing)
+                                             only_differing=only_differing,
+                                             show_all=show_all)
     )
 
 
@@ -195,7 +201,8 @@ def format_number(value):
         return '{:,.3f}'.format(value)
 
 
-def format_error_analysis(output, compare=None, per_token=False, only_differing=False):
+def format_error_analysis(output, compare=None, per_token=False,
+                          only_differing=False, show_all=False):
     examples_table_template = '''    <h3>{cond}</h3>
     <table>
         <tr><th>input</th>{alt_inputs_header}{alt_outputs_header}<th>gold</th><th>prediction</th><th>{prob_header}</th>{compare_header}</tr>
@@ -258,8 +265,9 @@ def format_error_analysis(output, compare=None, per_token=False, only_differing=
     tables = [
         ('Worst', score_order[:100]),
         ('Best', reversed(score_order[-100:])),
-        # ('Head', collated[:100]),
-        ('All', collated)
+        (('All', collated)
+         if show_all else
+         ('Head', collated[:100])),
     ]
     if compare:
         if only_differing:
@@ -339,7 +347,8 @@ def generate_html_reports(run_dir=None, compare_dir=None):
     for output, compare, out_path in get_all_outputs(run_dir, options.compare_dir):
         with open(out_path, 'w') as outfile:
             outfile.write(html_report(output, compare, per_token=options.per_token_prob,
-                                      only_differing=options.only_differing_preds))
+                                      only_differing=options.only_differing_preds,
+                                      show_all=options.show_all))
 
 
 def get_all_outputs(run_dir, compare_dir):
