@@ -86,6 +86,10 @@ parser.add_argument('--speaker_unk_threshold', type=int, default=0,
                          "before it's assigned a non-<unk> token index. 0 means nothing in "
                          "the training data is to be treated as unknown words; 1 means "
                          "single-occurrence words (hapax legomena) will be replaced with <unk>.")
+parser.add_argument('--speaker_language_tag', type=str, default='',
+                    help='If non-empty, outputs from the speaker model will be tuples of the '
+                         'form (lt, utt), where lt is the value of this argument. Meant to be '
+                         'used as a language identifier for the models in multilingual.py.')
 
 rng = get_rng()
 
@@ -223,7 +227,9 @@ class SpeakerLearner(NeuralLearner):
                                                                       probs.shape[2]))
                     beam_search_step(scores, length, beam, beam_scores, done, eos_index)
             outputs = self.seq_vec.unvectorize_all(beam[:, 0, :])
-            result.extend([' '.join(strip_invalid_tokens(o)) for o in outputs])
+            result.extend([tag_language(self.options.speaker_language_tag,
+                                        ' '.join(strip_invalid_tokens(o)))
+                           for o in outputs])
         if self.options.verbosity + verbosity >= 1:
             progress.end_task()
 
@@ -678,6 +684,13 @@ def beam_search_step(scores, length, beam, beam_scores, done, eos_index):
     done[:, :] = done[np.arange(batch_size)[:, np.newaxis], rows] | (new_indices == eos_index)
     # Pad already-finished sequences with </s>
     beam[done, length] = eos_index
+
+
+def tag_language(lt, utt):
+    if lt:
+        return (lt, utt)
+    else:
+        return utt
 
 
 class RecurrentContextSpeakerLearner(SpeakerLearner):

@@ -764,6 +764,13 @@ def bilingual_train(listener=False):
     return result
 
 
+def bilingual_en_train(listener=False):
+    return [
+        bilingual_tag_instance(inst, 'en')
+        for inst in filtered_train(listener=listener)
+    ]
+
+
 def bilingual_en_dev(listener=False):
     return [
         bilingual_tag_instance(inst, 'en')
@@ -775,6 +782,13 @@ def bilingual_en_test(listener=False):
     return [
         bilingual_tag_instance(inst, 'en')
         for inst in filtered_test(listener=listener)
+    ]
+
+
+def bilingual_zh_train(listener=False):
+    return [
+        bilingual_tag_instance(inst, 'zh')
+        for inst in chinese_train(listener=listener)
     ]
 
 
@@ -834,6 +848,10 @@ SOURCES = {
     'chinese_train': DataSource(chinese_train, chinese_test),
     'bilingual_en_dev': DataSource(bilingual_train, bilingual_en_dev),
     'bilingual_en_test': DataSource(bilingual_train, bilingual_en_test),
+    'bilingual_en_only_dev': DataSource(bilingual_en_train, bilingual_en_dev),
+    'bilingual_en_only_test': DataSource(bilingual_en_train, bilingual_en_test),
     'bilingual_zh_dev': DataSource(bilingual_train, bilingual_zh_dev),
     'bilingual_zh_test': DataSource(bilingual_train, bilingual_zh_test),
+    'bilingual_zh_only_dev': DataSource(bilingual_zh_train, bilingual_zh_dev),
+    'bilingual_zh_only_test': DataSource(bilingual_zh_train, bilingual_zh_test),
 }

@@ -1,3 +1,4 @@
+import collections
 import re
 from jieba import tokenize as jieba_tokenize
 
@@ -57,7 +58,7 @@ TOKENIZER_MAP = {
 
 
 def multilingual_tokenizer(s, lower=True):
-    assert isinstance(s, tuple) and len(s) == 2, repr(s)
+    assert isinstance(s, collections.Sequence) and len(s) == 2, repr(s)
     lang, utt = s
     return TOKENIZER_MAP[lang](utt, lower=lower)
 
