@@ -64,6 +64,7 @@ def header(output):
     return '''<!doctype html>
     <html>
     <head>
+    <meta charset="UTF-8">
     <link rel="stylesheet" href="http://web.stanford.edu/~wmonroe4/css/style.css" type="text/css">
     <title>{run_dir} - Grids</title>
     </head>
@@ -212,6 +213,8 @@ def correct_status(inst, grids):
 
 
 def escape(s):
+    if not isinstance(s, basestring):
+        s = repr(s).decode('unicode_escape')
     return html_escape(s).encode('utf-8')
 
 
