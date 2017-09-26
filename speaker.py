@@ -190,10 +190,15 @@ class SpeakerLearner(NeuralLearner):
                 progress.progress(batch_num)
             batch = list(batch)
 
+            xs, (_y,) = self._data_to_arrays(batch, test=True)
             if self.use_color_mask:
-                (c, cm, _p, mask), (_y,) = self._data_to_arrays(batch, test=True)
+                (c, cm) = xs[:2]
+                extra_vars = xs[2:-2]
+                (_p, mask) = xs[-2:]
             else:
-                (c, _p, mask), (_y,) = self._data_to_arrays(batch, test=True)
+                c = xs[0]
+                extra_vars = xs[1:-2]
+                (_p, mask) = xs[-2:]
             assert mask.all()  # We shouldn't be masking anything in prediction
 
             beam_size = 1 if random else self.options.speaker_beam_size
@@ -208,12 +213,14 @@ class SpeakerLearner(NeuralLearner):
             mask = np.repeat(mask, beam_size, axis=0)
             if self.use_color_mask:
                 cm = np.repeat(cm, beam_size, axis=0)
+            for i in range(len(extra_vars)):
+                extra_vars[i] = np.repeat(extra_vars[i], beam_size, axis=0)
 
             for length in range(1, self.seq_vec.max_len):
                 if done.all():
                     break
                 p = beam.reshape((beam.shape[0] * beam.shape[1], beam.shape[2]))[:, :-1]
-                inputs = [c, cm, p, mask] if self.use_color_mask else [c, p, mask]
+                inputs = [c] + ([cm] if self.use_color_mask else []) + extra_vars + [p, mask]
                 probs = self.model.predict(inputs)
                 if random:
                     indices = sample(probs[:, length - 1, :])
@@ -376,6 +383,7 @@ class SpeakerLearner(NeuralLearner):
                                                                        not self.use_color_mask))
         if self.use_color_mask:
             input_vars.append(T.imatrix(id_tag + 'color_mask'))
+        input_vars.extend(self.get_extra_vars())
         input_vars.extend([
             T.imatrix(id_tag + 'previous'),
             T.imatrix(id_tag + 'mask')
@@ -498,6 +506,9 @@ class SpeakerLearner(NeuralLearner):
 
     def sample_prior_smooth(self, num_samples):
         return self.prior_smooth.sample(num_samples)
+
+    def get_extra_vars(self):
+        return []
 
 
 class ContextSpeakerLearner(SpeakerLearner):
@@ -791,8 +802,11 @@ class RecurrentContextSpeakerLearner(SpeakerLearner):
         check_options(self.options)
         id_tag = (self.id + '/') if self.id else ''
 
-        color_mask_var, prev_output_var, mask_var = input_vars[-3:]
-        color_input_vars = input_vars[:-3]
+        num_extra_vars = len(self.get_extra_vars())
+        color_input_vars = input_vars[:-3 - num_extra_vars]
+        color_mask_var = input_vars[-3 - num_extra_vars]
+        extra_vars = input_vars[-2 - num_extra_vars:-2]
+        prev_output_var, mask_var = input_vars[-2:]
 
         num_contexts = color_mask_var.shape[0]
         num_colors = color_mask_var.shape[1]
@@ -823,7 +837,8 @@ class RecurrentContextSpeakerLearner(SpeakerLearner):
 
         l_context_out = cell(l_color_reshaped, name=id_tag + 'reccontext',
                              only_return_final=True, **cell_kwargs)
-        l_context_tiled = RepeatLayer(l_context_out, self.seq_vec.max_len - 1,
+        (l_context_modified, extra_input_layers) = self.modify_context(l_context_out, extra_vars)
+        l_context_tiled = RepeatLayer(l_context_modified, self.seq_vec.max_len - 1,
                                       name=id_tag + 'reccontext_tiled')
 
         l_prev_out = InputLayer(shape=(None, self.seq_vec.max_len - 1),
@@ -861,7 +876,13 @@ class RecurrentContextSpeakerLearner(SpeakerLearner):
         l_out = ReshapeLayer(l_softmax, (-1, self.seq_vec.max_len - 1, len(self.seq_vec.tokens)),
                              name=id_tag + 'out')
 
-        return l_out, color_inputs + [l_color_mask_in, l_prev_out, l_mask_in]
+        return (l_out,
+                color_inputs + [l_color_mask_in] + extra_input_layers + [l_prev_out, l_mask_in])
+
+    def modify_context(self, l_context_repr, extra_vars):
+        assert not extra_vars, \
+            'Need to override modify_context (got extra vars to default implementation)'
+        return (l_context_repr, [])
 
 
 class AtomicSpeakerLearner(NeuralLearner):

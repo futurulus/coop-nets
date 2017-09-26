@@ -2,7 +2,7 @@
 
 import theano
 import theano.tensor as T
-from lasagne.layers import InputLayer, EmbeddingLayer, NINLayer, MergeLayer, dimshuffle
+from lasagne.layers import InputLayer, EmbeddingLayer, NINLayer, MergeLayer, ConcatLayer, dimshuffle
 from lasagne.init import Normal
 import numpy as np
 
@@ -23,6 +23,10 @@ parser.add_argument('--bilingual_en_embed_file', default='',
 parser.add_argument('--bilingual_zh_embed_file', default='',
                     help='Path to a file giving Chinese word vectors in GloVe format. '
                          'If an empty string, randomly initialize and train.')
+parser.add_argument('--bilingual_lang_embed_size', type=int, default=2,
+                    help='Dimensionality of the embedding to use to represent a language tag. '
+                         'Note that there are only two of these embeddings for bilingual '
+                         'models, so high dimensionality should be unnecessary.')
 
 
 class BilingualGaussianListenerLearner(listener.GaussianContextListenerLearner):
@@ -72,28 +76,23 @@ class BilingualGaussianListenerLearner(listener.GaussianContextListenerLearner):
                               output_size=en_embed_size,
                               W=en_embeddings,
                               name=id_tag + 'desc_embed_en')
-        print('l_en: {}'.format(l_en.output_shape))
         l_en_transformed = dimshuffle(l_en, (0, 2, 1))
         l_en_transformed = NINLayer(l_en_transformed, num_units=self.options.listener_cell_size,
                                     nonlinearity=None,
                                     name=id_tag + 'desc_embed_en_transformed')
         l_en_transformed = dimshuffle(l_en_transformed, (0, 2, 1))
-        print('l_en_transformed: {}'.format(l_en_transformed.output_shape))
 
         l_zh = EmbeddingLayer(l_in, input_size=len(self.seq_vec.tokens),
                               output_size=zh_embed_size,
                               W=zh_embeddings,
                               name=id_tag + 'desc_embed_zh')
-        print('l_zh: {}'.format(l_zh.output_shape))
         l_zh_transformed = dimshuffle(l_zh, (0, 2, 1))
         l_zh_transformed = NINLayer(l_zh_transformed, num_units=self.options.listener_cell_size,
                                     nonlinearity=None,
                                     name=id_tag + 'desc_embed_zh_transformed')
         l_zh_transformed = dimshuffle(l_zh_transformed, (0, 2, 1))
-        print('l_zh_transformed: {}'.format(l_zh_transformed.output_shape))
         l_merged = SwitchLayer(l_lang, [l_en_transformed, l_zh_transformed],
                                name=id_tag + 'desc_embed_switch')
-        print('l_merged: {}'.format(l_merged.output_shape))
         return (l_merged, context_vars)
 
     def unpickle(self, state, model_class=SimpleLasagneModel):
@@ -151,6 +150,54 @@ class BilingualSpeakerLearner(speaker.RecurrentContextSpeakerLearner):
         )
 
 
+class LanguageBitBilingualSpeakerLearner(BilingualSpeakerLearner):
+    def get_extra_vars(self):
+        id_tag = (self.id + '/') if self.id else ''
+
+        return [T.ivector(id_tag + 'languages')]
+
+    def _data_to_arrays(self, training_instances,
+                        init_vectorizer=False, test=False, inverted=False):
+        xs, ys = super(LanguageBitBilingualSpeakerLearner, self)._data_to_arrays(
+            training_instances=training_instances,
+            init_vectorizer=init_vectorizer,
+            test=test, inverted=inverted
+        )
+        langs = [inst.input[0] for inst in training_instances]
+        if init_vectorizer:
+            self.lang_vec = SymbolVectorizer(use_unk=False)
+            self.lang_vec.add_all(langs)
+        langs_vec = self.lang_vec.vectorize_all(langs)
+        return xs[:-2] + [langs_vec] + xs[-2:], ys
+
+    def modify_context(self, l_context_repr, extra_vars):
+        language = extra_vars[0]
+        id_tag = (self.id + '/') if self.id else ''
+
+        print('l_context_repr: {}'.format(l_context_repr.output_shape))
+
+        l_lang_input = InputLayer(shape=(None,), input_var=language,
+                                  name=id_tag + 'lang_input')
+        l_lang_embed = EmbeddingLayer(l_lang_input, input_size=len(self.lang_vec.tokens),
+                                      output_size=self.options.bilingual_lang_embed_size,
+                                      name=id_tag + 'lang_embed')
+        print('l_lang_embed: {}'.format(l_lang_embed.output_shape))
+
+        l_modified_context = ConcatLayer([l_lang_embed, l_context_repr])
+        print('l_modified_context: {}'.format(l_modified_context.output_shape))
+
+        return (l_modified_context, [l_lang_input])
+
+    def __getstate__(self):
+        super_state = super(LanguageBitBilingualSpeakerLearner, self).__getstate__()
+        return super_state + (self.lang_vec,)
+
+    def unpickle(self, state, model_class=SimpleLasagneModel):
+        self.lang_vec = state[-1]
+        super(LanguageBitBilingualSpeakerLearner,
+              self).unpickle(state[:-1], model_class=model_class)
+
+
 def load_embeddings(filename, seq_vec):
     print('Loading word vectors from {}'.format(filename))
 
@@ -198,4 +245,5 @@ def load_embeddings(filename, seq_vec):
 AGENTS = {
     'BilingualListener': BilingualGaussianListenerLearner,
     'BilingualSpeaker': BilingualSpeakerLearner,
+    'LanguageBitBilingualSpeaker': LanguageBitBilingualSpeakerLearner,
 }
