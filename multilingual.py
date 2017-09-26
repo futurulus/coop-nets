@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import listener
 import theano
 import theano.tensor as T
 from lasagne.layers import InputLayer, EmbeddingLayer, NINLayer, MergeLayer, dimshuffle
 from lasagne.init import Normal
 import numpy as np
 
-from stanza.research import config
+from stanza.research import config, instance
 
+import listener
+import speaker
 from neural import SimpleLasagneModel
 from vectorizers import SymbolVectorizer
 
@@ -132,6 +133,24 @@ class SwitchLayer(MergeLayer):
         return stacked[switch, T.arange(T.shape(switch)[0]), ...]
 
 
+class BilingualSpeakerLearner(speaker.RecurrentContextSpeakerLearner):
+    def _data_to_arrays(self, training_instances,
+                        init_vectorizer=False, test=False, inverted=False):
+        stripped_insts = [
+            instance.Instance(input=inst.input[1],
+                              output=':'.join((inst.input[0], inst.output)),
+                              alt_inputs=inst.alt_inputs,
+                              alt_outputs=inst.alt_outputs,
+                              source=inst.source)
+            for inst in training_instances
+        ]
+        return super(BilingualSpeakerLearner, self)._data_to_arrays(
+            training_instances=stripped_insts,
+            init_vectorizer=init_vectorizer,
+            test=test, inverted=inverted
+        )
+
+
 def load_embeddings(filename, seq_vec):
     print('Loading word vectors from {}'.format(filename))
 
@@ -178,4 +197,5 @@ def load_embeddings(filename, seq_vec):
 
 AGENTS = {
     'BilingualListener': BilingualGaussianListenerLearner,
+    'BilingualSpeaker': BilingualSpeakerLearner,
 }

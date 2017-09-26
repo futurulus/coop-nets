@@ -87,8 +87,8 @@ parser.add_argument('--speaker_unk_threshold', type=int, default=0,
                          "the training data is to be treated as unknown words; 1 means "
                          "single-occurrence words (hapax legomena) will be replaced with <unk>.")
 parser.add_argument('--speaker_language_tag', type=str, default='',
-                    help='If non-empty, outputs from the speaker model will be tuples of the '
-                         'form (lt, utt), where lt is the value of this argument. Meant to be '
+                    help='If non-empty, outputs from the speaker model will be prefixed with '
+                         'the value of this argument, followed by a colon ":". Meant to be '
                          'used as a language identifier for the models in multilingual.py.')
 
 rng = get_rng()
@@ -227,8 +227,11 @@ class SpeakerLearner(NeuralLearner):
                                                                       probs.shape[2]))
                     beam_search_step(scores, length, beam, beam_scores, done, eos_index)
             outputs = self.seq_vec.unvectorize_all(beam[:, 0, :])
-            result.extend([tag_language(self.options.speaker_language_tag,
-                                        ' '.join(strip_invalid_tokens(o)))
+            if hasattr(self.options, 'speaker_language_tag'):
+                lt = self.options.speaker_language_tag
+            else:
+                lt = ''
+            result.extend([tag_language(lt, ' '.join(strip_invalid_tokens(o)))
                            for o in outputs])
         if self.options.verbosity + verbosity >= 1:
             progress.end_task()
@@ -688,7 +691,7 @@ def beam_search_step(scores, length, beam, beam_scores, done, eos_index):
 
 def tag_language(lt, utt):
     if lt:
-        return (lt, utt)
+        return ':'.join((lt, utt))
     else:
         return utt
 

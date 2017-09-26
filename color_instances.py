@@ -735,7 +735,12 @@ def bilingual_tag_instance(inst, lang, unicodify=None):
     elif unicodify is not None:
         raise ValueError('unicodify should be "input", "output", or None')
 
-    return Instance(input=(lang, inp),
+    if isinstance(inp, basestring):
+        new_inp = ':'.join((lang, inp))
+    else:
+        new_inp = (lang, inp)
+
+    return Instance(input=new_inp,
                     output=out,
                     alt_inputs=inst.alt_inputs,
                     alt_outputs=inst.alt_outputs,

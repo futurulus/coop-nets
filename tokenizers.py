@@ -58,8 +58,8 @@ TOKENIZER_MAP = {
 
 
 def multilingual_tokenizer(s, lower=True):
-    assert isinstance(s, collections.Sequence) and len(s) == 2, repr(s)
-    lang, utt = s
+    assert isinstance(s, basestring) and u':' in s, repr(s)
+    lang, utt = s.split(u':', 1)
     return TOKENIZER_MAP[lang](utt, lower=lower)
 
 

@@ -349,16 +349,9 @@ class ExhaustiveL2Learner(Learner):
                         print >>sys.stderr, "{}[{}] -> '{}'".format(sampler_inputs[i].alt_inputs,
                                                                     sampler_inputs[i].input,
                                                                     outputs[i])
-            if isinstance(outputs[0], tuple):
-                new_shape = (len(batch), options.exhaustive_num_sample_sets,
-                             context_len * options.exhaustive_num_samples,
-                             len(outputs[0]))
-                assert len(inst.input) == len(outputs[0]), inst.input
-            else:
-                new_shape = (len(batch), options.exhaustive_num_sample_sets,
-                             context_len * options.exhaustive_num_samples)
             outputs = (np.array(outputs)
-                         .reshape(*new_shape)
+                         .reshape(len(batch), options.exhaustive_num_sample_sets,
+                                   context_len * options.exhaustive_num_samples)
                          .tolist())
 
             return [instance.Instance(utt, j, alt_outputs=inst.alt_outputs)
