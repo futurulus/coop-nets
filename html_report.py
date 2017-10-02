@@ -245,8 +245,8 @@ def format_error_analysis(output, compare=None, per_token=False,
         example['pprob_val'] = pprob if isinstance(pprob, Number) else 0
         if compare:
             if compare.data[i]['input'] != inst['input']:
-                warnings.warn("Comparison input doesn't match this input: %s != %s" %
-                              (compare.data[i]['input'], inst['input']))
+                warnings.warn((u"Comparison input doesn't match this input: %s != %s" %
+                               (compare.data[i]['input'], inst['input'])).encode('utf-8'))
             example['comparison'] = format_value(compare.predictions[i])
             cscore = compare.scores[i]
             if isinstance(cscore, Number):
