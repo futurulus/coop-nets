@@ -1,6 +1,7 @@
 import collections
 import re
 from jieba import tokenize as jieba_tokenize
+from hanziconv import HanziConv as hanzi
 
 WORD_RE_STR = r"""
 (?:[a-z][a-z'\-_]+[a-z])       # Words with apostrophes or dashes.
@@ -47,8 +48,11 @@ def whitespace_tokenizer(s, lower=True):
     return s.split()
 
 
-def chinese_tokenizer(s, lower='ignored'):
-    return [t[0] for t in jieba_tokenize(unicode(s))]
+def chinese_tokenizer(s, lower=True):
+    s = unicode(s)
+    if lower:
+        s = hanzi.toSimplified(s)
+    return [t[0] for t in jieba_tokenize(s)]
 
 
 TOKENIZER_MAP = {
