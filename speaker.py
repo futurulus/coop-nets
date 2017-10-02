@@ -260,10 +260,7 @@ class SpeakerLearner(NeuralLearner):
             batch = list(batch)
 
             xs, (n,) = self._data_to_arrays(batch, test=False)
-            if self.use_color_mask:
-                mask = xs[3]
-            else:
-                mask = xs[2]
+            mask = xs[-1]
 
             probs = self.model.predict(xs)
             token_probs = probs[np.arange(probs.shape[0])[:, np.newaxis],

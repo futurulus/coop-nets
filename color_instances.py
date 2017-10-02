@@ -724,24 +724,30 @@ def linear_hsv(color):
     return h * 360.0, s * 100.0, v * 100.0
 
 
-def bilingual_tag_instance(inst, lang, unicodify=None):
+def bilingual_tag_instance(inst, lang, listener=False, unicodify=False):
     inp, out = inst.input, inst.output
-    if unicodify == 'input':
-        assert isinstance(inp, basestring), repr(inp)
-        inp = unicode(inp)
-    elif unicodify == 'output':
-        assert isinstance(out, basestring), repr(out)
-        out = unicode(out)
-    elif unicodify is not None:
-        raise ValueError('unicodify should be "input", "output", or None')
 
-    if isinstance(inp, basestring):
-        new_inp = ':'.join((lang, inp))
+    if listener:
+        if unicodify:
+            assert isinstance(inp, basestring), repr(inp)
+            inp = unicode(inp)
+        if isinstance(inp, basestring):
+            new_inp = ':'.join((lang, inp))
+        else:
+            new_inp = (lang, inp)
+        new_out = out
     else:
-        new_inp = (lang, inp)
+        new_inp = inp
+        if unicodify:
+            assert isinstance(out, basestring), repr(out)
+            out = unicode(out)
+        if isinstance(out, basestring):
+            new_out = ':'.join((lang, out))
+        else:
+            new_out = (lang, out)
 
     return Instance(input=new_inp,
-                    output=out,
+                    output=new_out,
                     alt_inputs=inst.alt_inputs,
                     alt_outputs=inst.alt_outputs,
                     source=inst.source)
@@ -764,49 +770,49 @@ def bilingual_train(listener=False):
     en_insts = filtered_train(listener=listener)
     zh_insts = chinese_train(listener=listener)
     for e, z in zip(en_insts, cycle_shuffled(zh_insts)):
-        result.append(bilingual_tag_instance(e, 'en', unicodify='input' if listener else 'output'))
-        result.append(bilingual_tag_instance(z, 'zh'))
+        result.append(bilingual_tag_instance(e, 'en', listener=listener, unicodify=True))
+        result.append(bilingual_tag_instance(z, 'zh', listener=listener))
     return result
 
 
 def bilingual_en_train(listener=False):
     return [
-        bilingual_tag_instance(inst, 'en')
+        bilingual_tag_instance(inst, 'en', listener=listener)
         for inst in filtered_train(listener=listener)
     ]
 
 
 def bilingual_en_dev(listener=False):
     return [
-        bilingual_tag_instance(inst, 'en')
+        bilingual_tag_instance(inst, 'en', listener=listener)
         for inst in filtered_dev(listener=listener)
     ]
 
 
 def bilingual_en_test(listener=False):
     return [
-        bilingual_tag_instance(inst, 'en')
+        bilingual_tag_instance(inst, 'en', listener=listener)
         for inst in filtered_test(listener=listener)
     ]
 
 
 def bilingual_zh_train(listener=False):
     return [
-        bilingual_tag_instance(inst, 'zh')
+        bilingual_tag_instance(inst, 'zh', listener=listener)
         for inst in chinese_train(listener=listener)
     ]
 
 
 def bilingual_zh_dev(listener=False):
     return [
-        bilingual_tag_instance(inst, 'zh')
+        bilingual_tag_instance(inst, 'zh', listener=listener)
         for inst in chinese_dev(listener=listener)
     ]
 
 
 def bilingual_zh_test(listener=False):
     return [
-        bilingual_tag_instance(inst, 'zh')
+        bilingual_tag_instance(inst, 'zh', listener=listener)
         for inst in chinese_test(listener=listener)
     ]
 

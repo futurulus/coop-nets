@@ -42,7 +42,7 @@ class BilingualGaussianListenerLearner(listener.GaussianContextListenerLearner):
             init_vectorizer=init_vectorizer,
             test=test, inverted=inverted
         )
-        langs = [inst.input[0] for inst in training_instances]
+        langs = [inst.input.split(':', 1)[0] for inst in training_instances]
         if init_vectorizer:
             self.lang_vec = SymbolVectorizer(use_unk=False)
             self.lang_vec.add_all(langs)
@@ -133,21 +133,8 @@ class SwitchLayer(MergeLayer):
 
 
 class BilingualSpeakerLearner(speaker.RecurrentContextSpeakerLearner):
-    def _data_to_arrays(self, training_instances,
-                        init_vectorizer=False, test=False, inverted=False):
-        stripped_insts = [
-            instance.Instance(input=inst.input[1],
-                              output=':'.join((inst.input[0], inst.output)),
-                              alt_inputs=inst.alt_inputs,
-                              alt_outputs=inst.alt_outputs,
-                              source=inst.source)
-            for inst in training_instances
-        ]
-        return super(BilingualSpeakerLearner, self)._data_to_arrays(
-            training_instances=stripped_insts,
-            init_vectorizer=init_vectorizer,
-            test=test, inverted=inverted
-        )
+    # Difference between this and the baseline speaker is obsolete
+    pass
 
 
 class LanguageBitBilingualSpeakerLearner(BilingualSpeakerLearner):
@@ -163,7 +150,7 @@ class LanguageBitBilingualSpeakerLearner(BilingualSpeakerLearner):
             init_vectorizer=init_vectorizer,
             test=test, inverted=inverted
         )
-        langs = [inst.input[0] for inst in training_instances]
+        langs = [inst.output.split(':', 1)[0] for inst in training_instances]
         if init_vectorizer:
             self.lang_vec = SymbolVectorizer(use_unk=False)
             self.lang_vec.add_all(langs)
