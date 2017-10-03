@@ -1,0 +1,11 @@
+{
+  options: {
+    speaker_learning_rate: [0.01, 0.1, 1.0],
+    speaker_cell_size: [10, 100, 500],
+    speaker_optimizer: ["adagrad", "adam", "sgd"],
+  },
+
+  interactions: {
+    speaker_optimizer: ["speaker_learning_rate"],
+  }
+}

@@ -1,5 +1,6 @@
 from stanza.research import config
-config.redirect_output()
+if __name__ == '__main__':
+    config.redirect_output()
 
 from stanza.cluster import pick_gpu
 parser = config.get_options_parser()
@@ -146,7 +147,8 @@ def main():
                 split_id = 'train'
             train_results = evaluate.evaluate(learner, train_insts, metrics=m, split_id=split_id,
                                               write_data=options.output_train_data)
-            output.output_results(train_results, split_id)
+            if options.verbosity != 0:
+                output.output_results(train_results, split_id)
 
     for i, (source, test_insts) in enumerate(zip(options.data_source,
                                                  test_datasets)):
@@ -158,7 +160,10 @@ def main():
             split_id = 'eval'
         test_results = evaluate.evaluate(learner, test_insts, metrics=m, split_id=split_id,
                                          write_data=options.output_test_data)
-        output.output_results(test_results, split_id)
+        if options.verbosity != 0:
+            output.output_results(test_results, split_id)
+
+    return train_results, test_results
 
 
 def get_example_inst(test_datasets, train_datasets):

@@ -1,0 +1,6 @@
+*.pyc
+.version
+MANIFEST
+build/
+dist/
+html/
