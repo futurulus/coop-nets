@@ -15,6 +15,7 @@ import math
 import multiprocessing as mp
 import os
 import Queue
+import time
 
 import pygtrie as trie
 from stanza.research import config
@@ -27,6 +28,9 @@ parser.add_argument('--tune_config', '-T',
                     help='Path to config file containing options for tuning search')
 parser.add_argument('--tune_max_processes', type=int, default=16,
                     help='Number of processes to run at once for tuning search')
+parser.add_argument('--tune_delay', type=float, default=10.0,
+                    help='Number of seconds to wait in between starting each process. '
+                         'If non-positive, do not wait.')
 parser.add_argument('--tune_random', type=int, default=16,
                     help='Number of random parameter settings to try before switching '
                          'to local search')
@@ -41,6 +45,7 @@ rng = get_rng()
 
 
 def tune_queue(main_fn):
+    config.redirect_output()
     options = config.options()
     with open(options.tune_config, 'r') as infile:
         tune_options = config.HoconConfigFileParser().parse(infile)
@@ -64,7 +69,7 @@ def tune_queue(main_fn):
 
         while reg.running_processes > 0:
             name, objective = reg.get()
-            print('{:10.3f} {}'.format(objective, name[:70]))
+            print('\nTUNE: {:10.3f} {}\n'.format(objective, name[:70]))
 
             while remaining_random > 0 and reg.running_processes < options.tune_max_processes:
                 reg.start_random()
@@ -125,6 +130,8 @@ class ProcessRegistry(object):
             options_dict[k] = v
         options = argparse.Namespace(**options_dict)
 
+        if options_dict['tune_delay'] > 0:
+            time.sleep(options_dict['tune_delay'])
         proc = mp.Process(target=queue_results,
                           args=(self.main_fn, options, name, self.results_queue))
         self.proc_for_name[name] = proc
@@ -300,5 +307,4 @@ def queue_results(main_fn, options, name, q):
 
 
 if __name__ == '__main__':
-    # tune_queue(run_experiment.main)
-    tune_queue(test_main)
+    tune_queue(run_experiment.main)
