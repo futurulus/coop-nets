@@ -442,16 +442,16 @@ def hawkins_test(listener=False, speakerID='speaker', suffix=''):
     return train_insts
 
 
-def hawkins_tune_train(listener=False, suffix='', tuning_insts=350):
-    insts = hawkins_context(listener=listener, suffix=suffix)
+def hawkins_tune_train(listener=False, speakerID='speaker', suffix='', tuning_insts=350):
+    insts = hawkins_context(listener=listener, speakerID=speakerID, suffix=suffix)
     num_insts = len(insts) / 3
     train_insts = insts[:num_insts - tuning_insts]
     rng.shuffle(train_insts)
     return train_insts
 
 
-def hawkins_tune_test(listener=False, suffix='', tuning_insts=350):
-    insts = hawkins_context(listener=listener, suffix=suffix)
+def hawkins_tune_test(listener=False, speakerID='speaker', suffix='', tuning_insts=350):
+    insts = hawkins_context(listener=listener, speakerID=speakerID, suffix=suffix)
     num_insts = len(insts) / 3
     tune_insts = insts[num_insts - tuning_insts:num_insts]
     return tune_insts
@@ -509,7 +509,17 @@ def chinese_dev(listener=False):
 
 
 def chinese_test(listener=False):
-    return hawkins_test(listener=listener, listenerID='倾听者', speakerID='演说者', suffix='Chinese')
+    return hawkins_test(listener=listener, speakerID='演说者', suffix='Chinese')
+
+
+def chinese_tune_train(listener=False):
+    return hawkins_tune_train(listener=listener, speakerID='演说者',
+                              suffix='Chinese', tuning_insts=350)
+
+
+def chinese_tune_test(listener=False):
+    return hawkins_tune_test(listener=listener, speakerID='演说者',
+                              suffix='Chinese', tuning_insts=350)
 
 # train: 1124-1:1  (start) - 8994-5:50
 # dev:   2641-2:1          - 8574-6:50
@@ -581,6 +591,21 @@ def filtered_train(listener=False):
     print('Training contexts: {}'.format(len(train_insts)))
     rng.shuffle(train_insts)
     return train_insts
+
+
+def filtered_tune_train(listener=False, tuning_insts=3500):
+    insts = filtered(listener=listener)
+    num_insts = FILTERED_SPLIT[1]
+    train_insts = insts[:num_insts - tuning_insts]
+    rng.shuffle(train_insts)
+    return train_insts
+
+
+def filtered_tune_test(listener=False, tuning_insts=3500):
+    insts = filtered(listener=listener)
+    num_insts = FILTERED_SPLIT[1]
+    tune_insts = insts[num_insts - tuning_insts:num_insts]
+    return tune_insts
 
 
 def filtered_dev(listener=False):
@@ -775,6 +800,26 @@ def bilingual_train(listener=False):
     return result
 
 
+def bilingual_tune_train(listener=False):
+    result = []
+    en_insts = filtered_tune_train(listener=listener, tuning_insts=350)
+    zh_insts = chinese_tune_train(listener=listener)
+    for e, z in zip(en_insts, cycle_shuffled(zh_insts)):
+        result.append(bilingual_tag_instance(e, 'en', listener=listener, unicodify=True))
+        result.append(bilingual_tag_instance(z, 'zh', listener=listener))
+    return result
+
+
+def bilingual_tune_test(listener=False):
+    return [
+        bilingual_tag_instance(inst, 'en', listener=listener)
+        for inst in filtered_tune_test(listener=listener, tuning_insts=350)
+    ] + [
+        bilingual_tag_instance(inst, 'zh', listener=listener)
+        for inst in chinese_tune_test(listener=listener)
+    ]
+
+
 def bilingual_en_train(listener=False):
     return [
         bilingual_tag_instance(inst, 'en', listener=listener)
@@ -856,7 +901,8 @@ SOURCES = {
     'tuna_dev': DataSource(tuna_instances.tuna08_train, tuna_instances.tuna08_dev),
     'tuna_test': DataSource(tuna_instances.tuna08_train, tuna_instances.tuna08_test),
     'chinese_dev': DataSource(chinese_train, chinese_dev),
-    'chinese_train': DataSource(chinese_train, chinese_test),
+    'chinese_test': DataSource(chinese_train, chinese_test),
+    'chinese_tune': DataSource(chinese_tune_train, chinese_tune_test),
     'bilingual_en_dev': DataSource(bilingual_train, bilingual_en_dev),
     'bilingual_en_test': DataSource(bilingual_train, bilingual_en_test),
     'bilingual_en_only_dev': DataSource(bilingual_en_train, bilingual_en_dev),
@@ -865,4 +911,5 @@ SOURCES = {
     'bilingual_zh_test': DataSource(bilingual_train, bilingual_zh_test),
     'bilingual_zh_only_dev': DataSource(bilingual_zh_train, bilingual_zh_dev),
     'bilingual_zh_only_test': DataSource(bilingual_zh_train, bilingual_zh_test),
+    'bilingual_tune': DataSource(bilingual_tune_train, bilingual_tune_test),
 }

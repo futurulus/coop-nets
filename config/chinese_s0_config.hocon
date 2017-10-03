@@ -1,0 +1,15 @@
+{
+  options: {
+    speaker_cell_size: [50, 80, 100, 200],
+    speaker_dropout: [0.0, 0.1, 0.2, 0.5],
+    speaker_forget_bias: [0.0, 1.0, 5.0],
+    speaker_learning_rate: [0.001, 0.004, 0.01, 0.04, 0.1, 0.4, 1.0, 4.0],
+    speaker_nonlinearity: ["tanh", "rectify", "sigmoid", "linear"],
+    speaker_optimizer: ["adagrad", "adam", "rmsprop", "sgd"],
+    true_grad_clipping: [0.0, 1.0, 5.0],
+  },
+
+  interactions: {
+    speaker_optimizer: ["speaker_learning_rate"],
+  }
+}
