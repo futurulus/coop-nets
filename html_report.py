@@ -478,16 +478,22 @@ def load_tokens(run_dir, split, max_val_iter, max_tokens_idx):
         with open(filename, 'r') as infile:
             sents = []
             for line in infile:
-                tokens_str = line.strip().split('\t')
+                line = line.decode('utf-8')
+                tokens_str = line[:-1].split(u'\t')
                 tuples = []
                 for token_str in tokens_str:
-                    t = token_str.split(' ')
+                    if token_str[:2] == u'  ':
+                        token_str = u'_ ' + token_str[2:]
+                    token_str = token_str.replace(u'   ', u' _ ')
+                    t = token_str.split(u' ')
                     if len(t) == 4:
-                        tuples.append((t[0], float(t[1]), t[2], float(t[3])))
+                        tuples.append((t[0].encode('utf-8'), float(t[1]),
+                                       t[2].encode('utf-8'), float(t[3])))
                     else:
-                        warnings.warn('invalid token format: "{}"\n'
-                                      '(should be "goldword 4.0 predword 5.2", where "4.0" is '
-                                      'negative log probability)'.format(token_str))
+                        warnings.warn(u'invalid token format: "{}"\n'
+                                       '(should be "goldword 4.0 predword 5.2", where "4.0" is '
+                                       'negative log probability)'
+                                      .format(token_str).encode('utf-8'))
                         tuples.append(('ERROR', 0.0, 'ERROR', 0.0))
                 sents.append(tuples)
             return sents
