@@ -121,6 +121,8 @@ def main():
     if options.load:
         with open(options.load, 'rb') as infile:
             learner.load(infile)
+
+        train_results = None
     else:
         if hasattr(learner, '_data_to_arrays'):
             # XXX: is there a better way to ensure that the vocabulary is defined
