@@ -4,6 +4,7 @@ import json
 import numpy as np
 import os
 import warnings
+from cgi import escape as html_escape
 from collections import namedtuple
 from numbers import Number
 
@@ -26,8 +27,12 @@ parser.add_argument('--only_differing_preds', type=config.boolean, default=False
 parser.add_argument('--show_all', type=config.boolean, default=False,
                     help='If True, replace the Head section with a section that shows '
                          'all examples.')
+parser.add_argument('--show_tokens', type=config.boolean, default=True,
+                    help='If True, add tables to the output showing token-by-token '
+                         'probabilities. Speaker only, does nothing if tokens.*.txt is not '
+                         'present in the run directory.')
 
-Output = namedtuple('Output', 'config,results,data,scores,predictions')
+Output = namedtuple('Output', 'config,results,data,scores,predictions,tokens')
 
 MAX_ALTS = 10
 
@@ -37,14 +42,15 @@ class NotPresent(object):
         return '&nbsp;'
 
 
-def html_report(output, compare=None, per_token=False, only_differing=False, show_all=False):
+def html_report(output, compare=None, per_token=False, only_differing=False,
+                show_all=False, show_tokens=True):
     '''
     >>> config_dict = {'run_dir': 'runs/test', 'listener': True}
     >>> results_dict = {'dev.perplexity.gmean': 14.0}
     >>> data = [instance.Instance([0.0, 100.0, 100.0], 'red').__dict__]
     >>> scores = [-2.639057329615259]
     >>> predictions = ['bright red']
-    >>> print(html_report(Output(config_dict, results_dict, data, scores, predictions)))
+    >>> print(html_report(Output(config_dict, results_dict, data, scores, predictions, None)))
     <html>
     <head>
     <link rel="stylesheet" href="http://web.stanford.edu/~wmonroe4/css/style.css" type="text/css">
@@ -115,7 +121,8 @@ def html_report(output, compare=None, per_token=False, only_differing=False, sho
         results=format_results(output.results, compare.results if compare else None),
         error_analysis=format_error_analysis(output, compare, per_token=per_token,
                                              only_differing=only_differing,
-                                             show_all=show_all)
+                                             show_all=show_all,
+                                             show_tokens=show_tokens)
     )
 
 
@@ -190,19 +197,19 @@ def get_formatted_result(results, split, m, a):
         return ''
 
 
-def format_number(value):
+def format_number(value, exp_sig_figs=6):
     if not isinstance(value, Number):
         return repr(value)
     elif isinstance(value, int):
         return '{:,d}'.format(value)
     elif value > 1e8 or abs(value) < 1e-3:
-        return '{:.6e}'.format(value)
+        return '{0:.{1}e}'.format(value, exp_sig_figs)
     else:
         return '{:,.3f}'.format(value)
 
 
 def format_error_analysis(output, compare=None, per_token=False,
-                          only_differing=False, show_all=False):
+                          only_differing=False, show_all=False, show_tokens=True):
     examples_table_template = '''    <h3>{cond}</h3>
     <table>
         <tr><th>input</th>{alt_inputs_header}{alt_outputs_header}<th>gold</th><th>prediction</th><th>{prob_header}</th>{compare_header}</tr>
@@ -230,7 +237,10 @@ def format_error_analysis(output, compare=None, per_token=False,
         example = {}
         example['input'] = format_value(inst['input'])
         example['alt_inputs'] = format_alts(inst['alt_inputs'], show_alt_inputs)
-        example['output'] = format_value(inst['output'])
+        if show_tokens and output.tokens:
+            example['output'] = format_tokens(inst['output'], output.tokens[i])
+        else:
+            example['output'] = format_value(inst['output'])
         example['alt_outputs'] = format_alts(inst['alt_outputs'], show_alt_outputs)
         example['prediction'] = format_value(pred)
         if isinstance(score, Number):
@@ -306,7 +316,7 @@ def format_value(value, suppress_colors=False):
             value = [int(c) for c in value]
     else:
         color = '#fff'
-    value_repr = repr(value).decode('unicode_escape').encode('utf-8')
+    value_repr = html_escape(repr(value).decode('unicode_escape').encode('utf-8'), quote=True)
     return '<td bgcolor="{color}">{value}</td>'.format(color=color, value=value_repr)
 
 
@@ -316,6 +326,44 @@ def format_alts(alts, num_alts):
     alts = alts[:num_alts]
     alts = alts + [NotPresent()] * (num_alts - len(alts))
     return ''.join(format_value(v) for v in alts)
+
+
+def format_tokens(output, tokens):
+    output_cell_template = ('<td>{output_repr}<br>'
+                            '<table>{rows}</table></td>')
+    output_repr = repr(output).decode('unicode_escape').encode('utf-8')
+    row_template = '<tr>{gold_row}</tr><tr>{pred_row}</tr>'
+    rows = []
+    for i in range(0, len(output), 16):
+        tokens_part = tokens[i:i + 16]
+        gold_row = format_tokens_row(tokens_part, 0)
+        pred_row = format_tokens_row(tokens_part, 2)
+        rows.append(row_template.format(gold_row=gold_row, pred_row=pred_row))
+    return output_cell_template.format(output_repr=output_repr, rows=''.join(rows))
+
+
+def format_tokens_row(tokens, tuple_offset):
+    token_cell_template = '<td bgcolor="{color}">{token}<br><small>{prob}</small></td>'
+    cells = []
+    for t in tokens:
+        log_prob = -t[tuple_offset + 1]
+        cells.append(token_cell_template.format(token=html_escape(t[tuple_offset], quote=True),
+                                                prob=format_number(np.exp(log_prob), 0),
+                                                color=web_color(color_log_prob(log_prob))))
+    return ''.join(cells)
+
+
+def color_log_prob(log_prob):
+    if np.isinf(log_prob):
+        # gray: -inf
+        return (0.0, 0.0, 50.0)
+    elif not np.isfinite(log_prob):
+        # neon green: nan
+        return (120.0, 100.0, 100.0)
+    else:
+        # shades of red/pink: finite log probabilities
+        sat = max(0.0, min(-log_prob * 10.0 / 2.0, 100.0))
+        return (0.0, sat, 100.0)
 
 
 def web_color(hsv):
@@ -348,7 +396,8 @@ def generate_html_reports(run_dir=None, compare_dir=None):
         with open(out_path, 'w') as outfile:
             outfile.write(html_report(output, compare, per_token=options.per_token_prob,
                                       only_differing=options.only_differing_preds,
-                                      show_all=options.show_all))
+                                      show_all=options.show_all,
+                                      show_tokens=options.show_tokens))
 
 
 def get_all_outputs(run_dir, compare_dir):
@@ -374,13 +423,25 @@ def get_output(run_dir, split):
     config_dict = load_dict(os.path.join(run_dir, 'config.json'))
 
     results = {}
+    max_val_iter = -1
     for filename in glob.glob(os.path.join(run_dir, 'results.*.json')):
         results.update(load_dict(filename))
+        results_split = os.path.basename(filename)[len('results.'):-len('.json')]
+        if results_split.startswith('val') and results_split[len('val'):].isdigit():
+            val_iter = int(results_split[len('val'):])
+            max_val_iter = max(val_iter, max_val_iter)
+
+    max_tokens_idx = -1
+    for filename in glob.glob(os.path.join(run_dir, 'tokens.*.txt')):
+        tokens_idx = os.path.basename(filename)[len('tokens.'):-len('.txt')]
+        if tokens_idx.isdigit():
+            max_tokens_idx = max(int(tokens_idx), max_tokens_idx)
 
     data = load_dataset(os.path.join(run_dir, 'data.%s.jsons' % split))
     scores = load_dataset(os.path.join(run_dir, 'scores.%s.jsons' % split))
     predictions = load_dataset(os.path.join(run_dir, 'predictions.%s.jsons' % split))
-    return Output(config_dict, results, data, scores, predictions)
+    tokens = load_tokens(run_dir, split, max_val_iter, max_tokens_idx)
+    return Output(config_dict, results, data, scores, predictions, tokens)
 
 
 def load_dict(filename):
@@ -403,6 +464,35 @@ def load_dataset(filename, transform_func=(lambda x: x)):
     except IOError, e:
         warnings.warn(str(e))
         return [{'error': str(e)}]
+
+
+def load_tokens(run_dir, split, max_val_iter, max_tokens_idx):
+    if split.startswith('val') and split[len('val'):].isdigit():
+        tokens_idx = int(split[len('val'):])
+    elif split == 'train':
+        tokens_idx = max_tokens_idx - 1
+    elif split in ('dev', 'test', 'eval'):
+        tokens_idx = max_tokens_idx
+    filename = os.path.join(run_dir, 'tokens.%d.txt' % tokens_idx)
+    try:
+        with open(filename, 'r') as infile:
+            sents = []
+            for line in infile:
+                tokens_str = line.strip().split('\t')
+                tuples = []
+                for token_str in tokens_str:
+                    t = token_str.split(' ')
+                    if len(t) == 4:
+                        tuples.append((t[0], float(t[1]), t[2], float(t[3])))
+                    else:
+                        warnings.warn('invalid token format: "{}"\n'
+                                      '(should be "goldword 4.0 predword 5.2", where "4.0" is '
+                                      'negative log probability)'.format(token_str))
+                        tuples.append(('ERROR', 0.0, 'ERROR', 0.0))
+                sents.append(tuples)
+            return sents
+    except IOError:
+        return None
 
 
 if __name__ == '__main__':

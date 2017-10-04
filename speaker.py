@@ -1,3 +1,4 @@
+import contextlib
 import numbers
 import numpy as np
 import theano.tensor as T
@@ -90,8 +91,16 @@ parser.add_argument('--speaker_language_tag', type=str, default='',
                     help='If non-empty, outputs from the speaker model will be prefixed with '
                          'the value of this argument, followed by a colon ":". Meant to be '
                          'used as a language identifier for the models in multilingual.py.')
+parser.add_argument('--speaker_output_tokens', type=config.boolean, default=True,
+                    help='If True, log token-level log likelihood information in tokens.0.txt '
+                         'during scoring.')
 
 rng = get_rng()
+
+
+@contextlib.contextmanager
+def null_context():
+    yield
 
 
 class UniformPrior(object):
@@ -250,28 +259,67 @@ class SpeakerLearner(NeuralLearner):
         batches = iterators.iter_batches(eval_instances, self.options.speaker_eval_batch_size)
         num_batches = (len(eval_instances) - 1) // self.options.speaker_eval_batch_size + 1
 
+        if self.options.speaker_output_tokens:
+            if hasattr(self, 'tokens_file_id'):
+                self.tokens_file_id += 1
+            else:
+                self.tokens_file_id = 0
+            tokens_fname = 'tokens.{}.txt'.format(self.tokens_file_id)
+        else:
+            tokens_fname = None
+
         if self.options.verbosity + verbosity >= 2:
             print('Scoring')
         if self.options.verbosity + verbosity >= 1:
             progress.start_task('Score batch', num_batches)
-        for batch_num, batch in enumerate(batches):
-            if self.options.verbosity + verbosity >= 1:
-                progress.progress(batch_num)
-            batch = list(batch)
 
-            xs, (n,) = self._data_to_arrays(batch, test=False)
-            mask = xs[-1]
+        with (config.open(tokens_fname, 'w') if tokens_fname else null_context()) as tokens_file:
+            for batch_num, batch in enumerate(batches):
+                if self.options.verbosity + verbosity >= 1:
+                    progress.progress(batch_num)
+                batch = list(batch)
 
-            probs = self.model.predict(xs)
-            token_probs = probs[np.arange(probs.shape[0])[:, np.newaxis],
-                                np.arange(probs.shape[1]), n]
-            scores_arr = np.sum(np.log(token_probs) * mask, axis=1)
-            scores = scores_arr.tolist()
-            result.extend(scores)
+                xs, (n,) = self._data_to_arrays(batch, test=False)
+                mask = xs[-1]
+
+                probs = self.model.predict(xs)
+                token_probs = probs[np.arange(probs.shape[0])[:, np.newaxis],
+                                    np.arange(probs.shape[1]), n]
+                scores_arr = np.sum(np.log(token_probs) * mask, axis=1)
+                scores = scores_arr.tolist()
+                result.extend(scores)
+                if tokens_fname:
+                    self.write_tokens_data(probs, n, mask, tokens_file)
+
         if self.options.verbosity + verbosity >= 1:
             progress.end_task()
 
         return result
+
+    def write_tokens_data(self, probs, gold, mask, outfile):
+        predicted = np.argmax(probs, axis=2)
+        gold_scores = -np.log(probs[np.arange(probs.shape[0])[:, np.newaxis],
+                                    np.arange(probs.shape[1]), gold])
+        pred_scores = -np.log(probs[np.arange(probs.shape[0])[:, np.newaxis],
+                                    np.arange(probs.shape[1]), predicted])
+        tuples = [
+            [
+                (gold_token, gold_score, pred_token, pred_score)
+                for gold_token, gold_score, pred_token, pred_score, mask_bit
+                in zip(gold_sentence, gold_scores_s, pred_sentence, pred_scores_s, mask_sentence)
+                if mask_bit
+            ]
+            for gold_sentence, pred_sentence, mask_sentence, gold_scores_s, pred_scores_s
+            in zip(self.seq_vec.unvectorize_all(gold),
+                   self.seq_vec.unvectorize_all(predicted),
+                   mask, gold_scores, pred_scores)
+        ]
+        for sent in tuples:
+            outfile.write(u'\t'.join(
+                u'{} {:.3g} {} {:.3g}'.format(*t)
+                for t in sent
+            ).encode('utf-8'))
+            outfile.write('\n')
 
     def _data_to_arrays(self, training_instances,
                         init_vectorizer=False, test=False, inverted=False):
