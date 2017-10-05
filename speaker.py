@@ -348,9 +348,15 @@ class SpeakerLearner(NeuralLearner):
             tokenize = TOKENIZERS['whitespace']
 
         if init_vectorizer:
+            # Don't double-count words in datasets that repeat instances
+            tokenized_nodups = [['<s>'] + tokenize(get_desc(inst)) + ['</s>']
+                                for inst in training_instances
+                                if not is_repeat(inst)]
+            self.seq_vec.add_all(tokenized_nodups)
+            del tokenized_nodups
+
             tokenized = [['<s>'] + tokenize(get_desc(inst)) + ['</s>']
                          for inst in training_instances]
-            self.seq_vec.add_all(tokenized)
             unk_replaced = self.seq_vec.unk_replace_all(tokenized)
             config.dump(unk_replaced, 'unk_replaced.train.jsons', lines=True)
 
@@ -773,9 +779,15 @@ class RecurrentContextSpeakerLearner(SpeakerLearner):
             tokenize = TOKENIZERS['whitespace']
 
         if init_vectorizer:
+            # Don't double-count words in datasets that repeat instances
+            tokenized_nodups = [['<s>'] + tokenize(get_utt(inst, inverted)) + ['</s>']
+                                for inst in training_instances
+                                if not is_repeat(inst)]
+            self.seq_vec.add_all(tokenized_nodups)
+            del tokenized_nodups
+
             tokenized = [['<s>'] + tokenize(get_utt(inst, inverted)) + ['</s>']
                          for inst in training_instances]
-            self.seq_vec.add_all(tokenized)
             unk_replaced = self.seq_vec.unk_replace_all(tokenized)
             config.dump(unk_replaced, 'unk_replaced.train.jsons', lines=True)
 
@@ -928,6 +940,15 @@ class RecurrentContextSpeakerLearner(SpeakerLearner):
         assert not extra_vars, \
             'Need to override modify_context (got extra vars to default implementation)'
         return (l_context_repr, [])
+
+
+def is_repeat(inst):
+    if isinstance(inst.source, tuple):
+        return inst.source[-1] == 'repeat'
+    elif isinstance(inst.source, dict):
+        return 'repeat' in inst.source and inst.source['repeat']
+    else:
+        return False
 
 
 class AtomicSpeakerLearner(NeuralLearner):

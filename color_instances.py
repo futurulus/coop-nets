@@ -782,12 +782,25 @@ def cycle_shuffled(insts):
     '''
     A generator that cycles through insts, but in a random order each time through the list.
 
-    Note: destructively modifies insts!
+    Note: destructively modifies the order of the list! (but not the instances themselves)
     '''
+    repeat = False
     while insts:
         for inst in insts:
+            if repeat:
+                inst = Instance(**inst.__dict__)
+                if isinstance(inst.source, tuple):
+                    inst.source += ('repeat',)
+                elif isinstance(inst.source, dict):
+                    inst.source = dict(inst.source)
+                    inst.source['repeat'] = True
+                elif inst.source is None:
+                    inst.source = {'repeat': True}
+
             yield inst
+
         rng.shuffle(insts)
+        repeat = True
 
 
 def bilingual_train(listener=False):
