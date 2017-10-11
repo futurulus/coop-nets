@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+rm *.aux *.bbl *.blg *.dvi *.log *.out *.bak *.synctex.gz

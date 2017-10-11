@@ -13,6 +13,8 @@
 
 *.bbl
 
+*.out
+
 *.swp
 
 tacl_colors.out

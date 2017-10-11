@@ -1,0 +1,200 @@
+%
+% File naaclhlt2018.tex
+%
+%% Based on the style files for NAACL-HLT 2018, which were
+%% Based on the style files for ACL-2015, with some improvements
+%%  taken from the NAACL-2016 style
+%% Based on the style files for ACL-2014, which were, in turn,
+%% based on ACL-2013, ACL-2012, ACL-2011, ACL-2010, ACL-IJCNLP-2009,
+%% EACL-2009, IJCNLP-2008...
+%% Based on the style files for EACL 2006 by 
+%%e.agirre@ehu.es or Sergi.Balari@uab.es
+%% and that of ACL 08 by Joakim Nivre and Noah Smith
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\usepackage[hyperref]{naaclhlt2018}
+\usepackage{naaclhlt2018}
+\usepackage{times}
+\usepackage{latexsym}
+
+\usepackage{url}
+\usepackage{comment}
+
+% Chinese
+\usepackage{CJK}
+\newenvironment{zh}{\begin{CJK}{UTF8}{gbsn}}{\end{CJK}}
+
+% nice-looking tables
+\usepackage{booktabs}
+
+% glossing
+\usepackage{expex}
+\lingset{everygla=,everyglb=\footnotesize}
+
+
+%\aclfinalcopy % Uncomment this line for the final submission
+%\def\aclpaperid{***} %  Enter the acl Paper ID here
+
+%\setlength\titlebox{5cm}
+% You can expand the titlebox if you need extra space
+% to show all the authors. Please do not make the titlebox
+% smaller than 5cm (the original size); we will check this
+% in the camera-ready version and ask you to change it back.
+
+\title{Generating and Understanding Color References \\
+  with Bilingual Multi-Task Learning}
+
+\author{First Author \\
+  Affiliation / Address line 1 \\
+  Affiliation / Address line 2 \\
+  Affiliation / Address line 3 \\
+  {\tt email@domain} \\\And
+  Second Author \\
+  Affiliation / Address line 1 \\
+  Affiliation / Address line 2 \\
+  Affiliation / Address line 3 \\
+  {\tt email@domain} \\}
+
+\date{}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+  We show that training on English data improves modeling of context-sensitive color description generation in Chinese on a reference game task. Furthermore, a Chinese description understanding model derived by Bayesian inference from this bilingually-trained speaker outperforms simple classifiers, both monolingual and bilingual.
+\end{abstract}
+
+\section{Introduction}
+
+Lexical semantic spaces differ among languages; English and Chinese have different color terms.
+% WM: a diagram of basic color terms according to our data could be interesting
+Do speakers of different languages use context in different ways?
+
+(Why colors? They are a well-understood referent space, allow for illustrative analysis.)
+
+Training on English data improves Chinese referring expression generation. This suggests the ability to transfer either context sensitivity or compositionality between the two languages.
+
+\section{Task}
+
+Reference game.
+
+Speaker and listener sides of the task.
+
+\section{Data collection}
+
+\citet{Hawkins15_RealTimeWebExperiments}
+
+\section{Human data analysis}
+
+Length, specificity.
+
+Comparatives, superlatives, negation.
+
+Success rates.
+
+\section{Models}
+
+Monolingual $L_0$ (separately trained for en, zh): Gaussian listener in \citet{Monroe2017}.
+
+Logistic regression baseline.
+
+Bilingual $L_0$ (trained on both en and zh data). Three designs: no change from Gaussian listener, addition of linear transform on word vectors, use of pretrained Glove
+% WM: CITE
+and Zou
+% WM: CITE
+word vectors.
+
+Monolingual $S_0$ (separately trained): context-to-sequence RNN speaker from \citet{Monroe2017} based on color-to-sequence speaker from \citet{MonroeGoodmanPotts16_Color}.
+
+Bilingual $S_0$ (trained on both en and zh data), with or without an extra bit specifying whether the output should be in English or Chinese.
+
+\section{Experimental results}
+
+\begin{table}
+\begin{tabular}{lcccc}
+\toprule
+Test data & \multicolumn{2}{c}{en} & \multicolumn{2}{c}{zh} \\
+Train data & en & en+zh & zh & en+zh \\
+\midrule
+$S$ (ppl) & 20.37 & 28.65 & 67.75 & 64.24 \\
+\midrule
+$L$ (acc \%) & 83.30 & 82.64 & 64.98 & 64.86 \\
+$L(S)$ & 80.51 & 79.01 & 64.20 & 67.27 \\
+\bottomrule
+\end{tabular}
+\caption{Speaker perplexities (top) and listener accuracies (bottom).}
+\end{table}
+
+Bilingual S0 is better for Chinese that a monolingual one (with the bit to say which language to use).
+
+Bilingual L(S) is better for Chinese than a bilingual L0.
+
+Bilingual L(S) is better for Chinese than all monolingual listeners.
+
+\section{Model analysis}
+
+\begin{figure}
+
+\begin{zh}
+\exdisplay
+\begingl
+\gla 一 个 是 浅 紫色//
+\glb yi ge sh\`{\i} qi\v{a}n z\v{\i}s\`{e}//
+\glc one \textsc{cl} is shallow purple//
+\endgl
+
+\begingl
+\gla 一 个 是 艳 紫色//
+\glb yi ge sh\`{\i} y\`{a}n z\v{\i}s\`{e}//
+\glc one \textsc{cl} is bright purple//
+\endgl
+
+\begingl
+\gla 剩下 的 那个 色 就是 要 选 的//
+\glb sh\`engxia de n\`age s\`e ji\`ush\`{\i} y\`{a}o xu\v{a}n de//
+\glc remain \textsc{de} that color is want choose \textsc{de}//
+\glft ``One is pale purple, one is bright purple. The remaining color is the one to choose.''//
+\endgl
+\xe
+\caption{This is just to make sure \LaTeX{} will display Chinese text correctly.}
+\end{zh}
+\end{figure}
+
+Split model results by condition, to measure effect of needing the context. Can we identify sentences that are syntactically similar, to see how much of the transfer is syntactic as opposed to pragmatic?
+
+\section{Related work}
+
+\citet{Collobert2008}
+
+\citet{Johnson2016}
+
+\citet{Wu2016}
+
+\citet{Kaiser2017}
+
+\section{Conclusion}
+
+\begin{comment}
+\section*{Acknowledgments}
+
+The acknowledgments should go immediately before the references.  Do
+not number the acknowledgments section. Do not include this section
+when submitting your paper for review.
+\end{comment}
+
+% include your own bib file like this:
+\bibliography{multilingual-naacl2018}
+\bibliographystyle{acl_natbib}
+
+\appendix
+
+\section{Model details}
+
+Tuning method and final hyperparameters
+
+Vocab sizes
+
+
+\end{document}
