@@ -771,7 +771,13 @@ class RecurrentContextSpeakerLearner(SpeakerLearner):
                         init_vectorizer=False, test=False, inverted=False):
         from fields import get_utt, get_color, get_color_index, get_context
 
-        context_len = max(len(get_context(inst, inverted)) for inst in training_instances)
+        try:
+            context_len = max(len(get_context(inst, inverted)) for inst in training_instances)
+        except TypeError:
+            warnings.warn('\n1) Is --direct_base_uses_context set to true? '
+                          '\n2) Is --direct_base_is_listener set to -1? '
+                          '\n3) Is --load set to a model file? ')
+            raise
 
         if hasattr(self.options, 'speaker_tokenizer'):
             tokenize = TOKENIZERS[self.options.speaker_tokenizer]
