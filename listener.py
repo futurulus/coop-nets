@@ -1049,5 +1049,3 @@ LISTENERS = {
     'AtomicListener': AtomicListenerLearner,
 }
 LISTENERS.update(data_aug.AGENTS)
-import multilingual
-LISTENERS.update(multilingual.AGENTS)

@@ -180,9 +180,13 @@ class LanguageBitBilingualSpeakerLearner(BilingualSpeakerLearner):
         return super_state + (self.lang_vec,)
 
     def unpickle(self, state, model_class=SimpleLasagneModel):
-        self.lang_vec = state[-1]
-        super(LanguageBitBilingualSpeakerLearner,
-              self).unpickle(state[:-1], model_class=model_class)
+        if isinstance(state, dict) and 'quickpickle' in state and state['quickpickle']:
+            super(LanguageBitBilingualSpeakerLearner,
+                  self).unpickle(state, model_class=model_class)
+        else:
+            self.lang_vec = state[-1]
+            super(LanguageBitBilingualSpeakerLearner,
+                  self).unpickle(state[:-1], model_class=model_class)
 
 
 def load_embeddings(filename, seq_vec):
@@ -234,3 +238,4 @@ AGENTS = {
     'BilingualSpeaker': BilingualSpeakerLearner,
     'LanguageBitBilingualSpeaker': LanguageBitBilingualSpeakerLearner,
 }
+listener.LISTENERS.update(AGENTS)
