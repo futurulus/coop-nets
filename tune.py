@@ -16,6 +16,7 @@ import multiprocessing as mp
 import os
 import Queue
 import time
+import warnings
 
 import pygtrie as trie
 from stanza.research import config
@@ -47,6 +48,15 @@ rng = get_rng()
 def tune_queue(main_fn):
     config.redirect_output()
     options = config.options()
+
+    if any('tune' not in s for s in options.data_source):
+        warnings.warn('expected all --data_source\'s to contain "tune", instead got "{}". '
+                      'Are you polluting your dev/test set?'.format(options.data_source))
+    if 'gpu' in options.device or 'cuda' in options.device:
+        warnings.warn('device is "{}". Have you checked that all processes will fit '
+                      'on one GPU? (Random GPU assignment has not been implemented '
+                      'yet.)'.format(options.device))
+
     with open(options.tune_config, 'r') as infile:
         tune_options = config.HoconConfigFileParser().parse(infile)
 
@@ -216,7 +226,7 @@ class ProcessRegistry(object):
         return '+'.join(
             '{}={}'.format(self.abbreviations[k], v)
             for k, v in tuned_options
-        )
+        ).replace('/', '_').replace(' ', '_').replace('\\', '_')
 
 
 def abbreviate(all_keys):
