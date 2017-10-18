@@ -1,13 +1,19 @@
+from __future__ import print_function
+
 import argparse
 import configargparse
 import os
 import sys
 import json
-import logfile
+from . import logfile
 import traceback
-import StringIO
+try:
+    from io import StringIO
+    import builtins
+except ImportError:
+    from StringIO import StringIO
+    import __builtin__ as builtins
 import contextlib
-import __builtin__
 from pyhocon import ConfigFactory
 
 
@@ -60,9 +66,14 @@ class HoconConfigFileParser(object):
                 '<https://github.com/typesafehub/config/blob/master/HOCON.md>.')
 
 
-_options_parser = ArgumentParser(conflict_handler='resolve', add_help=False,
-                                 config_file_parser=HoconConfigFileParser(),
-                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+try:
+    _options_parser = ArgumentParser(conflict_handler='resolve', add_help=False,
+                                     config_file_parser_class=HoconConfigFileParser,
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+except TypeError:
+    _options_parser = ArgumentParser(conflict_handler='resolve', add_help=False,
+                                     config_file_parser=HoconConfigFileParser(),
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 _options_parser.add_argument('--run_dir', '-R', type=str, default=None,
                              help='The directory in which to write log files, parameters, etc. '
                                   'Will be created if it does not exist. If None, output files '
@@ -100,9 +111,10 @@ def options(allow_partial=False, read=False):
     :return argparse.Namespace: An object storing the values of the options specified
         to the parser returned by `get_options_parser()`.
     '''
-    global _options
-
     if allow_partial:
+        if _options is not None:
+            return _options
+
         opts, extras = _options_parser.parse_known_args()
         if opts.run_dir:
             mkdirp(opts.run_dir)
@@ -112,22 +124,42 @@ def options(allow_partial=False, read=False):
         # Add back in the help option (only show help and quit once arguments are finalized)
         _options_parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
                                      help='show this help message and exit')
-        _options = _options_parser.parse_args()
-        if _options.run_dir:
-            mkdirp(_options.run_dir, overwrite=_options.overwrite or read)
+        options = _options_parser.parse_args()
+        set_options(options, read=read)
 
-        if not read:
-            options_dump = vars(_options)
-            # People should be able to rerun an experiment with -C config.json safely.
-            # Don't include the overwrite option, since using a config from an experiment
-            # done with -O should still require passing -O for it to be overwritten again.
-            del options_dump['overwrite']
-            # And don't write the name of the other config file in this new one! It's
-            # probably harmless (config file interpretation can't be chained with the
-            # config option), but still confusing.
-            del options_dump['config']
-            dump_pretty(options_dump, 'config.json')
     return _options
+
+
+def set_options(options, read=False):
+    '''
+    Set the global options namespace to be equal to `options`, and (if `read` is False)
+    create the run directory `options.run_dir`.
+
+    :param argparse.Namespace options: An object storing the values of the options.
+        If called externally, this will replace the code for actually reading the
+        parameters from the command line. Use with caution! In particular, if this is
+        called after config.options(), then more than one run directory will be created.
+    :param bool read: If `True`, do not create or overwrite a `config.json`
+        file, and do not check whether such file already exists. Use for scripts
+        that read from the run directory rather than/in addition to writing to it.
+    '''
+    global _options
+    _options = options
+
+    if _options.run_dir:
+        mkdirp(_options.run_dir, overwrite=_options.overwrite or read)
+
+    if not read:
+        options_dump = vars(_options)
+        # People should be able to rerun an experiment with -C config.json safely.
+        # Don't include the overwrite option, since using a config from an experiment
+        # done with -O should still require passing -O for it to be overwritten again.
+        del options_dump['overwrite']
+        # And don't write the name of the other config file in this new one! It's
+        # probably harmless (config file interpretation can't be chained with the
+        # config option), but still confusing.
+        del options_dump['config']
+        dump_pretty(options_dump, 'config.json')
 
 
 class OverwriteError(Exception):
@@ -167,8 +199,8 @@ def open(filename, *args, **kwargs):
     file_path = get_file_path(filename)
     if not file_path:
         # create a dummy file because we don't have a run dir
-        return contextlib.closing(StringIO.StringIO())
-    return __builtin__.open(file_path, *args, **kwargs)
+        return contextlib.closing(StringIO())
+    return builtins.open(file_path, *args, **kwargs)
 
 
 def boolean(arg):
@@ -201,10 +233,10 @@ def dump(data, filename, lines=False, *args, **kwargs):
                 json.dump(data, outfile, *args, **kwargs)
     except IOError:
         traceback.print_exc()
-        print >>sys.stderr, 'Unable to write %s' % filename
+        print ('Unable to write %s' % filename, file=sys.stderr)
     except TypeError:
         traceback.print_exc()
-        print >>sys.stderr, 'Unable to write %s' % filename
+        print ('Unable to write %s' % filename, file=sys.stderr)
 
 
 def dump_pretty(data, filename):
