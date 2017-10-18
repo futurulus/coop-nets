@@ -28,6 +28,12 @@ parser.add_argument('--num_distractors', type=int, default=4,
                     help='The number of random colors to include in addition to the true '
                          'color in generating reference game instances. Ignored if not '
                          'using one of the `ref_` data sources.')
+parser.add_argument('--num_en_insts', type=int, default=-1,
+                    help='Number of English instances to use in bilingual training. If '
+                         'negative, use all of them.')
+parser.add_argument('--num_zh_insts', type=int, default=-1,
+                    help='Number of Chinese instances to use in bilingual training. If '
+                         'negative, use all of them.')
 parser.add_argument('--train_data_file', type=str, default=None,
                     help='Path to a json file to use as the training dataset. Ignored if '
                          'not using the `file` data source.')
@@ -803,11 +809,25 @@ def cycle_shuffled(insts):
         repeat = True
 
 
+def none_if_negative(n):
+    if n < 0:
+        return None
+    else:
+        return n
+
+
 def bilingual_train(listener=False):
+    options = config.options()
+    num_en_insts = none_if_negative(options.num_en_insts)
+    num_zh_insts = none_if_negative(options.num_zh_insts)
     result = []
-    en_insts = filtered_train(listener=listener)
-    zh_insts = chinese_train(listener=listener)
-    for e, z in zip(en_insts, cycle_shuffled(zh_insts)):
+    en_insts = filtered_train(listener=listener)[:num_en_insts]
+    zh_insts = chinese_train(listener=listener)[:num_zh_insts]
+    if len(en_insts) >= len(zh_insts):
+        zh_insts = cycle_shuffled(zh_insts)
+    else:
+        en_insts = cycle_shuffled(en_insts)
+    for e, z in zip(en_insts, zh_insts):
         result.append(bilingual_tag_instance(e, 'en', listener=listener, unicodify=True))
         result.append(bilingual_tag_instance(z, 'zh', listener=listener))
     return result
@@ -817,7 +837,11 @@ def bilingual_tune_train(listener=False):
     result = []
     en_insts = filtered_tune_train(listener=listener, tuning_insts=350)
     zh_insts = chinese_tune_train(listener=listener)
-    for e, z in zip(en_insts, cycle_shuffled(zh_insts)):
+    if len(en_insts) >= len(zh_insts):
+        zh_insts = cycle_shuffled(zh_insts)
+    else:
+        en_insts = cycle_shuffled(en_insts)
+    for e, z in zip(en_insts, zh_insts):
         result.append(bilingual_tag_instance(e, 'en', listener=listener, unicodify=True))
         result.append(bilingual_tag_instance(z, 'zh', listener=listener))
     return result
