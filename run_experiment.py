@@ -111,11 +111,13 @@ def main():
     elif isinstance(example_inst.output, (tuple, list)):
         m.append(metrics.prec1)
         if example_inst.output and isinstance(example_inst.output, basestring):
-            m.extend([metrics.bleu, metrics.token_perplexity_macro, metrics.token_perplexity_micro])
+            m.extend([metrics.bleu, metrics.wer,
+                      metrics.token_perplexity_macro, metrics.token_perplexity_micro])
     else:
         m.append(metrics.accuracy)
         if example_inst.output and isinstance(example_inst.output, basestring):
-            m.extend([metrics.bleu, metrics.token_perplexity_macro, metrics.token_perplexity_micro])
+            m.extend([metrics.bleu, metrics.wer,
+                      metrics.token_perplexity_macro, metrics.token_perplexity_micro])
 
     multi_train = (len(options.data_source) > 1)
     if options.load:
