@@ -259,7 +259,7 @@ class SpeakerLearner(NeuralLearner):
         batches = iterators.iter_batches(eval_instances, self.options.speaker_eval_batch_size)
         num_batches = (len(eval_instances) - 1) // self.options.speaker_eval_batch_size + 1
 
-        if self.options.speaker_output_tokens:
+        if hasattr(self.options, 'speaker_output_tokens') and self.options.speaker_output_tokens:
             if hasattr(self, 'tokens_file_id'):
                 self.tokens_file_id += 1
             else:
