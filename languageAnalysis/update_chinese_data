@@ -6,6 +6,8 @@
 # terminate if fail
 set -e 
 
+OUT="data_input_raw/"
+
 if [[ ! -f mlab_auth ]] ; then
     echo 'File "mlab_auth" not found. An authentication file is required to access the mlab database. If you have no idea what this is, ask Andrew! He knows.'
 		echo 'Format the authention file with the user, a space, then the password. E.g. "user password"'
@@ -25,8 +27,8 @@ then
 		echo "User: $user"
 		echo "Password: $password"
 		# get data
-		chat="mongoexport -h ds115583.mlab.com:15583 -d heroku_7slvngr1 -c chatmessages -u $user -p $password -o chatmessages.json"
-		clicked="mongoexport -h ds115583.mlab.com:15583 -d heroku_7slvngr1 -c clickedobjs -u $user -p $password -o clickedobjs.json"
+		chat="mongoexport -h ds115583.mlab.com:15583 -d heroku_7slvngr1 -c chatmessages -u $user -p $password -o ${OUT}chatmessages.json"
+		clicked="mongoexport -h ds115583.mlab.com:15583 -d heroku_7slvngr1 -c clickedobjs -u $user -p $password -o ${OUT}clickedobjs.json"
 		eval $chat
 		eval $clicked
 	done < "$auth"
@@ -37,7 +39,7 @@ then
 	echo Conversion done
 
 	echo Copying to ../hawkins_data/
-	cp *Chinese* ../hawkins_data/
+	cp ${OUT}*Chinese* ../hawkins_data/
 	echo Done
 
 else

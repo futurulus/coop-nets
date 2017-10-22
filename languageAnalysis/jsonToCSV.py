@@ -4,7 +4,7 @@ import csv
 import codecs
 import cStringIO
 
-DIR='./'
+DIR='data_input_raw/'
 CHAT_IN_FILE = DIR+'chatmessages.json'
 CHAT_OUT_FILE = DIR+'colorReferenceMessageChinese.csv'
 CLICKED_IN_FILE = DIR+'clickedobjs.json'

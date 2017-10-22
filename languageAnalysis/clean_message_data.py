@@ -8,6 +8,8 @@ Author: Andrew
 import pandas as pd
 
 
+IN_DIR = 'data_input_raw/'
+OUT_DIR = 'data_input_cleaned/'
 INPUT_FILE = 'colorReferenceMessageChinese.csv'
 MESSAGE_COLUMN = 'contents'
 SEPARATOR = ','
@@ -19,7 +21,7 @@ def main():
     Performs preprocessing (cleanup) on the chinese 
     """
     # remove extra commas from the messages
-    stripped_file_name = remove_extra_separators(INPUT_FILE)
+    stripped_file_name = remove_extra_separators(IN_DIR + INPUT_FILE)
     opened_stripped_f = open(stripped_file_name, 'r')
 
     # read into a pandas df
@@ -37,11 +39,11 @@ def main():
     print 'Mean: {}, std: {}'.format(mean, std)
 
     # write to file
-    filtered_out_name = INPUT_FILE[:-4] + '_filtered.csv'
+    filtered_out_name = OUT_DIR + INPUT_FILE[:-4] + '_filtered.csv'
     print 'Writing filtered to ', filtered_out_name
     filtered_length_df.to_csv(filtered_out_name, encoding='utf-8')
     
-    removed_out_name = 'filtered_removed_messages.csv'
+    removed_out_name = OUT_DIR + 'filtered_removed_messages.csv'
     print 'Writing removed messages to ', removed_out_name
     removed_df.to_csv(removed_out_name, encoding='utf-8')
 
