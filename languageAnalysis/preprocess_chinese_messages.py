@@ -12,6 +12,7 @@ INPUT_FILE = 'colorReferenceMessageChinese.csv'
 MESSAGE_COLUMN = 'contents'
 SEPARATOR = ','
 NUM_COLUMNS = 5
+MAX_STD = 4
 
 def main():
     """
@@ -27,7 +28,7 @@ def main():
     print 'Original num datapoints: ', raw_num_rows
 
     # filter out the long messages and get information
-    filtered_length_df, removed_df, mean, std = filter_long_messages(raw_df)
+    filtered_length_df, removed_df, mean, std = filter_long_messages(raw_df, MAX_STD)
     filtered_num_rows = filtered_length_df.shape[0]
 
     # print summary results
@@ -61,6 +62,7 @@ def remove_extra_separators(input_file):
         if len(split) > NUM_COLUMNS:
             # gameid, epochTime, roundNum, role, message,could,have,extra,separators
             num_seps = NUM_COLUMNS - 1
+            # rejoin the previous columns with the original separator, then fill in spaces on the extraneous seps
             new_line = SEPARATOR.join(split[slice(num_seps)]) + ' '.join(split[slice(num_seps, len(split))])
         else:
             new_line = SEPARATOR.join(split)
@@ -90,10 +92,10 @@ def filter_long_messages(raw_df, std=4):
     removed_rows_df = raw_df[raw_df['z_scores'] > std]
 
     # remove the columns we added for calculating and filtering
-    filtered_length_df.drop['raw_lengths']
-    filtered_length_df.drop['z_scores']
-    removed_rows_df.drop['raw_lengths']
-    removed_rows_df.drop['z_scores']
+    filtered_length_df = filtered_length_df.drop('raw_lengths', axis=1)
+    filtered_length_df = filtered_length_df.drop('z_scores', axis=1)
+    removed_rows_df = removed_rows_df.drop('raw_lengths', axis=1)
+    removed_rows_df = removed_rows_df.drop('z_scores', axis=1)
 
     return filtered_length_df, removed_rows_df, length_mean, length_std
 
