@@ -4,11 +4,12 @@ import csv
 import codecs
 import cStringIO
 
-DIR='hawkins_data/'
+DIR='./'
 CHAT_IN_FILE = DIR+'chatmessages.json'
 CHAT_OUT_FILE = DIR+'colorReferenceMessageChinese.csv'
 CLICKED_IN_FILE = DIR+'clickedobjs.json'
 CLICKED_OUT_FILE = DIR+'colorReferenceClicksChinese.csv'
+SEPARATOR=','
 
 class UnicodeWriter:
     """
@@ -19,7 +20,7 @@ class UnicodeWriter:
     def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
         # Redirect output to a queue
         self.queue = cStringIO.StringIO()
-        self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
+        self.writer = csv.writer(self.queue, dialect=dialect, delimiter=SEPARATOR, **kwds)
         self.stream = f
         self.encoder = codecs.getincrementalencoder(encoding)()
 
@@ -49,8 +50,9 @@ def COLORSjsonToCSV(header, infile, outfile, strip):
             for obj in json_objs:
                 data = json.loads(obj)
                 data_as_str = data['line'].strip()
+                # about 14 datapoints in the json have random 'undefined' entries 
                 data_list = filter(lambda x : x != 'undefined',
-                            [x.strip() for x in data_as_str.split(',')])
+                            [x.strip() for x in data_as_str.split(SEPARATOR)])
                 if strip:
                     data_list[-1] = data_list[-1][1:-1]
                 csvOut.writerow(data_list)
