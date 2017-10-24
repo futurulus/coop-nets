@@ -1,21 +1,23 @@
 #!/usr/bin/env python
 """
-Clean up the data
-1 - Removes messages greater than 4 standard deviations away from the mean (do this first)
-2 - Remove the spam messages :c (TOOD)
+Cleans up the data from the chinese message corpus
+1 - Removes messages greater than 4 standard deviations away from the mean
+2 - Removes spam games
 Author: Andrew
 """
 import pandas as pd
 
-
+# === Constants ===
 IN_DIR = 'data_input_raw/'
 OUT_DIR = 'data_input_cleaned/'
 INPUT_FILE = 'colorReferenceMessageChinese.csv'
 MESSAGE_COLUMN = 'contents'
 SEPARATOR = ','
-NUM_COLUMNS = 5
-MAX_STD = 4
-MAX_DUPLICATES = 25
+NUM_COLUMNS = 5 # num columns in the csv files
+
+# === Parameters ===
+MAX_STD = 4 # for length
+MAX_DUPLICATES = 25 # for spam. this number is the maximum number of the same reoccuring message in a game
 
 def main():
     """
@@ -70,9 +72,9 @@ def main():
 
 def remove_extra_separators(input_file):
     """
-    The chinese messages corpus is only supposed to have 5 columns per datapoint. 
-    Any extra separators that occur in the dialog needs to be removed for the file 
-    to be read correctly. The number of columns is set with the constant NUM_COLUMNS.
+    This function is kind of pre-preprocessing. The chinese messages corpus is only supposed to have 5 columns per 
+    datapoint. Any extra separators that occur in the dialog needs to be removed for the file to be read correctly. 
+    The number of columns is set with the constant NUM_COLUMNS.
 
     :param input_file: the raw converted csv file from jsonToCSV.py
     :returns: name of the file stripped of extra commas
