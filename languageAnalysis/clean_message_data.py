@@ -29,12 +29,12 @@ def main():
 
     # read csv into a pandas df
     raw_df = pd.read_csv(opened_stripped_f, sep=SEPARATOR)
-    print 'Columns: ', raw_df.columns
+    print 'Columns:', raw_df.columns
     raw_num_rows = raw_df.shape[0]
-    print 'Original num datapoints: ', raw_num_rows
+    print 'Original num datapoints:', raw_num_rows
 
     # filter out the long messages and get information
-    print 'Filtering out messages with lengths exceeding {} standard deviations.'.format(MAX_STD)
+    print '\nFiltering out messages with lengths exceeding {} standard deviations.'.format(MAX_STD)
     filtered_len_df, deleted_len_df, mean, std = filter_long_messages(raw_df, MAX_STD)
     fil_len_num_rows = filtered_len_df.shape[0]
     # print summary results for filtered by length
@@ -48,23 +48,24 @@ def main():
     num_spam_games = len(deleted_spam_df.groupby('gameid'))
     fil_spam_num_rows = filtered_spam_df.shape[0]
     # print summary results for filtered by spam
-    print 'Num spam games: ', num_spam_games
+    print 'Num spam games:', num_spam_games
     print 'Num messages removed by spam:', fil_len_num_rows - fil_spam_num_rows
     print 'Num datapoints remaining:', fil_spam_num_rows
+    print '\nTotal removed:', raw_num_rows - fil_spam_num_rows
 
     # Write filtered to file
-    print 'Writing to file'
+    print '\nWriting to file'
     filtered_out_name = OUT_DIR + INPUT_FILE[:-4] + '_filtered.csv'
-    print 'Writing filtered to ', filtered_out_name
+    print 'Writing filtered to', filtered_out_name
     filtered_spam_df.to_csv(filtered_out_name, encoding='utf-8')
 
     # Write what got removed, to check what got removed makes sense
     del_len_out_name = OUT_DIR + 'filtered_deleted_long_lengths.csv'
-    print 'Writing removed messages to ', del_len_out_name
+    print 'Writing removed messages to', del_len_out_name
     deleted_len_df.to_csv(del_len_out_name, encoding='utf-8')
 
     del_spam_out_name = OUT_DIR + 'filtered_deleted_spam.csv'
-    print 'Writing removed messages to ', del_spam_out_name
+    print 'Writing removed messages to', del_spam_out_name
     deleted_spam_df.to_csv(del_spam_out_name, encoding='utf-8')
 
     print 'Done.'
@@ -80,7 +81,7 @@ def remove_extra_separators(input_file):
     :returns: name of the file stripped of extra commas
     """
     f = open(input_file, 'r')
-    out_f = open('stripped_extra_commas.csv', 'w')
+    out_f = open(OUT_DIR + 'raw_stripped_extra_commas.csv', 'w')
     for line in f:
         split = line.split(SEPARATOR)
         if len(split) > NUM_COLUMNS:
