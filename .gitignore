@@ -46,3 +46,5 @@ nosetests.json
 arxiv_submission/
 
 mlab_auth
+
+.vscode
