@@ -65,11 +65,11 @@ def main():
 
     # Write what got removed, to check what got removed makes sense
     del_len_out_name = OUT_DIR + 'filtered_deleted_long_lengths.csv'
-    print 'Writing removed messages to', del_len_out_name
+    print 'Writing removed messages from excessive word counts to', del_len_out_name
     deleted_len_df.to_csv(del_len_out_name, encoding='utf-8')
 
     del_spam_out_name = OUT_DIR + 'filtered_deleted_spam.csv'
-    print 'Writing removed messages to', del_spam_out_name
+    print 'Writing removed messages from spam games to', del_spam_out_name
     deleted_spam_df.to_csv(del_spam_out_name, encoding='utf-8')
 
     print 'Done.'
