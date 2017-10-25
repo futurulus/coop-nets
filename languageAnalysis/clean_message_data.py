@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Cleans up the data from the chinese message corpus
 1 - Removes messages greater than 4 standard deviations away from the mean
@@ -6,6 +7,9 @@ Cleans up the data from the chinese message corpus
 Author: Andrew
 """
 import pandas as pd
+import re
+import jieba
+import nltk.tokenize
 
 # === Constants ===
 IN_DIR = 'data_input_raw/'
@@ -34,12 +38,12 @@ def main():
     print 'Original num datapoints:', raw_num_rows
 
     # filter out the long messages and get information
-    print '\nFiltering out messages with lengths exceeding {} standard deviations.'.format(MAX_STD)
+    print '\nFiltering out messages with word counts exceeding {} standard deviations.'.format(MAX_STD)
     filtered_len_df, deleted_len_df, mean, std = filter_long_messages(raw_df, MAX_STD)
     fil_len_num_rows = filtered_len_df.shape[0]
     # print summary results for filtered by length
     print 'Mean: {}, std: {}'.format(mean, std)
-    print 'Num messages removed by excessive length:', raw_num_rows - fil_len_num_rows
+    print 'Num messages removed by excessive word counts:', raw_num_rows - fil_len_num_rows
     print 'Num datapoints remaining:', fil_len_num_rows
 
     # filter out the spam games
@@ -108,19 +112,37 @@ def filter_long_messages(raw_df, std=4):
     # We have to use msg.decode('utf-8') so that chinese characters are properly evaluated as 1 character.
     # Technically this means that messages with english will be more likely to be thrown out, as spaces and letters
     # are single characters. This may or may not be an issue.
-    raw_df['raw_lengths'] = raw_df[MESSAGE_COLUMN].astype(str).apply(lambda msg: len(msg.decode('utf-8')))
-    length_mean = raw_df['raw_lengths'].mean()
-    length_std = raw_df['raw_lengths'].std()
-    raw_df['z_scores'] = (raw_df['raw_lengths'] - length_mean) / length_std
+    raw_df['word_count'] = raw_df[MESSAGE_COLUMN].astype(str).apply(mixed_lang_word_count)
+    length_mean = raw_df['word_count'].mean()
+    length_std = raw_df['word_count'].std()
+    raw_df['z_scores'] = (raw_df['word_count'] - length_mean) / length_std
     # keep based on z_score (the num of standard deviations)
     filtered_length_df = raw_df[raw_df['z_scores'] <= std]
     deleted_length_df = raw_df[raw_df['z_scores'] > std]
 
     # remove the columns we added for calculating and filtering
-    filtered_length_df = filtered_length_df.drop('raw_lengths', axis=1)
+    filtered_length_df = filtered_length_df.drop('word_count', axis=1)
     filtered_length_df = filtered_length_df.drop('z_scores', axis=1)
 
     return filtered_length_df, deleted_length_df, length_mean, length_std
+
+def mixed_lang_word_count(string):
+    """
+    Returns the word count of a string containing English and Chinese words. The string is split into English and Chinese,
+    then returns the sum of the word counts from both substrings based on NLTK and Jieba.
+    E.g. '你好 Andrew' returns 2, as '你好' is one word and 'Andrew' is another.
+
+    :param string: a string containing english and chinese
+    :returns: the word count
+    """
+    english_only = re.sub(r'\W+', '', string)
+    num_eng_words = len(nltk.word_tokenize(english_only))
+
+    non_english_only = re.sub(r'\w+', '', string)
+    num_non_eng_words = len(list(jieba.tokenize(non_english_only.decode('utf-8'))))
+
+    return num_eng_words + num_non_eng_words
+
 
 def filter_spam_games(df, threshold):
     """
@@ -142,4 +164,3 @@ def filter_spam_games(df, threshold):
 
 if __name__ == '__main__':
     main()
-
