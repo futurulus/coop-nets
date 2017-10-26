@@ -61,16 +61,16 @@ def main():
     print '\nWriting to file'
     filtered_out_name = OUT_DIR + INPUT_FILE[:-4] + '_filtered.csv'
     print 'Writing filtered to', filtered_out_name
-    filtered_spam_df.to_csv(filtered_out_name, encoding='utf-8')
+    filtered_spam_df.to_csv(filtered_out_name, encoding='utf-8', index=False)
 
     # Write what got removed, to check what got removed makes sense
     del_len_out_name = OUT_DIR + 'filtered_deleted_long_lengths.csv'
     print 'Writing removed messages from excessive word counts to', del_len_out_name
-    deleted_len_df.to_csv(del_len_out_name, encoding='utf-8')
+    deleted_len_df.to_csv(del_len_out_name, encoding='utf-8', index=False)
 
     del_spam_out_name = OUT_DIR + 'filtered_deleted_spam.csv'
     print 'Writing removed messages from spam games to', del_spam_out_name
-    deleted_spam_df.to_csv(del_spam_out_name, encoding='utf-8')
+    deleted_spam_df.to_csv(del_spam_out_name, encoding='utf-8', index=False)
 
     print 'Done.'
 
