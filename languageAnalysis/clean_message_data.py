@@ -42,6 +42,7 @@ def main():
     print 'Mean: {}, std: {}'.format(mean, std)
     print 'Num messages removed by excessive word counts:', raw_num_rows - fil_len_num_rows
     print 'Num datapoints remaining:', fil_len_num_rows
+    print '\nTotal removed:', raw_num_rows - fil_len_num_rows
 
     # filter out the spam games
     print '\nFiltering out messages with spams containing more than {} duplicates.'.format(MAX_DUPLICATES)
