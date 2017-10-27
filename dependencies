@@ -68,8 +68,11 @@ fi
 echo 'Installing testing modules (optional)...'
 pip install nose nose-exclude coverage mock
 
-echo 'Installing NLTK and jieba'
-pip install -U nltk
-pip install -U jieba
+echo 'Installing NLTK, jieba, and googletrans'
+pip install nltk
+pip install jieba
+pip install googletrans
+echo 'Installing seaborn'
+pip install seaborn
 
-echo "For downloading updated data for the Chinese game from MLab, please manually install MongoDB Community Edition for your system. If you don't need to download data, you may ignore this message."
+echo "For downloading Chinese data from the mLab database, please manually install MongoDB Community Edition. If data download isn't needed, ignore this message."
