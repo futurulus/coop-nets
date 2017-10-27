@@ -68,9 +68,11 @@ def barplot(data, plot_file, ylabel, title=''):
     sns.set_style('ticks')
     ax = sns.barplot(x='Condition', y=data.columns.values[0], hue='Language',
                      order=['equal/far', 'further/split', 'closer/close'],
-                     errcolor='#d1d1d1', data=data, errwidth=1, capsize=0.05)
+                     errcolor='#d1d1d1', data=data, errwidth=1, capsize=0.05,
+                     palette=sns.color_palette("Set1", n_colors=8, desat=.75))
     sns.despine()
     show_vals(ax)
+    ax.set_xticklabels(['far', 'split', 'close'])
     ax.set_ylabel(ylabel)
     ax.set_title(title)
     plt.legend(loc='best')

@@ -14,7 +14,7 @@ def compare(attribute, generate_en=False):
 
 if __name__ == '__main__':
     ATTRIBUTES = ['tokens', 'dialogue', 'superlative', 'comparative',
-                  'negation', 'specificity', 'success']
+                  'negation', 'success', 'specificity']
     parser = argparse.ArgumentParser(description='compare Chinese and English')
     parser.add_argument('--mode', help='compare, generate, or plot',
                         default=None, choices=['compare', 'csv', 'plot'])
