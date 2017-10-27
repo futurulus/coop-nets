@@ -98,7 +98,7 @@ def check_attribute(msg, attribute, L):
 PUNCTUATION = ['~', ',', '.', '?', '!', '。', '，', '、', ':',
                '？', '！', '”', '(', ')', '…', '=', '-', '_', '～']
 
-def update_message_data_row(data, msg, cond, attribute, L):
+def update_message_data(data, msg, cond, attribute, L):
     x = None
     if attribute == 'tokens':
         for p in PUNCTUATION:
@@ -160,8 +160,8 @@ def round_data(attribute, L, msg_dicts, click_dicts):
 # The final get_data function
 ############################################################################
 
-ZH_MSG_FILE = 'colorReferenceMessageChinese.csv'
-ZH_CLICK_FILE = 'colorReferenceClicksChinese.csv'
+ZH_MSG_FILE = 'data_input_cleaned/colorReferenceMessageChinese_filtered.csv'
+ZH_CLICK_FILE = 'data_input_raw/colorReferenceClicksChinese.csv'
 EN_FILE = '../behavioralAnalysis/humanOutput/filteredCorpus.csv'
 
 def get_data(attribute, L):
