@@ -12,6 +12,7 @@ import numpy as np
 import re
 import jieba
 import nltk.tokenize
+from functools import reduce
 
 # === Constants ===
 IN_DIR = 'data_input_raw'
@@ -20,6 +21,7 @@ INPUT_FILE = 'colorReferenceMessageChinese.csv'
 MESSAGE_COLUMN = 'contents'
 SEPARATOR = ','
 NUM_COLUMNS = 5 # num columns in the csv files
+HIT_RES_DIR = 'anon_hit_results'
 
 # === Parameters ===
 MAX_STD = 4 # for length
@@ -104,7 +106,7 @@ def remove_extra_separators(input_file):
     :returns: name of the file stripped of extra commas
     """
     f = open(input_file, 'r')
-    out_f = open(os.path.join(OUT_DIR + 'raw_stripped_extra_commas.csv', 'w'))
+    out_f = open(os.path.join(OUT_DIR,'raw_stripped_extra_commas.csv'), 'w')
     for line in f:
         split = line.split(SEPARATOR)
         if len(split) > NUM_COLUMNS:
@@ -190,6 +192,7 @@ def filter_confused_players(message_df):
     # combine together the Answer1-4 columns, because for some reason data is everywhere in there
     hit_df['feedback'] = hit_df['Answer 1'].map(str) + hit_df['Answer 2'].map(str) + hit_df['Answer 3'].map(str) \
         + hit_df['Answer 4'].map(str)
+
     hit_df['understood'] = hit_df['feedback'].apply(lambda x: '"understood":"yes"' in x)
     hit_df['gameid'] = hit_df['feedback'].apply(find_game_id)
     # use only the gameid and understood columns
@@ -209,10 +212,10 @@ def hit_results_to_df():
     :returns: the combined dataframe
     """
     df = pd.DataFrame() # init an empty dataframe
-    for filename in os.listdir(os.path.join('hit_results')):
+    for filename in os.listdir(os.path.join(HIT_RES_DIR)):
         if filename.startswith('HITResults') and filename.endswith('.csv'):
-            sub_df = pd.read_csv(os.path.join('hit_results', filename))
-            if len(sub_df.columns) == 13 and 'Answer 4' in sub_df.columns:
+            sub_df = pd.read_csv(os.path.join(HIT_RES_DIR, filename))
+            if 'HitTitle' in sub_df and sub_df['HitTitle'].str.contains('Chinese').all():
                 df = df.append(sub_df, ignore_index=True)
     return df
 
