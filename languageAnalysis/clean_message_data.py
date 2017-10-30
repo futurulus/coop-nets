@@ -104,7 +104,7 @@ def remove_extra_separators(input_file):
     :returns: name of the file stripped of extra commas
     """
     f = open(input_file, 'r')
-    out_f = open(OUT_DIR + 'raw_stripped_extra_commas.csv', 'w')
+    out_f = open(os.path.join(OUT_DIR + 'raw_stripped_extra_commas.csv', 'w'))
     for line in f:
         split = line.split(SEPARATOR)
         if len(split) > NUM_COLUMNS:
