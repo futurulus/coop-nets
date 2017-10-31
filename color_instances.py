@@ -405,6 +405,8 @@ def hawkins_context(listener=False, speakerID='speaker', suffix=''):
             target_idx = target_idx[0]
             alt_colors = [c for (c, _, _) in context]
             message = ' ~ '.join(messages[key])
+            if suffix == 'Chinese_filtered' and not message.replace('~', '').strip():
+                continue
 
             if listener:
                 inst = Instance(input=message, output=target_idx, alt_outputs=alt_colors,
@@ -506,26 +508,26 @@ def hawkins_big_tune_test(listener=False):
     return hawkins_tune_test(listener=listener, suffix='2', tuning_insts=3500)
 
 
-def chinese_train(listener=False):
-    return hawkins_train(listener=listener, speakerID='演说者', suffix='Chinese')
+def chinese_train(listener=False, suffix='Chinese'):
+    return hawkins_train(listener=listener, speakerID='演说者', suffix=suffix)
 
 
-def chinese_dev(listener=False):
-    return hawkins_dev(listener=listener, speakerID='演说者', suffix='Chinese')
+def chinese_dev(listener=False, suffix='Chinese'):
+    return hawkins_dev(listener=listener, speakerID='演说者', suffix=suffix)
 
 
-def chinese_test(listener=False):
-    return hawkins_test(listener=listener, speakerID='演说者', suffix='Chinese')
+def chinese_test(listener=False, suffix='Chinese'):
+    return hawkins_test(listener=listener, speakerID='演说者', suffix=suffix)
 
 
-def chinese_tune_train(listener=False):
+def chinese_tune_train(listener=False, suffix='Chinese'):
     return hawkins_tune_train(listener=listener, speakerID='演说者',
-                              suffix='Chinese', tuning_insts=350)
+                              suffix=suffix, tuning_insts=350)
 
 
-def chinese_tune_test(listener=False):
+def chinese_tune_test(listener=False, suffix='Chinese'):
     return hawkins_tune_test(listener=listener, speakerID='演说者',
-                              suffix='Chinese', tuning_insts=350)
+                             suffix=suffix, tuning_insts=350)
 
 # train: 1124-1:1  (start) - 8994-5:50
 # dev:   2641-2:1          - 8574-6:50
@@ -816,13 +818,13 @@ def none_if_negative(n):
         return n
 
 
-def bilingual_train(listener=False):
+def bilingual_train(listener=False, suffix='Chinese'):
     options = config.options()
     num_en_insts = none_if_negative(options.num_en_insts)
     num_zh_insts = none_if_negative(options.num_zh_insts)
     result = []
     en_insts = filtered_train(listener=listener)[:num_en_insts]
-    zh_insts = chinese_train(listener=listener)[:num_zh_insts]
+    zh_insts = chinese_train(listener=listener, suffix=suffix)[:num_zh_insts]
     if len(en_insts) >= len(zh_insts):
         zh_insts = cycle_shuffled(zh_insts)
     else:
@@ -833,10 +835,10 @@ def bilingual_train(listener=False):
     return result
 
 
-def bilingual_tune_train(listener=False):
+def bilingual_tune_train(listener=False, suffix='Chinese'):
     result = []
     en_insts = filtered_tune_train(listener=listener, tuning_insts=350)
-    zh_insts = chinese_tune_train(listener=listener)
+    zh_insts = chinese_tune_train(listener=listener, suffix=suffix)
     if len(en_insts) >= len(zh_insts):
         zh_insts = cycle_shuffled(zh_insts)
     else:
@@ -847,56 +849,100 @@ def bilingual_tune_train(listener=False):
     return result
 
 
-def bilingual_tune_test(listener=False):
+def bilingual_tune_test(listener=False, suffix='Chinese'):
     return [
         bilingual_tag_instance(inst, 'en', listener=listener)
         for inst in filtered_tune_test(listener=listener, tuning_insts=350)
     ] + [
         bilingual_tag_instance(inst, 'zh', listener=listener)
-        for inst in chinese_tune_test(listener=listener)
+        for inst in chinese_tune_test(listener=listener, suffix=suffix)
     ]
 
 
-def bilingual_en_train(listener=False):
+def bilingual_en_train(listener=False, suffix='Chinese'):
     return [
         bilingual_tag_instance(inst, 'en', listener=listener)
         for inst in filtered_train(listener=listener)
     ]
 
 
-def bilingual_en_dev(listener=False):
+def bilingual_en_dev(listener=False, suffix='Chinese'):
     return [
         bilingual_tag_instance(inst, 'en', listener=listener)
         for inst in filtered_dev(listener=listener)
     ]
 
 
-def bilingual_en_test(listener=False):
+def bilingual_en_test(listener=False, suffix='Chinese'):
     return [
         bilingual_tag_instance(inst, 'en', listener=listener)
         for inst in filtered_test(listener=listener)
     ]
 
 
-def bilingual_zh_train(listener=False):
+def bilingual_zh_train(listener=False, suffix='Chinese'):
     return [
         bilingual_tag_instance(inst, 'zh', listener=listener)
-        for inst in chinese_train(listener=listener)
+        for inst in chinese_train(listener=listener, suffix=suffix)
     ]
 
 
-def bilingual_zh_dev(listener=False):
+def bilingual_zh_dev(listener=False, suffix='Chinese'):
     return [
         bilingual_tag_instance(inst, 'zh', listener=listener)
-        for inst in chinese_dev(listener=listener)
+        for inst in chinese_dev(listener=listener, suffix=suffix)
     ]
 
 
-def bilingual_zh_test(listener=False):
+def bilingual_zh_test(listener=False, suffix='Chinese'):
     return [
         bilingual_tag_instance(inst, 'zh', listener=listener)
-        for inst in chinese_test(listener=listener)
+        for inst in chinese_test(listener=listener, suffix=suffix)
     ]
+
+
+def chinese_filtered_train(listener=False):
+    return chinese_train(listener=listener, suffix='Chinese_filtered')
+
+
+def chinese_filtered_dev(listener=False):
+    return chinese_dev(listener=listener, suffix='Chinese_filtered')
+
+
+def chinese_filtered_test(listener=False):
+    return chinese_test(listener=listener, suffix='Chinese_filtered')
+
+
+def chinese_filtered_tune_train(listener=False):
+    return chinese_tune_train(listener=listener, suffix='Chinese_filtered')
+
+
+def chinese_filtered_tune_test(listener=False):
+    return chinese_tune_test(listener=listener, suffix='Chinese_filtered')
+
+
+def bilingual_filtered_train(listener=False):
+    return bilingual_train(listener=listener, suffix='Chinese_filtered')
+
+
+def bilingual_zh_filtered_train(listener=False):
+    return bilingual_zh_train(listener=listener, suffix='Chinese_filtered')
+
+
+def bilingual_zh_filtered_dev(listener=False):
+    return bilingual_zh_dev(listener=listener, suffix='Chinese_filtered')
+
+
+def bilingual_zh_filtered_test(listener=False):
+    return bilingual_zh_test(listener=listener, suffix='Chinese_filtered')
+
+
+def bilingual_filtered_tune_train(listener=False):
+    return bilingual_tune_train(listener=listener, suffix='Chinese_filtered')
+
+
+def bilingual_filtered_tune_test(listener=False):
+    return bilingual_tune_test(listener=listener, suffix='Chinese_filtered')
 
 
 DataSource = namedtuple('DataSource', ['train_data', 'test_data'])
@@ -949,4 +995,17 @@ SOURCES = {
     'bilingual_zh_only_dev': DataSource(bilingual_zh_train, bilingual_zh_dev),
     'bilingual_zh_only_test': DataSource(bilingual_zh_train, bilingual_zh_test),
     'bilingual_tune': DataSource(bilingual_tune_train, bilingual_tune_test),
+    'chinese_filtered_dev': DataSource(chinese_filtered_train, chinese_filtered_dev),
+    'chinese_filtered_test': DataSource(chinese_filtered_train, chinese_filtered_test),
+    'chinese_filtered_tune': DataSource(chinese_filtered_tune_train, chinese_filtered_tune_test),
+    'bilingual_en_filtered_dev': DataSource(bilingual_filtered_train, bilingual_en_dev),
+    'bilingual_en_filtered_test': DataSource(bilingual_filtered_train, bilingual_en_test),
+    'bilingual_zh_filtered_dev': DataSource(bilingual_filtered_train, bilingual_zh_filtered_dev),
+    'bilingual_zh_filtered_test': DataSource(bilingual_filtered_train, bilingual_zh_filtered_test),
+    'bilingual_zh_only_filtered_dev': DataSource(bilingual_zh_filtered_train,
+                                                 bilingual_zh_filtered_dev),
+    'bilingual_zh_only_filtered_test': DataSource(bilingual_zh_filtered_train,
+                                                  bilingual_zh_filtered_test),
+    'bilingual_filtered_tune': DataSource(bilingual_filtered_tune_train,
+                                          bilingual_filtered_tune_test),
 }
