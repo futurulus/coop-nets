@@ -925,6 +925,21 @@ def bilingual_filtered_train(listener=False):
     return bilingual_train(listener=listener, suffix='Chinese_filtered')
 
 
+def bilingual_unbalanced_train(listener=False, suffix='Chinese_filtered'):
+    options = config.options()
+    num_en_insts = none_if_negative(options.num_en_insts)
+    num_zh_insts = none_if_negative(options.num_zh_insts)
+    result = []
+    en_insts = filtered_train(listener=listener)[:num_en_insts]
+    zh_insts = chinese_train(listener=listener, suffix=suffix)[:num_zh_insts]
+    for inst in en_insts:
+        result.append(bilingual_tag_instance(inst, 'en', listener=listener, unicodify=True))
+    for inst in zh_insts:
+        result.append(bilingual_tag_instance(inst, 'zh', listener=listener))
+    rng.shuffle(result)
+    return result
+
+
 def bilingual_zh_filtered_train(listener=False):
     return bilingual_zh_train(listener=listener, suffix='Chinese_filtered')
 
@@ -999,6 +1014,7 @@ SOURCES = {
     'chinese_filtered_test': DataSource(chinese_filtered_train, chinese_filtered_test),
     'chinese_filtered_tune': DataSource(chinese_filtered_tune_train, chinese_filtered_tune_test),
     'bilingual_en_filtered_dev': DataSource(bilingual_filtered_train, bilingual_en_dev),
+    'bilingual_en_unbalanced_dev': DataSource(bilingual_unbalanced_train, bilingual_en_dev),
     'bilingual_en_filtered_test': DataSource(bilingual_filtered_train, bilingual_en_test),
     'bilingual_zh_filtered_dev': DataSource(bilingual_filtered_train, bilingual_zh_filtered_dev),
     'bilingual_zh_filtered_test': DataSource(bilingual_filtered_train, bilingual_zh_filtered_test),
