@@ -296,7 +296,20 @@ class SpeakerLearner(NeuralLearner):
 
         return result
 
-    def write_tokens_data(self, probs, gold, mask, outfile):
+    def tokens_for_inst(self, inst):
+        inst_dict = dict(inst.__dict__)
+        del inst_dict['input']
+        batch = [
+            instance.Instance(input=i, **inst_dict)
+            for i in range(len(inst.alt_inputs))
+        ]
+
+        xs, (n,) = self._data_to_arrays(batch, test=False)
+        mask = xs[-1]
+        probs = self.model.predict(xs)
+        return self.tokens(probs, n, mask)
+
+    def tokens(self, probs, gold, mask):
         predicted = np.argmax(probs, axis=2)
         gold_scores = -np.log(probs[np.arange(probs.shape[0])[:, np.newaxis],
                                     np.arange(probs.shape[1]), gold])
@@ -314,6 +327,10 @@ class SpeakerLearner(NeuralLearner):
                    self.seq_vec.unvectorize_all(predicted),
                    mask, gold_scores, pred_scores)
         ]
+        return tuples
+
+    def write_tokens_data(self, probs, gold, mask, outfile):
+        tuples = self.tokens(probs, gold, mask)
         for sent in tuples:
             outfile.write(u'\t'.join(
                 u'{} {:.3g} {} {:.3g}'.format(*t)
