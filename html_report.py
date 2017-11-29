@@ -361,9 +361,11 @@ def color_log_prob(log_prob):
         # neon green: nan
         return (120.0, 100.0, 100.0)
     else:
-        # shades of red/pink: finite log probabilities
-        sat = max(0.0, min(-log_prob * 10.0 / 2.0, 100.0))
-        return (0.0, sat, 100.0)
+        # shades of red/pink: negative log probabilities
+        # shades of blue: positive "log probabilities"
+        hue = 0.0 if log_prob <= 0 else 240.0
+        sat = max(0.0, min(abs(log_prob) * 10.0 / 2.0, 100.0))
+        return (hue, sat, 100.0)
 
 
 def web_color(hsv):
