@@ -40,6 +40,10 @@ parser.add_argument('--train_data_file', type=str, default=None,
 parser.add_argument('--test_data_file', type=str, default=None,
                     help='Path to a json file to use as the evaluation dataset. Ignored if '
                          'not using the `file` data source.')
+parser.add_argument('--remove_listener_data', type=config.boolean, default=True,
+                    help='This option is ignored; it has been added to mark when a change was '
+                         'made to the filtered dataset processing to return to an older '
+                         'version of the filtered English corpus.')
 
 
 def load_colors(h, s, v):
@@ -561,6 +565,9 @@ def filtered(listener=False):
     instances = defaultdict(list)
     with open('behavioralAnalysis/humanOutput/filteredCorpus.csv', 'r') as infile:
         for row in csv.DictReader(infile):
+            if row['role'] != 'speaker':
+                continue
+
             key = (row['gameid'], row['roundNum'])
 
             if len(FILTERED_SPLIT) < len(FILTERED_SPLIT_IDS) and \
