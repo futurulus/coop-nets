@@ -67,10 +67,23 @@ def multilingual_tokenizer(s, lower=True):
     return TOKENIZER_MAP[lang](utt, lower=lower)
 
 
+NOENDING_TOKENIZER_MAP = {
+    'en': basic_unigram_tokenizer,
+    'zh': chinese_tokenizer,
+}
+
+
+def multilingual_noending_tokenizer(s, lower=True):
+    assert isinstance(s, basestring) and u':' in s, repr(s)
+    lang, utt = s.split(u':', 1)
+    return NOENDING_TOKENIZER_MAP[lang](utt, lower=lower)
+
+
 TOKENIZERS = {
     'unigram': basic_unigram_tokenizer,
     'ending': heuristic_ending_tokenizer,
     'whitespace': whitespace_tokenizer,
     'chinese': chinese_tokenizer,
     'multilingual': multilingual_tokenizer,
+    'multilingual_noending': multilingual_noending_tokenizer,
 }
