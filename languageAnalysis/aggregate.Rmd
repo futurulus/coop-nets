@@ -14,16 +14,23 @@ library(tidyverse)
 # Pre-processing human data
 
 ```{r}
-msgs = read_csv("./colorReferenceMessageChinese_filtered.csv") %>%
+msgs = read_csv("./data_input_cleaned/colorReferenceMessageChinese_filtered.csv") %>%
   rename(msgTime = epochTime)
 
-clks = read.csv("../data_input_raw/colorReferenceClicksChinese.csv") %>%
+clks = read.csv("./data_input_raw/colorReferenceClicksChinese.csv") %>%
   mutate(condition = factor(condition, levels = c("closer", "further", "equal"), 
                             labels = c("close", "split", "far"))) %>%
   rename(clkTime = time)
 
-rawAggregated <- msgs %>% 
+aggregated <- msgs %>% 
   left_join(clks, by = c("gameid", "roundNum")) %>%
   select(-index) %>%
-  write_csv('./filteredCorpus.csv')
+  write_csv('./data_input_cleaned/filteredCorpus.csv')
+```
+
+# Some statistics
+
+```{r}
+paste0("# games: ", length(unique(rawAggregated$gameid)))
+paste0("# utterances: ", length(unique(rawAggregated$gameid)))
 ```
