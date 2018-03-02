@@ -1,0 +1,29 @@
+---
+title: ''
+output:
+  html_document: default
+  html_notebook: default
+---
+
+# Import libraries
+
+```{r, warning=F, message=F}
+library(tidyverse)
+```
+
+# Pre-processing human data
+
+```{r}
+msgs = read_csv("./colorReferenceMessageChinese_filtered.csv") %>%
+  rename(msgTime = epochTime)
+
+clks = read.csv("../data_input_raw/colorReferenceClicksChinese.csv") %>%
+  mutate(condition = factor(condition, levels = c("closer", "further", "equal"), 
+                            labels = c("close", "split", "far"))) %>%
+  rename(clkTime = time)
+
+rawAggregated <- msgs %>% 
+  left_join(clks, by = c("gameid", "roundNum")) %>%
+  select(-index) %>%
+  write_csv('./filteredCorpus.csv')
+```
