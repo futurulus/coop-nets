@@ -15,139 +15,434 @@
 \usepackage[utf8]{inputenc}
 
 \usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
-\usepackage[hyperref]{naaclhlt2018}
+%\usepackage[draft]{hyperref}
+%\usepackage[hyperref]{naaclhlt2018}
 \usepackage{naaclhlt2018}
 \usepackage{times}
 \usepackage{latexsym}
+\usepackage{amsmath}
 
-\usepackage{url}
+%\usepackage{url}
 \usepackage{comment}
 
 % Chinese
 \usepackage{CJK}
 \newenvironment{zh}{\begin{CJK}{UTF8}{gbsn}}{\end{CJK}}
+\newcommand{\textzh}[2]{\begin{zh}#1\end{zh}~\emph{#2}}
+\usepackage{tipa}
 
 % nice-looking tables
 \usepackage{booktabs}
+\usepackage{makecell}
 
 % glossing
 \usepackage{expex}
 \lingset{everygla=,everyglb=\footnotesize}
 
+% for images
+\usepackage{graphicx}
+\graphicspath{{images/}}
+% put text on top of image
+\usepackage[percent]{overpic}
 
-%\aclfinalcopy % Uncomment this line for the final submission
+\renewcommand{\|}{\mid}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\word}[1]{\emph{#1}}
+
+\newcommand{\colorPatch}[2][x]{
+  \colorbox[HTML]{#2}{{\color[HTML]{#2}{\large #1}}}}
+
+% figures with multiple parts
+\usepackage{subcaption}
+
+% references
+\newcommand{\figref}[1]{Figure~\ref{#1}}
+\newcommand{\Figref}[1]{Figure~\ref{#1}}
+\newcommand{\tabref}[1]{Table~\ref{#1}}
+\newcommand{\Tabref}[1]{Table~\ref{#1}}
+\newcommand{\secref}[1]{Section~\ref{#1}}
+\newcommand{\Secref}[1]{Section~\ref{#1}}
+
+% to-dos
+\newcommand{\todo}[1]{{\color{red}{#1}}}
+
+
+\aclfinalcopy % Uncomment this line for the final submission
 %\def\aclpaperid{***} %  Enter the acl Paper ID here
 
-%\setlength\titlebox{5cm}
+\setlength\titlebox{7cm}
 % You can expand the titlebox if you need extra space
 % to show all the authors. Please do not make the titlebox
 % smaller than 5cm (the original size); we will check this
 % in the camera-ready version and ask you to change it back.
 
-\title{Generating and Understanding Color References \\
-  with Bilingual Multi-Task Learning}
+\title{Generating Bilingual Pragmatic Color References}
 
-\author{First Author \\
-  Affiliation / Address line 1 \\
-  Affiliation / Address line 2 \\
-  Affiliation / Address line 3 \\
-  {\tt email@domain} \\\And
-  Second Author \\
-  Affiliation / Address line 1 \\
-  Affiliation / Address line 2 \\
-  Affiliation / Address line 3 \\
-  {\tt email@domain} \\}
+\author{Will Monroe \\
+  Computer Science Department \\
+  Stanford University \\
+  {\tt wmonroe4@cs.stanford.edu} \\\And
+  Jennifer Hu \\
+  Department of Mathematics \\
+  Harvard University \\
+  {\tt jenniferhu@college.harvard.edu} \\\AND 
+  Andrew Jong \\
+  Department of Computer Science \\
+  San Jose State University \\
+  {\tt andrewjong.cs@gmail.com} \\\And
+  Christopher Potts \\
+  Department of Linguistics \\
+  Stanford University \\
+  {\tt cgpotts@stanford.edu} \\}
 
 \date{}
 
 \begin{document}
 \maketitle
 \begin{abstract}
-  We show that training on English data improves modeling of context-sensitive color description generation in Chinese on a reference game task. Furthermore, a Chinese description understanding model derived by Bayesian inference from this bilingually-trained speaker outperforms simple classifiers, both monolingual and bilingual.
+ Contextual influences on language exhibit substantial language-independent
+ regularities; for example, we are more verbose in situations that require finer
+ distinctions. However, these regularities are sometimes obscured by semantic
+ and syntactic differences. Using a newly-collected dataset of color reference games in Mandarin
+ Chinese (which we release to the public), we confirm that a variety of constructions
+ display the same sensitivity to contextual difficulty in Chinese and English. We
+ then show that a neural speaker agent trained on bilingual data with a simple
+ multitask learning approach displays more human-like patterns
+ of context dependence and is more pragmatically informative than its monolingual
+ Chinese counterpart. Moreover, this is not at the expense of language-specific
+ semantic understanding: the resulting speaker model learns the different basic color
+ term systems of English and Chinese (with noteworthy cross-lingual influences), and it
+ can identify synonyms between the two languages using vector analogy operations on
+ its output layer, despite having no exposure to parallel data.
+
+% Context-dependent aspects of language use have substantial language-independent
+% regularities, but the details vary widely among languages due to differences 
+% in how meaning is encoded. We assess the extent to which neural speaker agents 
+% trained bilingually on both English and Mandarin Chinese are able to learn these 
+% abstract pragmatic behaviors while also grappling with the underlying linguistic
+% variation. Using color reference games, we show that our bilingual agents 
+% are more pragmatically informative than their monolingual counterparts, 
+% and that the resulting speaker models can identify synonyms between the two languages 
+% using vector relationships in their output layers, with no direct exposure to 
+% translation pairs. Interestingly, while these agents are effective communicators, 
+% their usage patterns show influences from both languages, further indicating that 
+% they have learned general aspects of pragmatic language use. % across the two languages.
+
+%   We investigate the problem of generating referring expressions for colors in a reference
+%   game task in both English and Mandarin Chinese. Our main finding is that training a speaker model on data
+%   from both languages results in more informative color descriptions in Chinese than training on Chinese alone,
+%   as measured by the accuracy of a derived listener model at interpreting human utterances, but the effect of adding English data is
+%   non-monotone: a small amount of English data is detrimental, but a large amount is beneficial. We also show that the
+%   resulting speaker model can identify synonyms between the two languages using vector relationships in its
+%   output layer representations, and that bilingual training results in basic color term semantics
+%   intermediate between those of English and Chinese. Our work includes the release of a new corpus of
+%   contextual color descriptions in Mandarin Chinese by human participants.
 \end{abstract}
 
-\section{Introduction}
+\section{Introduction} \label{sec:intro}
 
-Lexical semantic spaces differ among languages; English and Chinese have different color terms.
-% WM: a diagram of basic color terms according to our data could be interesting
-Do speakers of different languages use context in different ways?
+% Lexical semantic spaces differ among languages; English and Chinese have different color terms.
+% Do speakers of different languages use context in different ways? What is shared in grounded language use
+% between different languages?
 
-(Why colors? They are a well-understood referent space, allow for illustrative analysis.)
+% (Why colors? They are a well-understood referent space, allow for illustrative analysis.)
 
-Training on English data improves Chinese referring expression generation. This suggests the ability to transfer either context sensitivity or compositionality between the two languages.
+% Training on English data improves Chinese generation and understanding. This suggests the ability to transfer either context sensitivity or compositionality between the two languages.
 
-\section{Task}
+% Pragmatic language use is collaborative and context-dependent. As listeners, we draw on the context to resolve the underspecified utterances we hear, and on assumptions about the speaker to enrich those utterances beyond their literal content \citep{Grice75}. As speakers, we know that our listeners are pragmatic in this way, and that shapes the choices we make for our utterances. The result is a great deal of meaning beyond what is literally encoded.
 
-Reference game.
 
-Speaker and listener sides of the task.
+%In pragmatic language use, we draw on the context and assumptions about our interlocutors to give utterances meaning beyond their literal content \citep{Grice75}. This process of pragmatic meaning enrichment is observed in a wide variety of natural languages, 
+%and it is reasonable to expect that the general principles are universal. However, the details differ sharply among languages \citep{Keenan79}. Differences in lexical and compositional semantics shape the choices speakers make and the pragmatic inferences that listeners derive (or not) from those choices in context. For example, if a word or syntactic construction is very marked in one language, it could take on pragmatic import that is absent from its translation in another language. 
+In grounded communication tasks, speakers face pressures in choosing referential expressions that distinguish their targets from others in the context, leading to many kinds of pragmatic meaning enrichment. For example, the harder a target is to identify, the more the speaker will feel the need to refer implicitly and explicitly to alternatives to draw subtle contrasts \citep{Zipf49,Horn84,Levinson00}. However,
+the ways in which these contrasts are expressed depend heavily on language-specific syntax and semantics.
+%which contrasts are expressed and how is 
+%heavily dependent on language-specific syntax and semantics. 
+%
 
-\section{Data collection}
+\setlength{\fboxrule}{2pt}
 
-\citet{Hawkins15_RealTimeWebExperiments}
+\begin{figure}
+    \centering
+    \footnotesize
+    \renewcommand{\arraystretch}{2.5}
+    \begin{tabular}{c@{\hskip 1ex}c@{\hskip 1ex}cl}
+        \toprule
+        %\multicolumn{3}{c}{Context} & Utterance \\
+        %\midrule
+        \colorPatch{2AD596} & \colorPatch{4EB1A7} & \framebox{\negthickspace\colorPatch{19E6C4}} & 
+            \makecell[cl]{\textzh{鲜绿}{xi\=an l\textipa{\`{\"u}}} \\ `bright green'} \\
+        \framebox{\negthickspace\colorPatch{E67519}} & \colorPatch{902ed1} & \colorPatch{FE5E01} & 
+            \makecell[cl]{\textzh{不亮的橙色}{bu-li\`ang de ch\'engs\`e} \\ `not-bright orange'} \\
+        \colorPatch{7BFD02} & \colorPatch{C03FAE} & \framebox{\negthickspace\colorPatch{B319E6}} & 
+            \makecell[cl]{\textzh{紫红色}{z\v{\i} h\'ongs\`e} \\ `purple-red'} \\
+        \bottomrule 
+    \end{tabular}
+    \caption{Reference game contexts and utterances from our Chinese corpus. The boxed color is the target. Some color terms show differences between Chinese and English, such as \textzh{绿}{l\textipa{\`{\"u}}} `green' in the first example for a color that might be referred to with `blue' or `aqua' in English.}
+    \label{fig:ref-game}
+\end{figure}
+
+In this paper, we seek to develop a model of contextual language production that captures language-specific syntax and semantics while also exhibiting language-independent patterns of responsiveness to contextual differences. We focus on a color reference game \citep{Rosenberg:Cohen:1964,Dale:Reiter:1995,Krahmer:vanDeemter:2012}
+played in both English and Mandarin Chinese.
+A reference game (\figref{fig:ref-game}) involves two agents, one designated the ``speaker'' and the other the ``listener''. The
+speaker and listener are shown the same set of $k$ colors $C = \{c_1, \dotsc, c_k\}$ (in our experiments, 
+$k = 3$), and one of these
+colors $c_t$ is indicated secretly to the speaker as the ``target''. Both players share the same goal:
+that the listener correctly guesses the target color. The speaker may communicate with the listener in
+free-form natural-language dialogue to achieve this goal. Thus, a model of the speaker must process representations of the colors in the context and produce an utterance to distinguish the target color from the others. We evaluate a sequence-to-sequence speaker agent based on that of \citet{Monroe2017}, who also collected the English data we use; our Chinese data are new and were collected according to the same protocols.
+
+English and Chinese exhibit substantial commonalities but also important differences. While both use fairly similar syntax for color descriptions, our reference game is designed to elicit constructions that make reference to the context, and these constructions---particularly comparatives and negation---differ morpho-syntactically and pragmatically between the two languages. Additionally, Chinese is considered to have a smaller number of basic color terms \citep{BerlinKay1969}, which predicts markedness of more specific descriptions. %(Our data suggest that this difference is smaller in practice than might be expected, but we do observe a tendency toward less specific color descriptions in our Chinese utterances.)
+
+Our primary goal is to examine the effects of \emph{bilingual} training: building one speaker trained on both English and Chinese data with a shared vocabulary, so that it can produce utterances in either language.  
+%(with the output language set by a flag added to the input). 
+The reference game setting offers an objective measure of success on the grounded
+language task, namely, the speaker's ability to guide the listener to the target. We use this to address the tricky problem of speaker evaluation. Specifically, we use the speaker model and an application of Bayes' rule to infer the most likely target color given a human utterance, and we report the accuracy of that process at identifying the target color. We refer to this metric as \emph{pragmatic informativeness} because it requires not only accuracy but also effectiveness at meeting the players' shared goal \citep{Grice75}. 
+%
+%This is a formalization of an intuition from \citet{Grice75}: how good is the speaker model at representing human %utterances such that a listener can ``put itself in the speaker's shoes''? 
+A more formal definition and a discussion of alternatives are given in \secref{sec:metric}.
+
+We show that a bilingually-trained model produces distributions over Chinese utterances that have higher pragmatic informativeness than a monolingual model, 
+% as measured by the accuracy of a derived generative listener trying to identify the target from the 
+% speaker's utterances, 
+suggesting that it has leveraged the bilingual data to learn relevant abstract pragmatic abilities. The same model learns color synonyms between the two languages without being directly exposed to labeled pairs. Using a color term elicitation task from \citet{BerlinKay1969} on our models, we show that the learned lexical meanings are largely faithful to each language's basic color system but show subtle influences from the other language, reinforcing the claim that the model incorporates both language-specific semantics and language-general pragmatics.
+
+%frequencies of context-sensitive constructions and plots of the learned lexical semantics show influences from both languages; the benefits from learning language-independent principles outweigh the costs of discrepancies in language-specific details introduced by bilingual training.
+
+\section{Data collection} \label{sec:data}
+
+We adapted the open-source reference game framework of \citet{Hawkins15_RealTimeWebExperiments} to Chinese and followed the data collection protocols of \citet{Monroe2017} as closely as possible, in the hope that this can be the first step in a broader multilingual color reference project. We recruit pairs of players on Amazon Mechanical Turk in real time, randomly assigning one the role of the speaker and the other the listener. Players are self-reported Chinese speakers, but they must pass a series of Chinese comprehension questions in order to proceed, with instructions in a format preventing copy-and-paste translation. The speaker and listener are placed in a game environment in which they both see the three colors of the context and a chatbox. The speaker sends messages through the chatbox to describe the target to the listener, who then attempts to click on the target. This ends the round, and three new colors are generated for the next. Both players can send messages through the chatbox at any time. After filtering out extremely long messages (number of tokens greater than $4\sigma$ above the mean), spam games,\footnote{Some players found they could advance through rounds by sending duplicate messages. Games were considered spam if the game contained 25 or more duplicates.} and players who self-reported confusion about the game, we have a new corpus of 5,774 Chinese messages in color reference games, which we will release publicly. Data management information is given in Appendix~\ref{sec:irb}.
+
+As in \citet{Monroe2017}, the contexts are divided into three groups of roughly equal size: in the \emph{far} condition (1,421 contexts), all the colors are at least a threshold distance $\theta$ from each other; in the \emph{split} condition (1,412 contexts), the target and one distractor are less than $\theta$ from each other, with the other distractor at least $\theta$ away from both; and in the \emph{close} condition (1,425 contexts), all colors are within $\theta$ from each other. We set $\theta = {}$20 by the CIEDE2000 color-difference formula \citep{Sharma2005}, with all colors different by at least 5.
 
 \section{Human data analysis}
 
-Length, specificity.
+As we mentioned earlier, our main goal with this work is to investigate the effects of bilingual training on pragmatic language use. We first examine the similarities and differences in pragmatic behaviors between the English and Chinese corpora we use. The picture that emerges accords well with our expectations about pragmatics: the broad patterns are aligned across the two languages, with the observed differences mostly tracing to the details of their lexicons and constructions.
 
-Comparatives, superlatives, negation.
+\subsection{Message length}
 
-Success rates.
+We expect message length to correlate with the difficulty of the context: as the target becomes harder to distinguish from the distractors, the speaker will produce more complex messages, and length is a rough indicator of such complexity. %Dialogue length should display a similar positive correlation with difficulty, since the participants will engage in more discussion before the listener makes a guess.
+To test this hypothesis, we used the Natural Language Toolkit (NLTK; \citealt{NLTKbook}) and Jieba \citep{Jieba:2015} to tokenize English and Chinese messages, respectively, and counted the number of tokens in both languages as a measure of message length. The results (\figref{fig:length}) confirm that in both languages, players become more verbose in more difficult conditions.\footnote{We do not believe that the overall drop in message length from English to Chinese reflects a fundamental difference between the languages; this has a few possible explanations, from Chinese messages taking the form of ``sentence segments'' \citep{WangQin2010} to differences in tokenization.}
 
-\section{Models}
+\begin{figure}[!t]
+    %\begin{subfigure}[b]{\columnwidth}
+    \centering
+    %\includegraphics[width=\textwidth]{dialogue}
+    %\caption{Mean length of dialogues in Chinese and English.}
+    %\label{fig:dialogue_length}
+    %\end{subfigure}
 
-Monolingual $L_0$ (separately trained for en, zh): Gaussian listener in \citet{Monroe2017}.
+    %\begin{subfigure}[b]{\columnwidth}
+    \includegraphics[width=0.8\columnwidth]{tokens.pdf}
+    %\caption{Mean length of messages in Chinese and English.}
+    %\label{fig:message_length}
+    %\end{subfigure}
+%\caption{Comparison of length of dialogues and messages in English and Chinese.}
+\caption{Comparison of mean length of messages in English and Chinese. The \emph{split} and \emph{close} conditions have more similar context colors (\secref{sec:data}).}
+\label{fig:length}
+\end{figure}
 
-Logistic regression baseline.
+%Chinese conversations had shorter messages (far\%; split\%; close\%) but longer dialogues (far\%; split\%; close\%) than English. % JH : I would be wary of saying this until we clean up the Chinese data
 
-Bilingual $L_0$ (trained on both en and zh data). Three designs: no change from Gaussian listener, addition of linear transform on word vectors, use of pretrained Glove
-% WM: CITE
-and Zou
-% WM: CITE
-word vectors.
+% AJ: and a table?
+%           English vs Chinese: Message Length
+%           English    Chinese      T Test
+% Far        μ, σ       μ, σ          t*
+% Split      μ, σ       μ, σ          t*
+% Close      μ, σ       μ, σ          t*
+% Average    μ, σ       μ, σ          t*
 
-Monolingual $S_0$ (separately trained): context-to-sequence RNN speaker from \citet{Monroe2017} based on color-to-sequence speaker from \citet{MonroeGoodmanPotts16_Color}.
 
-Bilingual $S_0$ (trained on both en and zh data), with or without an extra bit specifying whether the output should be in English or Chinese.
+\subsection{Specificity}
 
-\section{Experimental results}
+In the \emph{split} and \emph{far} conditions, the speaker must make fine-grained distinctions. A broad color term like \word{red} will not suffice if there are two reds, but more specific terms like \word{maroon} might identify the target. Thus, we expect specificity to increase as the difficulty of the context does. To assess this, we use WordNet \citep{WordNet98} to transform adjectives into derivationally-related noun forms, filter for nouns with \word{color} in their hypernym paths, and mark a message as ``specific'' if it contains at least one word with a hypernym depth greater than 7. For Chinese, we translate to English via Google Translate, then measure the translated word using WordNet. (Though Mandarin variations of WordNet exist, we chose this translation method to standardize hypernym paths for both languages.)
 
-\begin{table}
-\begin{tabular}{lcccc}
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=0.8\columnwidth]{specificity.pdf}
+    \caption{Comparison of WordNet specificity in Chinese and English.}
+    \label{fig:specificity}
+\end{figure}
+
+\Figref{fig:specificity} summarizes the results of this measurement. In general, the usage of high-specificity color words increases in more difficult conditions, as expected. However, we see that Chinese speakers use them significantly less than English speakers. Instead, Chinese speakers use descriptive color words, such as \textzh{草}{c\v{a}o} `grass' and \textzh{海}{h\v{a}i} `ocean', which do not contain ``color'' in their hypernym paths and are thus not marked as high-specificity. 
+To quantify this observation, we annotated random samples of 250 messages from each language for whether they contained descriptive color terms, and found that 0.4\% of the English messages contain descriptive color words versus 15.26\% of the Chinese messages.
+
+We also observe that Chinese speakers use long strings of low-specificity color terms such as \textzh{土橘黄色}{t\v{u} j\'{u} hu\'{a}ng s\`{e}} `earth tangerine yellow' to describe the target. This difference is arguably expected given the claims of \citet{BerlinKay1969} and others that Chinese has fewer basic color terms than English. However, we wish to add a pragmatic twist to those generalizations: even where Chinese has an appropriate specific color term, it might be unusual enough that speakers avoid it: the term could confuse a listener, either by mere unfamiliarity or by implying that the choice of that specific, unusual color term was meant to emphasize a specific, unusual aspect of the color it refers to (markedness implicature).
+
+% AJ: and a table?
+%           English    Chinese      T Test
+% Far        μ, σ       μ, σ          t*
+% Split      μ, σ       μ, σ          t*
+% Close      μ, σ       μ, σ          t*
+% 3-Average  μ, σ       μ, σ          t*
+
+\subsection{Comparatives, superlatives, and negation}
+
+To detect comparative and superlative adjectives in English, we use NLTK POS-tagging, which outputs JJR and RBR for comparatives, and JJS and RBS for superlatives. In Chinese, we look for the tokens \textzh{更}{g\`eng} `more' and \textzh{比}{b\v{\i}} `comparatively' to detect comparatives and \textzh{最}{zu\`{\i}} `most' to detect superlatives. We detect negation by tokenizing messages with NLTK and Jieba and then looking for the tokens \emph{not} and \emph{n't} in English and corresponding \textzh{不}{b\`u} 
+%(negating present and future tense)
+and \textzh{没}{m\'ei} 
+%(negating past tense) 
+in Chinese.
+
+\begin{figure}[!t]
+    \centering
+    \begin{subfigure}[b]{\columnwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{comparative.pdf}
+    \caption{Usage of comparative adjectives in Chinese and English.}
+    \label{fig:comparative}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{\columnwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{superlative.pdf}
+    \caption{Usage of superlative adjectives in Chinese and English.}
+    \label{fig:superlative}
+    \end{subfigure}
+    
+    \begin{subfigure}[b]{\columnwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{negation.pdf}
+    \caption{Usage of negation in Chinese and English.}
+    \label{fig:negation}
+    \end{subfigure}
+\caption{Comparison of usage of comparatives, superlatives, and negation in English and Chinese.}
+\label{fig:comp-super-neg}
+\end{figure}
+
+Both languages exhibit similar trends for superlative adjectives. In English, comparatives are used most frequently in the \emph{split} condition and second most frequently in the \emph{close} condition, while in Chinese, they occur at around the same rate in the \emph{split} and \emph{close} conditions. The literature is not conclusive about the source of these differences. \citet{Xia:2014} argues that complex attributives are rarely used and sound ``syntactically deviant or Europeanized'' \citep{Zhu:1982,Xie:2001} in Chinese, citing the left-branching nature of the language as restricting attributives in length and complexity. There are also conflicting theories on the markedness of gradable adjectives in Chinese \citep{Grano:2012,Ito:2008}; such markedness may contribute to the frequency at which comparative forms are used.
+% There are also conflicting theories on the markedness of gradable adjectives in Chinese. \citet{Grano:2012} suggests that ``the comparative form involves additional structure, even when it is not overt,'' while \citet{Ito:2008} claims that comparative forms are unmarked in Chinese. % JH: need to refine this
+% WM: what about the fact that comparatives are so much rarer?
+
+We also see that both languages follow the same general trend of using negation more frequently as the condition becomes more difficult.
+
+\begin{comment}
+\subsection{Success rates}
+
+To measure success, we count the rounds in which the listener correctly identifies the target color. As expected, the success rates decrease as the task gets more difficult. However, English listeners consistently performed better than Chinese listeners. % with a p-value of $3.25 \times 10^{-19}$. % JH: we should recheck this math to be safe
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\columnwidth]{success}
+    \caption{Comparison of overall success rates in Chinese and English.}
+    \label{fig:success}
+\end{figure}
+
+% AJ: and a table?
+%           English    Chinese      T Test
+% Far        μ, σ       μ, σ          t*
+% Split      μ, σ       μ, σ          t*
+% Close      μ, σ       μ, σ          t*
+% 3-Average  μ, σ       μ, σ          t*
+
+% JH: better transition and flesh this out
+The correlations between trial difficulty and usage of negation, comparatives, and superlatives reflect groundedness of language, as these behaviors implicitly refer to other colors in the context. The differences within those strategies reflect differences in morphological markedness. Differences in specificity reflect differences in basic color lexica \cite{BerlinKay1969} and their interactions with RSA. 
+\end{comment}
+
+\section{Models}\label{sec:models}
+
+We build and evaluate three artificial agents on this reference game task, two trained
+on monolingual descriptions (one for each language) and one on bilingual descriptions.
+We base these models on the basic speaker architecture
+from \citet{Monroe2017}. The monolingual speakers 
+represent the context by passing all the
+context colors as input to a long short-term memory (LSTM) sequence encoder, then concatenating
+this representation with a word vector for
+each previous output token as the input to an LSTM decoder that produces a color description token-by-token. This defines a distribution over descriptions $u$ conditioned on the target and context, $S(u \| c_t, C)$.
+
+To accommodate bilingual training with this architecture, we expand the
+vocabulary to include English and Chinese words, and we add a flag $\ell$ to the input specifying whether the model's
+output should be in English ($\ell = 0$) or Chinese ($\ell = 1$):
+\[S(u \| \ell, c_t, C) = \prod_{i=1}^{|u|} s(u_i \| u_{1..i-1}, \ell, c_t, C)\]
+The flag $\ell$ is embedded as a single additional dimension that is concatenated alongside the context and input (previous token)
+vectors for the encoder. See Appendix~\ref{sec:appendix} for additional training details.
+
+\subsection{Pragmatic informativeness} \label{sec:metric}
+
+As mentioned in \secref{sec:intro}, we evaluate the two models on a measure of \emph{pragmatic informativeness}: how well does
+the model represent a human speaker, such that a generative model of a listener can be built from it to interpret utterances?
+Formally, for a speaker $S(u \| \ell, c_t, C)$ and an example consisting of an utterance, language identifier, and
+color context $(u, \ell, C)$, we identify the $t^*$ that maximizes the probability of $u$ according to $S$:
+\[t^* = \argmax_t S(u \| c_t, C)\]
+That is, $L$ uses a noisy-channel model with a uniform prior over target colors and $S$ as a generation model to infer the most likely target color given the input utterance. The pragmatic informativeness of a speaker is the proportion of target colors in a test set correctly identified by $t^*$.
+
+One drawback of this metric is it does not evaluate how faithful the model is to the overall distribution of human utterances, only the relative conditional likelihoods of human utterances for different target colors. In practice, since the agents are trained to minimize log likelihood, we do not observe our agents frequently producing wildly unhumanlike utterances; however, this is a caveat to keep in mind for evaluating agents that do not naturally approximate a language model.
+
+The understanding model implied in this metric is equivalent to a version of the Rational Speech Acts model of pragmatic language understanding \cite{Frank2012,GoodmanFrank16_RSATiCS}, applied to the output of a neural network model. A related metric is \emph{communicative success} as defined by \citet{Golland2010}, which judges the speaker by the accuracy of a human listener when given model-produced utterances. Our pragmatic informativeness metric instead gives a model-derived listener human utterances and assesses its accuracy at identifying colors. Pragmatic informativeness has the advantage of not requiring additional expensive human labeling in response to model outputs; it can be assessed on an existing collection of human utterances, and can therefore be considered an automatic metric.
+
+\subsection{A note on perplexity and token metrics}
+
+Perplexity is a common intrinsic evaluation metric for generation models. However, for comparing monolingual and bilingual models,
+we found perplexity to be
+unhelpful, owing largely to its vocabulary-dependent definition. Specifically, if we fix the vocabulary in advance to include tokens
+from both languages, then the monolingual model performs
+unreasonably poorly, and bilingual training helps immensely. However, this is an unfair comparison: the monolingual model's high perplexity
+is dominated by low probabilities assigned to rare tokens in the opposite-language data that it did not see. Thus, perplexity ceases to
+be a measure of language modeling ability and assumes the role of a proxy for the out-of-vocabulary rate.
+
+On the other hand, if we define the output vocabulary
+to be the set of tokens seen at least $n$ times in training ($n={}$1 and 2 are common), then monolingual training yields
+better perplexity than bilingual training, but mainly because including opposite-language training data forces the
+bilingual model to predict more rare words that would otherwise be replaced with $\langle$unk$\rangle$.\footnote{The rare
+words that make this difference are primarily the small number of English words that were used by the Chinese-language participants;
+no Chinese words were observed in the English data from \citet{Monroe2017}} % WM: quantify this
+This produces the counterintuitive result that perplexity initially goes \emph{up} (gets worse) when increasing the amount of
+training data. (As a pathological case, with no training data, a model can get a perfect perplexity
+of 1 by predicting $\langle$unk$\rangle$ for every token.)
+
+Another alternative for evaluating speaker models is token overlap metrics such as word error
+rate (WER) and BLEU \cite{Papineni2002}. These were at or worse than
+chance despite qualitatively adequate speaker outputs, due to the high diversity in valid speaker outputs
+for similar contexts. This problem is common in dialogue tasks,
+for which BLEU is known to be an ineffective speaker evaluation metric \cite{Liu2016}.
+
+\section{Experimental results and analysis}
+
+\begin{table}[t]
+\centering
+\begin{tabular}{llcc}
 \toprule
-Test data & \multicolumn{2}{c}{en} & \multicolumn{2}{c}{zh} \\
-Train data & en & en+zh & zh & en+zh \\
+test & train & dev acc & test acc \\
+%\midrule
+%$S$ (ppl) & \textbf{20.37} & 28.68 & \textbf{67.59} & 111.94 \\
+%$S$ (WER) & \textbf{0.9407} & 0.9495 & 3.1151 & \textbf{1.2429} \\
+%\midrule
+%$L$    & en & 83.30 & - & 85.08 & - \\
+%       & zh & - & 70.33 & - & 68.38 \\ 
+%       & en+zh & \textbf{83.34} & \textit{71.53} & \textbf{*85.59} & \textit{69.86} \\
+%               % p = 0.????     & p = 0.3132     & p = 0.0398      & p = 0.2111
 \midrule
-$S$ (ppl) & 20.37 & 28.65 & 67.75 & 64.24 \\
+en     & en    & \textbf{80.51} & \textbf{83.06} \\
+       & en+zh & 79.73          & 81.43 \\ %82.18 \\
+               % p = 0.0178 & p < 0.0001 
 \midrule
-$L$ (acc \%) & 83.30 & 82.64 & 64.98 & 64.86 \\
-$L(S)$ & 80.51 & 79.01 & 64.20 & 67.27 \\
+zh     & zh    & 67.16          & 67.75 \\
+       & en+zh & \textbf{71.81} & \textbf{72.89} \\ %\textbf{71.97} \\
+               % p = 0.0006 & p = 0.0003
 \bottomrule
 \end{tabular}
-\caption{Speaker perplexities (top) and listener accuracies (bottom).}
+\caption{Pragmatic informativeness scores (\%) for monolingual and bilingual speakers.}
+\label{tab:accuracy}
 \end{table}
 
-Bilingual S0 is better for Chinese that a monolingual one (with the bit to say which language to use).
+Pragmatic informativeness of the models on English and Chinese data is shown in \tabref{tab:accuracy}. The main result is that training a
+bilingual model helps compared to a Chinese monolingual one; however, the benefit is asymmetrical, as training on monolingual English data is superior for English data to training on a mix of
+Chinese and English. All differences in \tabref{tab:accuracy} are significant at $p < {}$0.001 \citep[approximate permutation test, 10,000 samples;][]{Pado2006}, except for the
+decrease on the English dev set, which is significant at $p < {}$0.05.
 
-Bilingual L(S) is better for Chinese than a bilingual L0.
-
-Bilingual L(S) is better for Chinese than all monolingual listeners.
-
-\section{Model analysis}
-
+\begin{comment}
 \begin{figure}
 
 \begin{zh}
 \exdisplay
 \begingl
 \gla 一 个 是 浅 紫色//
-\glb yi ge sh\`{\i} qi\v{a}n z\v{\i}s\`{e}//
+\glb y\'{\i} ge sh\`{\i} qi\v{a}n z\v{\i}s\`{e}//
 \glc one \textsc{cl} is shallow purple//
 \endgl
 
 \begingl
 \gla 一 个 是 艳 紫色//
-\glb yi ge sh\`{\i} y\`{a}n z\v{\i}s\`{e}//
+\glb y\'\i g\.e sh\`{\i} y\`{a}n z\v{\i}s\`{e}//
 \glc one \textsc{cl} is bright purple//
 \endgl
 
@@ -161,28 +456,321 @@ Bilingual L(S) is better for Chinese than all monolingual listeners.
 \caption{This is just to make sure \LaTeX{} will display Chinese text correctly.}
 \end{zh}
 \end{figure}
+\end{comment}
 
-Split model results by condition, to measure effect of needing the context. Can we identify sentences that are syntactically similar, to see how much of the transfer is syntactic as opposed to pragmatic?
+% WM: Split model results by condition, to measure effect of needing the context. Can we identify sentences that are syntactically similar, to see how much of the transfer is syntactic as opposed to pragmatic?
+
+An important difference between our corpora is that the English dataset is an order of magnitude larger than the Chinese. Intuitively, we expect adding more training data on the same task will
+improve the model, regardless of language. However, we find that the effect of dataset size is not so straightforward. In fact, the differences in training set size convey an asymmetric benefit.
+\Figref{fig:lowdata} shows the pragmatic informativeness of the monolingual and bilingual speakers on the development set
+as a function of dataset size (number of English and Chinese utterances). The blue curves (circles) in the plots on the left, 
+\figref{fig:lowdata-azh2en} and \figref{fig:lowdata-aen2zh}, are standard learning curves for the monolingual 
+models, and their parallel red curves (triangles) show the pragmatic informativeness of the bilingual model with the
+same amount of in-language data plus all available data in the opposite language. The plots on the right, 
+\figref{fig:lowdata-zh2aen} and \figref{fig:lowdata-en2azh}, show the effect of gradually adding 
+opposite-language data to the bilingual model starting with all of the in-language data.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[b]{0.465\columnwidth}
+    \centering
+    \includegraphics[width=\textwidth]{lowdata_azh2en_4way.pdf}
+    \caption{English without any / with all Chinese}
+    \label{fig:lowdata-azh2en}
+    \end{subfigure}
+    \hspace{0.04\columnwidth}
+    \begin{subfigure}[b]{0.465\columnwidth}
+    \centering
+    \includegraphics[width=\textwidth]{lowdata_zh2aen_4way.pdf}
+    \caption{All English, varying amount of Chinese data}
+    \label{fig:lowdata-zh2aen}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{0.465\columnwidth}
+    \centering
+    \includegraphics[width=\textwidth]{lowdata_aen2zh_4way.pdf}
+    \caption{Chinese without any / with all English}
+    \label{fig:lowdata-aen2zh}
+    \end{subfigure}
+    \hspace{0.04\columnwidth}
+    \begin{subfigure}[b]{0.465\columnwidth}
+    \centering
+    \includegraphics[width=\textwidth]{lowdata_en2azh_4way.pdf}
+    \caption{All Chinese, varying amount of English data}
+    \label{fig:lowdata-en2azh}
+    \end{subfigure}
+%
+\caption{Pragmatic informativeness (dev set) for different amounts and languages of training data.}
+\label{fig:lowdata}
+\end{figure}
+
+Overall, we see that adding all English data consistently helps the Chinese monolingual model, whereas
+adding all Chinese data consistently hurts the English monolingual model (though with diminishing effects
+as the amount of English data increases). Adding small amounts of English data---especially amounts comparable
+to the size of the Chinese dataset---decreases accuracy of the Chinese model dramatically. This suggests an
+interaction between the total amount of data and the effect of bilingual training: a model trained on
+a moderately small number of in-language examples can benefit from a much larger training set in another
+language, but combining data in two languages is detrimental when both datasets are very small and has
+very little effect when the in-language training set is large. This implies a benefit primarily in low-resource
+settings, which agrees with the findings of \citet{Johnson2016} using a similar architecture for machine translation.
+
+\subsection{Comparing model and human utterances}
+
+\begin{figure}[!t]
+    \begin{subfigure}[b]{\columnwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{models_en_tokens.png}
+    \caption{Human and model utterance lengths in English.}
+    \label{fig:models_length:en}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{\columnwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{models_zh_tokens.png}
+    \caption{Human and model utterance lengths in Chinese.}
+    \label{fig:models_length:zh}
+    \end{subfigure}
+\caption{Comparison of mean length of messages between human and model utterances.}
+\label{fig:models_length}
+\end{figure}
+
+Our hypothesis is that the bilingually-trained model is learning language-independent aspects
+of pragmatic language production. \figref{fig:models_length} reveals that the bilingually-trained model better
+captures the pattern of increasing message length in harder conditions. In both languages, the monolingual model
+uses longer utterances in the easy \emph{far} condition than human speakers do, whereas the bilingual model is
+significantly closer on that condition to the human statistics. We see similar results in the use of negations
+and comparatives; the use of superlatives is not substantially different between the monolingual and bilingual
+models.
+
+\subsection{Bilingual lexicon induction} \label{sec:lexicon-induction}
+
+\begin{table}[t]
+\centering
+\footnotesize
+\begin{tabular}{llll}
+\toprule
+\textbf{zh} & \textbf{en} & \textbf{en} & \textbf{zh} \\
+\midrule
+\textzh{绿色}{} `green' & \textbf{green}   & green & \textbf{\textzh{绿}{} `green'} \\
+\textzh{紫色}{} `purple' & \textbf{purple} & blue & \textbf{\textzh{蓝}{} `blue'} \\
+\textzh{蓝色}{} `blue' & purple            & purple & \textzh{蓝}{} `blue' \\
+\textzh{灰色}{} `grey' & \textbf{grey}     & bright & \textbf{\textzh{鲜艳}{} `bright'} \\
+\textzh{亮}{} `bright' & \textbf{bright}   & pink & \textbf{\textzh{粉色}{} `pink'} \\
+\textzh{灰}{} `grey' & -er                 & grey & \textbf{\textzh{灰}{} `grey'} \\
+\textzh{蓝}{} `blue' & \textit{teal}       & dark & \textbf{\textzh{暗}{} `dark'} \\
+\textzh{绿}{} `green' & \textbf{green}     & gray & \textbf{\textzh{灰}{} `grey'} \\
+\textzh{紫}{} `purple' & \textbf{purple}   & yellow & \textbf{\textzh{黄色}{} `yellow'} \\
+\textzh{草}{} `grass' & \textit{green}     & light & \textzh{最}{} `most' \\
+\bottomrule
+\end{tabular}
+\caption{Bilingual lexicon induction from Chinese to English (first two columns) and vice versa
+(last two). Correct translations in \textbf{bold}, semantically close words in \textit{italic}.}
+\label{tab:lexicon}
+\end{table}
+
+To get a better understanding of the influence of the bilingual training on the model's lexical
+representations in the two languages, we extracted the weights of the final softmax layer of the bilingual
+speaker model and used them to induce a bilingual lexicon with a word vector analogy task.
+For two pairs of lexical translations, \textzh{蓝色}{l\'ans\`e} $\rightarrow$ ``blue'' and ``red''
+$\rightarrow$ \textzh{红}{h\'ong}, we took the difference between the source language word vector and
+the target language word vector. To ``translate'' a word, we added this ``translation vector'' to the
+word vector for the source word, and found the
+word in the opposite language with the largest inner product to the resulting vector.
+The results are presented in \tabref{tab:lexicon}. We identified the 10 most frequent color-related words in each language to translate. (In other words,
+we did not use this process to find translations of function words like ``the'' or the Chinese
+nominalization/genitive particle \textzh{的}{de}, but we show proposed translations that were not
+color-related, such as \textzh{灰}{hu\={\i}} being translated as the English comparative ending ``-er''.)
+The majority of common color words are translated correctly by this simple method, showing that the vectors in
+the softmax layer do express a linear correspondence between the representation of synonyms in the two languages.
+
+\subsection{Color term semantics} \label{sec:wcs}
+
+\begin{comment}
+\begin{figure}[t]
+    \begin{subfigure}[b]{\columnwidth}
+    \centering
+    \begin{overpic}[width=0.9\textwidth]{en_bilingual_borders.png}
+        \put (-9, 8) {\footnotesize{grey}}
+        \put (3.5, 13) {\footnotesize{red}}
+        \put (12, 8) {\footnotesize{orange}}
+        \put (23, 0) {\footnotesize{brown}}
+        \put (24, 15) {\footnotesize{yellow}}
+        \put (36.5, 10) {\footnotesize{green}}
+        \put (62, 11) {\footnotesize{blue}}
+        \put (80, 12.5) {\footnotesize{purple}}
+        \put (91, 8) {\footnotesize{pink}}
+
+        \put (46, -3) {Hue}
+        \put (102, 7) {\rotatebox{90}{Value}}
+    \end{overpic}
+    \vspace*{1ex}
+    \caption{Bilingual training}
+    \label{fig:wcs-en-bi}
+    \end{subfigure}
+%
+\caption{English color term lexicons: colors in the World Color Survey
+palette grouped by highest-probability description, averaged over 10 randomly-generated pairs
+of distractor colors.
+The color that results in the highest probability of each description is marked with a star.}
+\label{fig:wcs}
+\end{figure}
+\end{comment}
+\begin{figure}[t]
+    \centering
+
+    \begin{subfigure}[b]{\columnwidth}
+    \centering    
+    \begin{overpic}[width=0.9\textwidth]{zh_monolingual_borders.png}
+        \put (-7, 3) {\footnotesize{hu\={\i}}}
+        \put (3, 11) {\footnotesize{h\'ong}}
+        \put (22, 2) {\footnotesize{z\=ong}}
+        \put (16.5, 19) {\footnotesize{hu\'ang}}
+        \put (38.5, 12) {\footnotesize{l\textipa{\`{\"u}}}}
+        \put (67.5, 12) {\footnotesize{l\'an}}
+        \put (86, 6) {\footnotesize{z\v{\i}}}
+        \put (93.5, 18) {\footnotesize{h\'ong}}
+        \put (93.5, 27) {\footnotesize{z\=ong}}
+
+        \put (46, -3) {Hue}
+        \put (102, 7) {\rotatebox{90}{Value}}
+    \end{overpic}
+    \vspace*{1ex}
+    \caption{Monolingual Chinese}
+    \label{fig:wcs-front-zh-mono}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{\columnwidth}
+    \centering
+    \begin{overpic}[width=0.9\textwidth]{zh_bilingual_borders.png}
+        \put (-7, 3) {\footnotesize{hu\={\i}}}
+        \put (3.5, 27.5) {\footnotesize{z\=ong}}
+        \put (5, 20) {\footnotesize{h\'ong}}
+        \put (15.5, 13.5) {\footnotesize{ch\'eng}}
+        \put (19.5, 2) {\footnotesize{z\=ong}}
+        \put (25, 18) {\footnotesize{hu\'ang}}
+        \put (38.5, 6) {\footnotesize{l\textipa{\`{\"u}}}}
+        \put (69.5, 8.5) {\footnotesize{l\'an}}
+        \put (83, 8.5) {\footnotesize{z\v{\i}}}
+        \put (90.5, 19) {\footnotesize{h\'ong}}
+
+        \put (46, -3) {Hue}
+        \put (102, 7) {\rotatebox{90}{Value}}
+    \end{overpic}
+    \vspace*{1ex}
+    \caption{Chinese with English data}
+    \label{fig:wcs-front-zh-bi}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{\columnwidth}
+    \centering
+    \begin{overpic}[width=0.9\textwidth]{en_monolingual_borders.png} % [width=\textwidth,grid,tics=10]
+        \put (-9, 17) {\footnotesize{grey}}
+        \put (3.5, 15) {\footnotesize{red}}
+        \put (11.5, 9.5) {\footnotesize{orange}}
+        \put (22, 0) {\footnotesize{brown}}
+        \put (25.3, 12.5) {\footnotesize{yellow}}
+        \put (34.5, 6.5) {\footnotesize{green}}
+        \put (51, 13.5) {\footnotesize{teal}}
+        \put (65, 13) {\footnotesize{blue}}
+        \put (75.5, 7) {\footnotesize{purple}}
+        \put (91, 9) {\footnotesize{pink}}
+
+        \put (46, -3) {Hue}
+        \put (102, 7) {\rotatebox{90}{Value}}
+    \end{overpic}
+    \vspace*{1ex}
+    \caption{Monolingual English}
+    \label{fig:wcs-en-mono}
+    \end{subfigure}
+
+%
+\caption{Color term lexica: colors in the World Color Survey
+palette grouped by highest-probability description, averaged over 10 randomly-generated pairs
+of distractor colors.
+The color that results in the highest probability of each description is marked with a star. English influences on the bilingual model include the appearance
+of \textzh{橙色}{ch\'engs\`e} `orange' and narrowing of \textzh{黄色}{hu\'angs\`e} `yellow' and \textzh{绿色}{l\textipa{\`{\"u}}s\`e} `green'.} 
+\label{fig:wcs}
+\end{figure}
+
+The above experiment suggests that the bilingual model has learned word semantics in ways that discover
+translation pairs. However, we wish to know whether bilingual training has resulted in changes to the
+model's output distribution reflecting differences in the two languages' color systems. To evaluate this,
+we performed an experiment similar to the basic color term elicitations
+in the World Color Survey \citep[WCS;][]{BerlinKay1969} on our models. For each of the 330 colors in the 
+original WCS, we presented that color to our monolingual and bilingual models and recorded the
+most likely color description according to the conditional language model. Our models require a three-color
+context to produce a description; as an approximation to eliciting context-insensitive color terms, we gave the
+model ten contexts with randomly generated (uniform in H, S, and V) distractor colors and averaged the language
+model probabilities. We also identified, for each color term produced as the most likely description of one or more colors, the color that resulted in the highest probability of producing that term.
+
+The results are in \figref{fig:wcs}. The charts use the layout of
+the WCS stimulus, in which the two axes represent dimensions of color variation
+similar to hue and lightness. Each region represents a set of colors that the model labeled with the same color term, and a star marks the color that resulted in the highest probability of producing that term. The Chinese terms, except for \textzh{红}{h\'ong}, are abbreviated by deleting the
+final morpheme \textzh{色}{s\`e} `color'.
+
+The charts agree with \citet{BerlinKay1969} on most of the differences between the two languages:
+\emph{orange} and \emph{pink} have clear regions of dominance in English, whereas in the Mandarin
+monolingual model \emph{pink} is subsumed by \textzh{红}{h\'ong} `red', and \emph{orange} is subsumed by \textzh{黄色}{hu\'angs\`e} `yellow'. Our models produce three colors not in the six-color system\footnote{Notably absent are `black' and `white'. The collection methodology of \citet{Monroe2017} restricted colors to a single lightness, so black and white are not in the data. For these charts, we replaced the World Color Survey swatches with the closest color used in our data collection.} identified by Berlin and Kay for Mandarin: \textzh{灰色}{hu\={\i}s\`e} `grey', \textzh{紫色}{z\v{\i}s\`e} `purple', and \textzh{棕色}{z\=ongs\`e} `brown'. Of these, they explicitly exclude \textzh{灰色}{hu\={\i}s\`e} from the set of basic color terms because it has a meaning that refers to an object (`ashes'); the other two may have been excluded for the same reason, or they may represent a change in the language or the influence of English on the participants' usage.\footnote{MTurk's restriction to US workers makes English influence more likely than would otherwise be expected.}
+
+A few differences between the monolingual and bilingual models can be characterized as an influence of
+one language's color system on the other. First, \emph{teal} appears as a common description of a few color 
+swatches from the English monolingual model, but the bilingual model, like the Chinese model, does not feature 
+a common word for teal. Second, the Chinese monolingual model does not include a common word for orange, but
+the bilingual model identifies \textzh{橙色}{ch\'engs\`e} `orange'. Finally, the English 
+\emph{green} is semantically narrower than the Chinese \textzh{绿色}{l\textipa{\`{\"u}}s\`e}, and the
+Chinese bilingual model exhibits a corresponding narrowing of the range of 
+\textzh{绿色}{l\textipa{\`{\"u}}s\`e}. Changes to the lexical semantics due to
+opposite-language data should predict, all else equal, that the bilingual model would be a less effective model
+of a speaker in each language. The fact that we observe otherwise for the Chinese speaker suggests
+that the benefits of learning general pragmatic behaviors outweigh the
+drawbacks of cross-lingual semantic interference.
 
 \section{Related work}
 
-\citet{Collobert2008}
+The method we use to build a bilingual model involves adding a single language dimension to the previous-token vectors in the encoder (\secref{sec:models}). 
+%In essence, the two languages have separate vocabulary representation at the input and output but shared hidden representations. 
+Adding a hard constraint on the output vocabulary
+would make this equivalent to a simple form of multitask learning \citep{Caruana1997,Collobert2008}.
+(Our model occasionally ignores the flag
+and ``code-switches'' between the two languages within a single output, which is not possible in typical multitask architectures.)
+%, with tasks consisting of the same
+%referring expression generation objective in different languages.
 
-\citet{Johnson2016}
+Using shared parameters for cross-lingual representation transfer has a large literature.
+\citet{Klementiev2012} and \citet{Hermann2014} use multitask learning with multilingual document classification to build cross-lingual
+word vectors, and observe accurate lexical translations from linear vector analogy operations. They include predicting translations for
+words in parallel data as one of their tasks. Our translations from vector relationships (\secref{sec:lexicon-induction}) derive their cross-lingual
+relationships from the non-linguistic input of our grounded task, without parallel data.
 
-\citet{Wu2016}
-
-\citet{Kaiser2017}
+\citet{Huang2013} note gains in speech recognition from cross-lingual learning with shared parameters. In machine translation,
+\citet{Johnson2016} add the approach of setting the output language using a symbol in the input. 
+\citet{Kaiser2017} extend this to image captioning, speech recognition, and parsing in one multitask system.
+Our work complements these efforts with an in-depth analysis of bilingual training on a 
+grounded generation task and an exploration of the relationship between cross-lingual semantic differences 
+and language-general pragmatics.
 
 \section{Conclusion}
 
-\begin{comment}
+In this paper, we studied the effects of training on bilingual data in a grounded language task. We show evidence that
+bilingual training can be helpful, but with a non-obvious effect of dataset size: accuracy as a function of opposite-language
+data follows a U-shaped curve. The resulting model is more human-like in measures of language-general pragmatic effects, while
+exhibiting language-specific evidence of its bilingual training in the form of vector relationships between lexical pairs
+and influences of the opposite language on common color-term probabilities.
+
+It should be noted that color descriptions in English and Chinese are similar both in their syntax
+and in the way they divide up the semantic space. We might expect that for languages like Arabic and Spanish (with their
+different placement of modifiers), or Waorani and Pirah\~a (with their much smaller color term
+inventories), the introduction of English data could have detrimental effects that 
+outweigh the language-general gains. An investigation across a broader range of languages is desirable.
+
+Our contribution includes a new dataset of human utterances in a color reference game in Mandarin Chinese, which we
+release to the public\footnote{\url{http://cocolab.stanford.edu/datasets/colors.html}} with our code and trained model
+parameters.\footnote{\url{http://github.com/futurulus/coop-nets}}
+
 \section*{Acknowledgments}
 
-The acknowledgments should go immediately before the references.  Do
-not number the acknowledgments section. Do not include this section
-when submitting your paper for review.
-\end{comment}
+We thank Jiwei Li for extensive editing of our Chinese translations of the Mechanical Turk task instructions, Robert X.D.\ Hawkins for assistance setting up the data collection platform, and members of the Stanford NLP group---particularly Reid Pryzant, Sebastian Schuster, and Reuben Cohn-Gordon---for valuable feedback on earlier drafts. 
+This material is based in part upon work supported by the Stanford Data Science Initiative and by the NSF under Grant Nos.~BCS-1456077 and SMA-1659585.
 
 % include your own bib file like this:
 \bibliography{multilingual-naacl2018}
@@ -190,11 +778,49 @@ when submitting your paper for review.
 
 \appendix
 
-\section{Model details}
+\section{Model details} \label{sec:appendix}
 
-Tuning method and final hyperparameters
+Both Chinese monolingual and bilingual model were tuned for perplexity on a held-out subset of the training set,
+by random search followed by a local search from the best candidate until no single parameter change produced a better
+result. However, the tuned settings for the Chinese monolingual model did not outperform the settings from
+\citet{Monroe2017} for the English model on the development set, so in our final experiments the monolingual models
+used the same parameters.
 
-Vocab sizes
+The vocabulary for each model consisted of all tokens that were seen at least twice in training; the bilingual
+model's vocabulary is larger than the union of the words in each monolingual model because some tokens occurred once in each language
+(largely meta-commentary---e.g., \word{dunno}, \word{HIT}, \word{xD}---and some English color word typos).
 
+\begin{table}[!h]
+\centering
+\begin{tabular}{lccc}
+\toprule
+hyperparameter      & mono. & biling. \\
+\midrule
+optimizer           & ADAM  & RMSProp \\
+learning rate       & 0.004 & 0.004 \\
+dropout             & 0.1   & 0.1 \\
+gradient clip norm  & --    & 1 \\
+LSTM cell size      & 100   & 50 \\
+embedding size      & 100   & 100 \\
+initial forget bias & 0     & 5 \\
+nonlinearity        & tanh  & sigmoid \\
+\midrule
+vocabulary size     & 895 (en) & 1,326 \\
+                    & 260 (zh) & \\
+\bottomrule
+\end{tabular}
+\caption{Values of hyperparameters optimized in tuning for the monolingual and bilingual models, plus vocabulary sizes.}
+\label{tab:hyperparameters}
+\end{table}
+
+\section{Data management} \label{sec:irb}
+
+This work was done under
+Stanford IRB Protocol 17827, which has the title ``Pragmatic enrichment and contextual inference''.
+Data was only collected from workers who indicated their informed consent.
+Workers on Amazon Mechanical Turk were paid \$2.00 to complete each game consisting of 50 dialogue contexts, plus
+a bonus of \$0.01 for each target the listener correctly identified.
+All worker identifiers have been removed from data that will be released; the only other information collected
+about the workers was their Chinese language proficiency.
 
 \end{document}
