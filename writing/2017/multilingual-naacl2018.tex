@@ -315,29 +315,6 @@ Both languages exhibit similar trends for superlative adjectives. In English, co
 
 We also see that both languages follow the same general trend of using negation more frequently as the condition becomes more difficult.
 
-\begin{comment}
-\subsection{Success rates}
-
-To measure success, we count the rounds in which the listener correctly identifies the target color. As expected, the success rates decrease as the task gets more difficult. However, English listeners consistently performed better than Chinese listeners. % with a p-value of $3.25 \times 10^{-19}$. % JH: we should recheck this math to be safe
-
-\begin{figure}[!t]
-    \centering
-    \includegraphics[width=\columnwidth]{success}
-    \caption{Comparison of overall success rates in Chinese and English.}
-    \label{fig:success}
-\end{figure}
-
-% AJ: and a table?
-%           English    Chinese      T Test
-% Far        μ, σ       μ, σ          t*
-% Split      μ, σ       μ, σ          t*
-% Close      μ, σ       μ, σ          t*
-% 3-Average  μ, σ       μ, σ          t*
-
-% JH: better transition and flesh this out
-The correlations between trial difficulty and usage of negation, comparatives, and superlatives reflect groundedness of language, as these behaviors implicitly refer to other colors in the context. The differences within those strategies reflect differences in morphological markedness. Differences in specificity reflect differences in basic color lexica \cite{BerlinKay1969} and their interactions with RSA. 
-\end{comment}
-
 \section{Models}\label{sec:models}
 
 We build and evaluate three artificial agents on this reference game task, two trained
@@ -428,35 +405,6 @@ Pragmatic informativeness of the models on English and Chinese data is shown in 
 bilingual model helps compared to a Chinese monolingual one; however, the benefit is asymmetrical, as training on monolingual English data is superior for English data to training on a mix of
 Chinese and English. All differences in \tabref{tab:accuracy} are significant at $p < {}$0.001 \citep[approximate permutation test, 10,000 samples;][]{Pado2006}, except for the
 decrease on the English dev set, which is significant at $p < {}$0.05.
-
-\begin{comment}
-\begin{figure}
-
-\begin{zh}
-\exdisplay
-\begingl
-\gla 一 个 是 浅 紫色//
-\glb y\'{\i} ge sh\`{\i} qi\v{a}n z\v{\i}s\`{e}//
-\glc one \textsc{cl} is shallow purple//
-\endgl
-
-\begingl
-\gla 一 个 是 艳 紫色//
-\glb y\'\i g\.e sh\`{\i} y\`{a}n z\v{\i}s\`{e}//
-\glc one \textsc{cl} is bright purple//
-\endgl
-
-\begingl
-\gla 剩下 的 那个 色 就是 要 选 的//
-\glb sh\`engxia de n\`age s\`e ji\`ush\`{\i} y\`{a}o xu\v{a}n de//
-\glc remain \textsc{de} that color is want choose \textsc{de}//
-\glft ``One is pale purple, one is bright purple. The remaining color is the one to choose.''//
-\endgl
-\xe
-\caption{This is just to make sure \LaTeX{} will display Chinese text correctly.}
-\end{zh}
-\end{figure}
-\end{comment}
 
 % WM: Split model results by condition, to measure effect of needing the context. Can we identify sentences that are syntactically similar, to see how much of the transfer is syntactic as opposed to pragmatic?
 
@@ -585,36 +533,6 @@ the softmax layer do express a linear correspondence between the representation 
 
 \subsection{Color term semantics} \label{sec:wcs}
 
-\begin{comment}
-\begin{figure}[t]
-    \begin{subfigure}[b]{\columnwidth}
-    \centering
-    \begin{overpic}[width=0.9\textwidth]{en_bilingual_borders.png}
-        \put (-9, 8) {\footnotesize{grey}}
-        \put (3.5, 13) {\footnotesize{red}}
-        \put (12, 8) {\footnotesize{orange}}
-        \put (23, 0) {\footnotesize{brown}}
-        \put (24, 15) {\footnotesize{yellow}}
-        \put (36.5, 10) {\footnotesize{green}}
-        \put (62, 11) {\footnotesize{blue}}
-        \put (80, 12.5) {\footnotesize{purple}}
-        \put (91, 8) {\footnotesize{pink}}
-
-        \put (46, -3) {Hue}
-        \put (102, 7) {\rotatebox{90}{Value}}
-    \end{overpic}
-    \vspace*{1ex}
-    \caption{Bilingual training}
-    \label{fig:wcs-en-bi}
-    \end{subfigure}
-%
-\caption{English color term lexicons: colors in the World Color Survey
-palette grouped by highest-probability description, averaged over 10 randomly-generated pairs
-of distractor colors.
-The color that results in the highest probability of each description is marked with a star.}
-\label{fig:wcs}
-\end{figure}
-\end{comment}
 \begin{figure}[t]
     \centering
 
