@@ -25,12 +25,13 @@ clks = read.csv("./data_input_raw/colorReferenceClicksChinese.csv") %>%
 aggregated <- msgs %>% 
   left_join(clks, by = c("gameid", "roundNum")) %>%
   select(-index) %>%
+  filter(!is.na(clickStatus)) %>%
   write_csv('./data_input_cleaned/filteredCorpus.csv')
 ```
 
 # Some statistics
 
 ```{r}
-paste0("# games: ", length(unique(rawAggregated$gameid)))
-paste0("# utterances: ", length(unique(rawAggregated$gameid)))
+paste0("# games: ", length(unique(aggregated$gameid)))
+paste0("# utterances: ", length(aggregated$gameid))
 ```

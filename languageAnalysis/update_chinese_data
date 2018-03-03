@@ -33,6 +33,11 @@ then
 		eval $clicked
 	done < "$auth"
 
+    bad_pattern='worker \?ID\|A[A-Z0-9]\{13\}'
+    echo 'Removing known bad entries:'
+    sed -n "/${bad_pattern}/p" "${OUT}chatmessages.json"
+    sed -i "/${bad_pattern}/d" "${OUT}chatmessages.json"
+
 	# convert to csv
 	echo Converting json to csv
 	python jsonToCSV.py
