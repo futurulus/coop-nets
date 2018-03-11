@@ -75,12 +75,10 @@ class ColorDescriber(object):
     def score_all(self, colors, descriptions, format='rgb'):
         '''
         Return a list of log probabilities (base e) for the descriptions
-        in `descriptions`, conditioned on the corresponding colors in `colors`.
-        `descriptions` and `colors` have the same length.
-        is expressed in the colorspace given by `format`
-        (one of 'rgb', 'hsv', 'hsl'). If `sample` is `True`,
-        return descriptions sampled from the model's probability
-        distribution; otherwise return the most likely, common descriptions.
+        in `descriptions`, conditioned on the corresponding colors in `colors`,
+        which are expressed in the colorspace given by `format`
+        (one of 'rgb', 'hsv', 'hsl'). `descriptions` and `colors` must have the
+        same length.
 
         >>> cd = ColorDescriber()
         >>> cd.score_all([(255, 0, 0), (0, 0, 255)], ['red', 'blue'])  # doctest: +ELLIPSIS
