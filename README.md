@@ -7,6 +7,9 @@ Code and supplementary material for
 Understanding (TACL 2017)](https://arxiv.org/abs/1703.10186)
 * Generating Bilingual Color References (NAACL 2018)
 
+See http://cocolab.stanford.edu/datasets/colors.html for quick links to the
+datasets released with these papers.
+
 Dependencies
 ------------
 
