@@ -145,5 +145,5 @@
   "validation_size": [
     3500
   ],
-  "verbosity": 4
+  "verbosity": 1
 }

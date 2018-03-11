@@ -2,10 +2,8 @@ Colors in Context
 =================
 
 Code and supplementary material for
-
-* [Colors in Context: A Pragmatic Neural Model for Grounded Language
-Understanding (TACL 2017)](https://arxiv.org/abs/1703.10186)
-* Generating Bilingual Color References (NAACL 2018)
+[Colors in Context: A Pragmatic Neural Model for Grounded Language
+Understanding](https://arxiv.org/abs/1703.10186).
 
 Dependencies
 ------------
@@ -27,28 +25,14 @@ to try.
 Running experiments
 -------------------
 
-Bilingual Color References
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+To re-run the base listener L0 from the paper (Table 3) with pre-trained
+models, you can use the following command:
 
-To re-run pre-trained monolingual and bilingual agents from Table 1, you can
-use the following commands:
-
-    python run_experiment.py --config models/en_l1.config.json        # (en: en)
-    python run_experiment.py --config models/biling_l1_en.config.json # (en: en+zh)
-    python run_experiment.py --config models/zh_l1.config.json        # (zh: zh)
-    python run_experiment.py --config models/biling_l1_zh.config.json # (zh: en+zh)
+    python run_experiment.py --config models/l0.config.json
 
 Look for `eval.accuracy.mean` in the output to compare with Table 2. This
 command uses dev set results by default; add `--data_source filtered_test` to
 reproduce the test set results instead.
-
-Colors in Context
-~~~~~~~~~~~~~~~~~
-
-To re-run the base listener L0 from the paper (Table 3) with pre-trained
-models, use:
-
-    python run_experiment.py --config models/l0.config.json
 
 Re-running the other experiments requires first constructing the "quickload"
 file for the base speaker:
@@ -91,9 +75,9 @@ will all be logged to the directory
 
     runs/lb
 
-To retrain any models for either paper from scratch, add `--load ''` to the
-`run_experiment.py` command. Like the Lb step, GPU is recommended here; for
-training, the difference in speed can be dramatic (2 hours vs. days).
+To retrain L0 or S0 from scratch, add `--load ''` to the `run_experiment.py`
+command. Like the Lb step, GPU is recommended here; for training, the
+difference in speed can be dramatic (2 hours vs. days).
 
 Troubleshooting
 ---------------
